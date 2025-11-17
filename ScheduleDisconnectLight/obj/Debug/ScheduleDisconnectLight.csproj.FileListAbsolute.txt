@@ -1,0 +1,8 @@
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe.config
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.AssemblyReference.cache
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.CoreCompileInputs.cache
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe.config

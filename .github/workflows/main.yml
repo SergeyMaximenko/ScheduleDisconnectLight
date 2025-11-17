@@ -2,6 +2,8 @@ name: Run ScheduleDisconnectLight
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"   # каждые 5 минут, чаще GitHub не даёт
 
 jobs:
   run:
@@ -10,12 +12,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Clean & Build solution
-        run: msbuild ScheduleDisconnectLight.sln /t:Clean,Build /p:Configuration=Debug
 
       - name: Run EXE
         env:

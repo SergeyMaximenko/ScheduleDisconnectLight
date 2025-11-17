@@ -36,7 +36,7 @@ namespace ScheduleDisconnectLight
                 return;
             }
 
-            string text = "__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
+            string text = "44__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
 
             using (var httpClient = new HttpClient())
             {
