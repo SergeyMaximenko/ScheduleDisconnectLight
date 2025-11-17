@@ -121,7 +121,7 @@ namespace ScheduleDisconnectLight
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
             var schedule = new Schedule();
-            schedule.LastUpdatedYasno = ConvertToKyiv(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
+            schedule.LastUpdatedYasno = getDateUa(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
@@ -205,22 +205,12 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
         }
-        
-        private static readonly TimeZoneInfo KyivZone =
-            TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
 
-
-
-        private static DateTime ConvertToKyiv(DateTimeOffset dto)
+        private static DateTime getDateUa(DateTimeOffset date)
         {
-            // 1. Явно берём UTC-время
-            DateTime utc = dto.UtcDateTime; // Kind = Utc
-
-            // 2. Переводим из UTC в Киев
-            DateTime kyivTime = TimeZoneInfo.ConvertTimeFromUtc(utc, KyivZone);
-
-            // Можно оставить Kind = Unspecified, нам главное значение
-            return kyivTime;
+            TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+            // Конвертируем "как задумано" в киевский часовой пояс
+            return TimeZoneInfo.ConvertTime(date, kyiv).DateTime;
         }
 
 
