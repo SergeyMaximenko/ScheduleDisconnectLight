@@ -14,8 +14,8 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Clean & Build project
-        run: msbuild ScheduleDisconnectLight\ScheduleDisconnectLight.csproj /t:Clean,Build /p:Configuration=Debug /p:Platform="Any CPU"
+      - name: Clean & Build solution
+        run: msbuild ScheduleDisconnectLight.sln /t:Clean,Build /p:Configuration=Debug
 
       - name: Run EXE
         env:
