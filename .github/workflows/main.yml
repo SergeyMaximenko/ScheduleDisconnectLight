@@ -1,7 +1,7 @@
 name: Run ScheduleDisconnectLight
 
 on:
-  workflow_dispatch:   # дает кнопку "Run workflow" в Actions
+  workflow_dispatch:
 
 jobs:
   run:
@@ -12,13 +12,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Restore NuGet packages
-        run: nuget restore ScheduleDisconnectLight.sln
-
-      - name: Build project
-        run: msbuild ScheduleDisconnectLight\ScheduleDisconnectLight.csproj /p:Configuration=Debug
+      - name: Restore and Build project
+        run: msbuild ScheduleDisconnectLight\ScheduleDisconnectLight.csproj /t:Restore,Build /p:Configuration=Debug
 
       - name: Run EXE
         env:
@@ -26,4 +23,4 @@ jobs:
           CHAT_ID:  ${{ secrets.CHAT_ID }}
         run: |
           cd ScheduleDisconnectLight\bin\Debug
-          ScheduleDisconnectLight.exe
+          .\ScheduleDisconnectLight.exe
