@@ -1,9 +1,9 @@
 name: Run ScheduleDisconnectLight
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}     # СЂСѓС‡РЅРёР№ Р·Р°РїСѓСЃРє
   schedule:
-    - cron: "*/5 * * * *"   # каждые 5 минут, чаще GitHub не даёт
+    - cron: '*/5 * * * *'   # РєРѕР¶РЅС– 5 С…РІРёР»РёРЅ РїРѕ UTC
 
 jobs:
   run:
@@ -21,26 +21,19 @@ jobs:
           cd ScheduleDisconnectLight\bin\Debug
           .\ScheduleDisconnectLight.exe
 
-
-
-
-
-
-
-
       - name: Commit updated state.json
-        if: success()    # только если Run EXE отработал без ошибок
+        if: success()    # С‚РѕР»СЊРєРѕ РµСЃР»Рё Run EXE РѕС‚СЂР°Р±РѕС‚Р°Р» Р±РµР· РѕС€РёР±РѕРє
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Добавляем файл в индекс
+          # Р”РѕР±Р°РІР»СЏРµРј С„Р°Р№Р» РІ РёРЅРґРµРєСЃ
           git add state.json
 
-          # Делаем коммит, если есть изменения
+          # Р”РµР»Р°РµРј РєРѕРјРјРёС‚, РµСЃР»Рё РµСЃС‚СЊ РёР·РјРµРЅРµРЅРёСЏ
           git commit -m "Update state.json" || echo "No changes to commit"
 
-          # Пушим в ту же ветку (main)
+          # РџСѓС€РёРј РІ С‚Сѓ Р¶Рµ РІРµС‚РєСѓ (main)
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
