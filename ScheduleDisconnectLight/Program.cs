@@ -130,6 +130,7 @@ namespace ScheduleDisconnectLight
                         continue;
                     }
 
+
                     double valueStart = item["start"].ValueInt / 60.0;
                     int hoursStart = (int)valueStart;                    // 8
                     int minutesStart = (int)((valueStart - hoursStart) * 60); // 0.5 * 60 = 30
