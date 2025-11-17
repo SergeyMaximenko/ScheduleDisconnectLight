@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -27,26 +28,66 @@ namespace ScheduleDisconnectLight
             // Загружаем состояние
             AppState state = LoadState(stateFile);
 
-            // Увеличиваем счётчик
-            state.Counter++;
 
-            // Ставим текущее время
-            state.LastUpdated = DateTime.Now;
-
-            // Сохраняем обратно
-            SaveState(stateFile, state);
-
-            Console.WriteLine("state.json обновлён по пути: " + stateFile);
+           
+          
 
 
 
 
 
-            getScheduleYasno();
+            var schedule = getScheduleYasno();
+            var message = "";
+            if (1==1 || schedule.LastUpdatedYasno != state.LastUpdatedYasno)
+            {
+                // Изменился график
+
+                // Записать дату последнего обновления в Yasno
+                state.LastUpdatedYasno = schedule.LastUpdatedYasno;
+
+                if (schedule.ParamDisconnet1 != null || schedule.ParamDisconnet2 != null)
+                {
+                    var messageTmp = new StringBuilder();
+                    // Отправить сообщение об изменении графика 
+                    messageTmp.Append("⚡️<b>Увага!</b> Новий графік <b>відсутності</b> світла\n");
+                    messageTmp.Append("\n");
+                    if (schedule.ParamDisconnet1 != null)
+                    {
+                        messageTmp.Append($"📅 <b>{schedule.ParamDisconnet1.Date.ToString("dd.MM.yyyy")} {getNameDay(schedule.ParamDisconnet1.Date)}</b>\n");
+                        messageTmp.Append(schedule.ParamDisconnet1.GetHtmlTime()+"\n");
+                        messageTmp.Append("\n");
+                    }
+                    if (schedule.ParamDisconnet2 != null)
+                    {
+                        messageTmp.Append($"📅 <b>{schedule.ParamDisconnet2.Date.ToString("dd.MM.yyyy")} {getNameDay(schedule.ParamDisconnet2.Date)}</b>\n");
+                        messageTmp.Append(schedule.ParamDisconnet2.GetHtmlTime() + "\n");
+                        messageTmp.Append("\n");
+                    }
+                    messageTmp.Append("\n");
+
+                    messageTmp.Append("<i>P.S. Оновлено на Yasno " + state.LastUpdatedYasno.ToString("dd.MM.yyyy HH:mm") + "</i>");
+                    message = messageTmp.ToString();
+                }
+                
+            }
+            else
+            {
+                
+
+            }
+            
+
 
             Console.WriteLine("Отправляем сообщение...");
 
-            sendTelegramMessage();
+            sendTelegramMessage(message);
+
+            
+            // Сохраняем обратно
+            state.LastUpdatedFile = getCurrentDate();
+            SaveState(stateFile, state);
+
+
         }
 
 
@@ -78,7 +119,7 @@ namespace ScheduleDisconnectLight
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
             var schedule = new Schedule();
-            schedule.DateUpdate = jsonYasno["updatedOn"].GetValue<DateTime>();
+            schedule.LastUpdatedYasno = jsonYasno["updatedOn"].GetValue<DateTime>();
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
@@ -86,7 +127,7 @@ namespace ScheduleDisconnectLight
 
                 foreach (var item in jsonYasno["today"]["slots"].GetArray())
                 {
-                    if (item["type"].Value == "Definite")
+                    if (item["type"].Value != "Definite")
                     {
                         continue;
                     }
@@ -113,7 +154,7 @@ namespace ScheduleDisconnectLight
 
                 foreach (var item in jsonYasno["tomorrow"]["slots"].GetArray())
                 {
-                    if (item["type"].Value == "Definite")
+                    if (item["type"].Value != "Definite")
                     {
                         continue;
                     }
@@ -138,8 +179,31 @@ namespace ScheduleDisconnectLight
 
         }
 
+        private static string getNameDay(DateTime date)
+        {
+            var text = date.ToString("ddd", new CultureInfo("uk-UA"));
+            if (date == getCurrentDate().Date)
+            {
+                text = text + " (сьогодні)";
+            }
+            else if (getCurrentDate().Date.AddDays(1) == date)
+            {
+                text = text + " (завтра)";
+            }
+            else if (getCurrentDate().Date.AddDays(-1) == date)
+            {
+                text = text + " (вчора)";
+            }
+            return text;
+        }
 
-        public static void sendTelegramMessage()
+        private static DateTime getCurrentDate()
+        {
+            TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
+        }
+
+        public static void sendTelegramMessage(string message)
         {
             string botToken = "7911836999:AAHeC6qjw-Kis9xwA332YTq2ns1YI1AMdMI";
             string chatId = "-1002275491172";
@@ -150,7 +214,7 @@ namespace ScheduleDisconnectLight
                 return;
             }
 
-            string text = "11144__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
+            //string text = "11144__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
 
             using (var httpClient = new HttpClient())
             {
@@ -159,8 +223,10 @@ namespace ScheduleDisconnectLight
                 var data = new Dictionary<string, string>
                     {
                         { "chat_id", chatId },
-                        { "text", text }
-                    };
+                        { "text", message },
+                        { "parse_mode", "HTML"}
+                    }
+            ;
 
                 using (var content = new FormUrlEncodedContent(data))
                 {
@@ -180,8 +246,8 @@ namespace ScheduleDisconnectLight
             {
                 return new AppState
                 {
-                    LastUpdated = DateTime.Now,
-                    Counter = 0
+                    LastUpdatedFile = DateTime.MinValue,
+                    LastUpdatedYasno = DateTime.MinValue
                 };
             }
 
@@ -201,13 +267,15 @@ namespace ScheduleDisconnectLight
     // Класс "мини-базы"
     class AppState
     {
-        public DateTime LastUpdated { get; set; }
-        public int Counter { get; set; }
+        public DateTime LastUpdatedFile { get; set; }
+        
+        public DateTime LastUpdatedYasno { get; set; }
+    
     }
 
     public class Schedule
     {
-        public DateTime DateUpdate;
+        public DateTime LastUpdatedYasno;
         public ScheduleTimeDisconnet ParamDisconnet1;
         public ScheduleTimeDisconnet ParamDisconnet2;
         public Schedule()
@@ -220,6 +288,16 @@ namespace ScheduleDisconnectLight
     {
         public DateTime Date;
         public List<Tuple<TimeSpan,TimeSpan>> PeriodDisconnet;
+
+        public string GetHtmlTime()
+        {
+            if (PeriodDisconnet.Count==0)
+            {
+                return "🟢 Відключення не плануються";
+            }
+
+            return string.Join("\n", PeriodDisconnet.Select(t => "🔴 " + t.Item1.Hours.ToString("D2") + ":" + t.Item1.Minutes.ToString("D2")+ " - "+ ( t.Item2.Hours == 23 && t.Item2.Minutes ==59 ? "24:00" : t.Item2.Hours.ToString("D2") + ":" + t.Item2.Minutes.ToString("D2"))));
+        }
 
         public ScheduleTimeDisconnet()
         {
