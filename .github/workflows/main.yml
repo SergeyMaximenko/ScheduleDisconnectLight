@@ -1,9 +1,9 @@
 name: Run ScheduleDisconnectLight
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}     # ручний запуск
   schedule:
-    - cron: "*/5 * * * *"   # 112 êàæäûå 5 ìèíóò, ÷àùå GitHub íå äà¸ò
+    - cron: '*/5 * * * *'   # кожні 5 хвилин по UTC
 
 jobs:
   run:
