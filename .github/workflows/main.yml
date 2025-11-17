@@ -1,0 +1,26 @@
+name: Run ScheduleDisconnectLight
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore and Build project
+        run: msbuild ScheduleDisconnectLight\ScheduleDisconnectLight.csproj /t:Restore,Build /p:Configuration=Debug
+
+      - name: Run EXE
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID:  ${{ secrets.CHAT_ID }}
+        run: |
+          cd ScheduleDisconnectLight\bin\Debug
+          .\ScheduleDisconnectLight.exe
