@@ -82,7 +82,7 @@ namespace ScheduleDisconnectLight
 
             
             // Сохраняем обратно
-            state.LastUpdatedFile = getCurrentDate();
+            state.LastUpdatedFile = getCurrentDateUa();
             SaveState(stateFile, state);
 
 
@@ -114,14 +114,18 @@ namespace ScheduleDisconnectLight
                     jsonYasnoTmp = string.Empty;
                 }
             }
+            
+
+                
+
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
             var schedule = new Schedule();
-            schedule.LastUpdatedYasno = jsonYasno["updatedOn"].GetValue<DateTime>();
+            schedule.LastUpdatedYasno = getDateUa(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet1.Date = jsonYasno["today"]["date"].JToken.Value<DateTime>();
+                schedule.ParamDisconnet1.Date = getDateUa(jsonYasno["today"]["date"].GetValue<DateTimeOffset>());
 
                 foreach (var item in jsonYasno["today"]["slots"].GetArray())
                 {
@@ -149,7 +153,7 @@ namespace ScheduleDisconnectLight
             if (jsonYasno["tomorrow"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet2 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet2.Date = jsonYasno["tomorrow"]["date"].GetValue<DateTime>();
+                schedule.ParamDisconnet2.Date = getDateUa(jsonYasno["tomorrow"]["date"].GetValue<DateTimeOffset>());
 
                 foreach (var item in jsonYasno["tomorrow"]["slots"].GetArray())
                 {
@@ -181,26 +185,34 @@ namespace ScheduleDisconnectLight
         private static string getNameDay(DateTime date)
         {
             var text = date.ToString("ddd", new CultureInfo("uk-UA"));
-            if (date == getCurrentDate().Date)
+            if (date == getCurrentDateUa().Date)
             {
                 text = text + " (сьогодні)";
             }
-            else if (getCurrentDate().Date.AddDays(1) == date)
+            else if (getCurrentDateUa().Date.AddDays(1) == date)
             {
                 text = text + " (завтра)";
             }
-            else if (getCurrentDate().Date.AddDays(-1) == date)
+            else if (getCurrentDateUa().Date.AddDays(-1) == date)
             {
                 text = text + " (вчора)";
             }
             return text;
         }
 
-        private static DateTime getCurrentDate()
+        private static DateTime getCurrentDateUa()
         {
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
         }
+
+        private static DateTime getDateUa(DateTimeOffset date)
+        {
+            TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+            // Конвертируем "как задумано" в киевский часовой пояс
+            return TimeZoneInfo.ConvertTime(date, kyiv).DateTime;
+        }
+
 
         public static void sendTelegramMessage(string message)
         {
