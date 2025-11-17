@@ -63,8 +63,6 @@ namespace ScheduleDisconnectLight
                         messageTmp.Append(schedule.ParamDisconnet2.GetHtmlTime() + "\n");
                         messageTmp.Append("\n");
                     }
-                    messageTmp.Append("\n");
-
                     messageTmp.Append("<i>P.S. Оновлено на Yasno " + state.LastUpdatedYasno.ToString("dd.MM.yyyy HH:mm") + "</i>");
                     message = messageTmp.ToString();
                 }
