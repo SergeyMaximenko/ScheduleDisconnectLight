@@ -1,0 +1,39 @@
+name: Run ScheduleDisconnectLight
+
+on:
+  workflow_dispatch: {}     # ручний запуск
+  schedule:
+    - cron: '*/5 * * * *'   # кожні 5 хвилин по UTC
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run EXE
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID:  ${{ secrets.CHAT_ID }}
+        run: |
+          cd ScheduleDisconnectLight\bin\Debug
+          .\ScheduleDisconnectLight.exe
+
+      - name: Commit updated state.json
+        if: success()    # только если Run EXE отработал без ошибок
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          # Добавляем файл в индекс
+          git add state.json
+
+          # Делаем коммит, если есть изменения
+          git commit -m "Update state.json" || echo "No changes to commit"
+
+          # Пушим в ту же ветку (main)
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
