@@ -121,11 +121,11 @@ namespace ScheduleDisconnectLight
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
             var schedule = new Schedule();
-            schedule.LastUpdatedYasno = getDateUa(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
+            schedule.LastUpdatedYasno = ConvertToKyiv(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet1.Date = getDateUa(jsonYasno["today"]["date"].GetValue<DateTimeOffset>());
+                schedule.ParamDisconnet1.Date = jsonYasno["today"]["date"].GetValue<DateTimeOffset>().Date;
 
                 foreach (var item in jsonYasno["today"]["slots"].GetArray())
                 {
@@ -153,7 +153,7 @@ namespace ScheduleDisconnectLight
             if (jsonYasno["tomorrow"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet2 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet2.Date = getDateUa(jsonYasno["tomorrow"]["date"].GetValue<DateTimeOffset>());
+                schedule.ParamDisconnet2.Date = jsonYasno["tomorrow"]["date"].GetValue<DateTimeOffset>().Date;
 
                 foreach (var item in jsonYasno["tomorrow"]["slots"].GetArray())
                 {
@@ -205,13 +205,24 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
         }
+        
+        private static readonly TimeZoneInfo KyivZone =
+            TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
 
-        private static DateTime getDateUa(DateTimeOffset date)
+
+
+        private static DateTime ConvertToKyiv(DateTimeOffset dto)
         {
-            TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
-            // Конвертируем "как задумано" в киевский часовой пояс
-            return TimeZoneInfo.ConvertTime(date, kyiv).DateTime;
+            // 1. Явно берём UTC-время
+            DateTime utc = dto.UtcDateTime; // Kind = Utc
+
+            // 2. Переводим из UTC в Киев
+            DateTime kyivTime = TimeZoneInfo.ConvertTimeFromUtc(utc, KyivZone);
+
+            // Можно оставить Kind = Unspecified, нам главное значение
+            return kyivTime;
         }
+
 
 
         public static void sendTelegramMessage(string message)
