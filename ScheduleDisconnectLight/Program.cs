@@ -16,9 +16,15 @@ namespace ScheduleDisconnectLight
         static void Main(string[] args)
         {
 
-            string stateFile = "state.json";
+            // Определяем путь к корню репозитория
+            string repoRoot = Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
+            );
 
-            // Загружаем состояние (если файла нет, создаётся новое)
+            // Полный путь к state.json
+            string stateFile = Path.Combine(repoRoot, "state.json");
+
+            // Загружаем состояние
             AppState state = LoadState(stateFile);
 
             // Увеличиваем счётчик
@@ -29,6 +35,8 @@ namespace ScheduleDisconnectLight
 
             // Сохраняем обратно
             SaveState(stateFile, state);
+
+            Console.WriteLine("state.json обновлён по пути: " + stateFile);
 
 
 
