@@ -23,9 +23,16 @@ namespace ScheduleDisconnectLight
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
             );
 
-            // Полный путь к state.json
-            string stateFile = Path.Combine(repoRoot, "state.json");
 
+            #if DEBUG
+                        // Локальный файл, который НЕ нужен гиту
+                        string stateFile = Path.Combine(repoRoot, "state-local.json");
+            #else
+                // Файл для GitHub Actions
+                string stateFile = Path.Combine(repoRoot, "state.json");
+            #endif
+
+            
             // Загружаем состояние
             AppState state = LoadState(stateFile);
 
