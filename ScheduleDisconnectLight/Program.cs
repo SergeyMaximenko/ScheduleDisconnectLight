@@ -45,6 +45,7 @@ namespace ScheduleDisconnectLight
                 // Записать дату последнего обновления в Yasno
                 state.LastUpdatedYasno = schedule.LastUpdatedYasno;
 
+
                 if (schedule.ParamDisconnet1 != null || schedule.ParamDisconnet2 != null)
                 {
                     var messageTmp = new StringBuilder();
