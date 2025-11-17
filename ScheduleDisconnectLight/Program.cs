@@ -77,7 +77,6 @@ namespace ScheduleDisconnectLight
             }
             
 
-
             Console.WriteLine("Отправляем сообщение...");
 
             sendTelegramMessage(message);
