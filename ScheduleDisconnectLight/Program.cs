@@ -49,7 +49,7 @@ namespace ScheduleDisconnectLight
                 {
                     var messageTmp = new StringBuilder();
                     // Отправить сообщение об изменении графика 
-                    messageTmp.Append("⚡️<b>Увага!</b> Новий графік <b>відсутності</b> світла\n");
+                    messageTmp.Append("⚡️<b>1Увага!</b> Новий графік <b>відсутності</b> світла\n");
                     messageTmp.Append("\n");
                     if (schedule.ParamDisconnet1 != null)
                     {
