@@ -121,7 +121,7 @@ namespace ScheduleDisconnectLight
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet1.Date = jsonYasno["today"]["date"].GetValue<DateTime>();
+                schedule.ParamDisconnet1.Date = jsonYasno["today"]["date"].JToken.Value<DateTime>();
 
                 foreach (var item in jsonYasno["today"]["slots"].GetArray())
                 {
