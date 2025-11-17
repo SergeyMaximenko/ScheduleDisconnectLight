@@ -49,7 +49,7 @@ namespace ScheduleDisconnectLight
                 {
                     var messageTmp = new StringBuilder();
                     // Отправить сообщение об изменении графика 
-                    messageTmp.Append("⚡️<b>1Увага!</b> Новий графік <b>відсутності</b> світла\n");
+                    messageTmp.Append("⚡️<b>2Увага!</b> Новий графік <b>відсутності</b> світла\n");
                     messageTmp.Append("\n");
                     if (schedule.ParamDisconnet1 != null)
                     {
@@ -125,7 +125,7 @@ namespace ScheduleDisconnectLight
             if (jsonYasno["today"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet1 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet1.Date = jsonYasno["today"]["date"].GetValue<DateTimeOffset>().Date;
+                schedule.ParamDisconnet1.Date = getDateUa(jsonYasno["today"]["date"].GetValue<DateTimeOffset>()).Date;
 
                 foreach (var item in jsonYasno["today"]["slots"].GetArray())
                 {
@@ -153,7 +153,7 @@ namespace ScheduleDisconnectLight
             if (jsonYasno["tomorrow"]["status"].Value == "ScheduleApplies")
             {
                 schedule.ParamDisconnet2 = new ScheduleTimeDisconnet();
-                schedule.ParamDisconnet2.Date = jsonYasno["tomorrow"]["date"].GetValue<DateTimeOffset>().Date;
+                schedule.ParamDisconnet2.Date = getDateUa(jsonYasno["tomorrow"]["date"].GetValue<DateTimeOffset>()).Date;
 
                 foreach (var item in jsonYasno["tomorrow"]["slots"].GetArray())
                 {
