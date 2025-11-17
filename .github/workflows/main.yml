@@ -1,7 +1,7 @@
 name: Run ScheduleDisconnectLight
 
 on:
-  workflow_dispatch: {}     # ручний запуск
+  workflow_dispatch: {}     # ручний запуск 11
   schedule:
     - cron: '*/5 * * * *'   # кожні 5 хвилин по UTC
 
