@@ -1,0 +1,29 @@
+name: Run Project
+
+on:
+  workflow_dispatch:   # ← даёт кнопку "Run workflow"
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Framework
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Restore packages
+        run: nuget restore ScheduleDisconnectLight.sln
+
+      - name: Build project
+        run: msbuild ScheduleDisconnectLight.csproj /p:Configuration=Debug
+
+      - name: Run EXE
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID:  ${{ secrets.CHAT_ID }}
+        run: |
+          cd bin/Debug
+          ScheduleDisconnectLight.exe
