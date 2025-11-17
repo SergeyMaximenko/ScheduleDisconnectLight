@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,12 +39,12 @@ namespace ScheduleDisconnectLight
 
             var schedule = getScheduleYasno();
             var message = "";
-            if (1==1 || schedule.LastUpdatedYasno != state.LastUpdatedYasno)
+            if (1==1 || schedule.GetHashCodeStr() != state.HashCodeStr)
             {
                 // Изменился график
 
                 // Записать дату последнего обновления в Yasno
-                state.LastUpdatedYasno = schedule.LastUpdatedYasno;
+                
 
 
                 if (schedule.ParamDisconnet1 != null || schedule.ParamDisconnet2 != null)
@@ -64,7 +65,7 @@ namespace ScheduleDisconnectLight
                         messageTmp.Append(schedule.ParamDisconnet2.GetHtmlTime() + "\n");
                         messageTmp.Append("\n");
                     }
-                    messageTmp.Append("<i>P.S. Оновлено на Yasno " + state.LastUpdatedYasno.ToString("dd.MM.yyyy HH:mm") + "</i>");
+                    messageTmp.Append("<i>P.S. Оновлено на Yasno " + schedule.LastUpdatedYasno.ToString("dd.MM.yyyy HH:mm") + "</i>");
                     message = messageTmp.ToString();
                 }
                 
@@ -80,10 +81,15 @@ namespace ScheduleDisconnectLight
             Console.WriteLine("Отправляем сообщение...");
 
             sendTelegramMessage(message);
+            if (schedule.GetHashCodeStr() != state.HashCodeStr)
+            {
+                sendTelegramMessage("Г Р А Ф І К  З М І Н Е Н О");
+            }
 
             
             // Сохраняем обратно
             state.LastUpdatedFile = getCurrentDateUa();
+            state.HashCodeStr = schedule.GetHashCodeStr();
             SaveState(stateFile, state);
 
 
@@ -260,7 +266,7 @@ namespace ScheduleDisconnectLight
                 return new AppState
                 {
                     LastUpdatedFile = DateTime.MinValue,
-                    LastUpdatedYasno = DateTime.MinValue
+                    HashCodeStr = string.Empty
                 };
             }
 
@@ -282,7 +288,7 @@ namespace ScheduleDisconnectLight
     {
         public DateTime LastUpdatedFile { get; set; }
         
-        public DateTime LastUpdatedYasno { get; set; }
+        public string HashCodeStr { get; set; }
     
     }
 
@@ -291,6 +297,28 @@ namespace ScheduleDisconnectLight
         public DateTime LastUpdatedYasno;
         public ScheduleTimeDisconnet ParamDisconnet1;
         public ScheduleTimeDisconnet ParamDisconnet2;
+
+
+        public string GetHashCodeStr()
+        {
+            // создаём объект без LastUpdatedYasno
+            var obj = new
+            {
+                ParamDisconnet1 = this.ParamDisconnet1,
+                ParamDisconnet2 = this.ParamDisconnet2
+            };
+
+            // сериализуем только нужные поля
+            string json = JsonConvert.SerializeObject(obj);
+
+            using (var sha = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(json);
+                byte[] hashBytes = sha.ComputeHash(bytes);
+                return BitConverter.ToString(hashBytes).Replace("-", ""); // hex
+            }
+        }
+
         public Schedule()
         {
            
