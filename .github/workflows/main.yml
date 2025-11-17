@@ -3,7 +3,7 @@ name: Run ScheduleDisconnectLight
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"   # каждые 5 минут, чаще GitHub не даёт
+    - cron: "*/5 * * * *"   # 11 ГЄГ Г¦Г¤Г»ГҐ 5 Г¬ГЁГ­ГіГІ, Г·Г Г№ГҐ GitHub Г­ГҐ Г¤Г ВёГІ
 
 jobs:
   run:
