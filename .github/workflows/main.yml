@@ -11,7 +11,6 @@ jobs:
   run:
     runs-on: windows-latest
 
-    # даём экшену право писать в репозиторий
     permissions:
       contents: write
 
@@ -19,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0        # нужен полный history, чтобы git pull --rebase работал
+          fetch-depth: 0
 
       - name: Run EXE
         env:
@@ -35,17 +34,14 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Подтянуть последние изменения из main,
-          # чтобы не было ошибки "fetch first"
-          git pull --rebase origin main
-
-          # Добавляем state.json
+          # Добавляем state.json и коммитим, если есть изменения
           git add state.json
-
-          # Делаем коммит, если есть изменения
           git commit -m "Update state.json" || echo "No changes to commit"
 
+          # Подтягиваем последние изменения, не ломаясь из-за локальных правок
+          git pull --rebase --autostash origin main || echo "Pull failed"
+
           # Пушим обратно в main
-          git push origin HEAD:main
+          git push origin HEAD:main || echo "Push failed"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
