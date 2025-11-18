@@ -112,16 +112,19 @@ namespace ScheduleDisconnectLight
 
                 // відправити повідомлення з оповіщенням про відключення світла
 
-                var i = 0;
+                
 
                 foreach (var interval in scheduleOneDay.Periods)
                 {
-                    i++;
+                    
 
                     var dateTimePowerOff = scheduleOneDay.Date + interval.Start;
+                    
+                    Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetPeriodString()}. Дата выключения: {dateTimeToStr(dateTimePowerOff)}. Текущая дата {dateTimeToStr(dateTimeCurrent)}  ");
+
                     if (dateTimePowerOff == state.DateTimePowerOffLastMessage)
                     {
-                        Console.WriteLine($"Напоминание об отключении света. Период {i}. Уже сообщение было отправлено для "+ dateTimePowerOff);
+                        Console.WriteLine($"      => уже сообщение было отправлено ранее");
                         continue;
                     }
 
@@ -138,21 +141,21 @@ namespace ScheduleDisconnectLight
                             var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
                             state.DateTimePowerOffLastMessage = dateTimePowerOff;
                             isSendMessageOff = true;
-                            sendTelegramMessage("⚠️🔴 Світло може пропасти орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{ScheduleOneDay.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
+                            sendTelegramMessage("⚠️🔴 Світло може пропасти орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
                                     (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
                                     );
 
                             AppState.SaveState(stateFile, state);
-                            Console.WriteLine($"Напоминание об отключении света. Период {i}. Сообщение отправлено. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOff}");
+                            Console.WriteLine($"      => сообщение отправлено");
                         }
                         else
                         {
-                            Console.WriteLine($"Напоминание об отключении света. Период {i}. Еще не достигнуто 30 мин до отключения. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOff}");
+                            Console.WriteLine($"      => еще не достигнуто 30 мин.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Напоминание об отключении света. Период {i}. Текущая дата {dateTimeCurrent} больше чем дата виключения света {dateTimePowerOff}");
+                        Console.WriteLine($"      => текущая дата больше даты выключения");
                     }
                 }
 
@@ -163,10 +166,10 @@ namespace ScheduleDisconnectLight
                 if (!isSendMessageOff)
                 {
                     Console.WriteLine("Напоминание о включении света: старт");
-                    i = 0;
+              
                     foreach (var interval in scheduleOneDay.Periods)
                     {
-                        i++;
+                        
                         var timeEnd = interval.End;
                         // Если это конец дня, возможно на следующий день свет не планируется включаться
                         if (timeEnd.Hours == 23 &&
@@ -182,9 +185,13 @@ namespace ScheduleDisconnectLight
                         }
 
                         var dateTimePowerOn = scheduleOneDay.Date + timeEnd;
+
+                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetPeriodString()}. Дата включения: {dateTimeToStr(dateTimePowerOn)}. Текущая дата {dateTimeToStr(dateTimeCurrent)}  ");
+
+
                         if (dateTimePowerOn == state.DateTimePowerOnLastMessage)
                         {
-                            Console.WriteLine($"Напоминание об включении света. Период {i}. Уже сообщение было отправлено для " + dateTimePowerOn);
+                            Console.WriteLine($"      => уже сообщение было отправлено ранее");
                             continue;
                         }
 
@@ -200,22 +207,22 @@ namespace ScheduleDisconnectLight
                                 state.DateTimePowerOnLastMessage = dateTimePowerOn;
                                 var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
 
-                                sendTelegramMessage("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{ScheduleOneDay.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
+                                sendTelegramMessage("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
                                     (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
                                     );
 
                                 AppState.SaveState(stateFile, state);
-                                Console.WriteLine($"Напоминание об включении света. Период {i}. Сообщение отправлено. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOn}");
+                                Console.WriteLine($"      => сообщение отправлено");
 
                             }
                             else
                             {
-                                Console.WriteLine($"Напоминание об включении света. Период {i}. Еще не достигнуто 30 мин до включении. Текущая дата {dateTimeCurrent}, дата включения света {dateTimePowerOn}");
+                                Console.WriteLine($"      => еще не достигнуто 30 мин.");
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"Напоминание об включении света. Период {i}. Текущая дата {dateTimeCurrent} больше чем дата включения света {dateTimePowerOn}");
+                            Console.WriteLine($"      => текущая дата больше даты включения");
                         }
                     }
                 }
@@ -229,7 +236,10 @@ namespace ScheduleDisconnectLight
         }
 
 
-       
+        private static string dateTimeToStr(DateTime dateTime)
+        {
+            return dateTime.ToString("dd.MM.yyyy HH:mm");
+        }
 
 
 
@@ -358,7 +368,7 @@ namespace ScheduleDisconnectLight
                 return "🟢 Відключення не плануються";
             }
 
-            return string.Join("\n", Periods.Where(t=> timeStartNext == null ? true : t.Start> timeStartNext).Select(t => "🔴 " + ConvertTimeToStr(t.Start) + " - " + ConvertTimeToStr(t.End)));
+            return string.Join("\n", Periods.Where(t => timeStartNext == null ? true : t.Start > timeStartNext).Select(t => "🔴 " + t.GetPeriodString()));
         }
 
         /// <summary>
@@ -386,20 +396,14 @@ namespace ScheduleDisconnectLight
             return result;
         }
 
-        /// <summary>
-        /// Конвертировать время в строку
-        /// </summary>
-        public static string ConvertTimeToStr(TimeSpan time)
-        {
-            return time.Hours == 23 && time.Minutes == 59 ? "24:00" : time.Hours.ToString("D2") + ":" + time.Minutes.ToString("D2");
-        }
+
 
         /// <summary>
         /// Получить время для Хеша
         /// </summary>
         public string GetScheduleHash()
         {
-            return string.Join(" => ", Periods.Select(t => ConvertTimeToStr(t.Start) + "-" + ConvertTimeToStr(t.End)));
+            return string.Join(" => ", Periods.Select(t => t.GetPeriodString()));
         }
 
         public ScheduleOneDay()
@@ -421,6 +425,20 @@ namespace ScheduleDisconnectLight
             Start = start;
             End = end;
         }
+
+        public string GetPeriodString()
+        {
+            return ConvertTimeToStr(Start) + " - " + ConvertTimeToStr(End);
+        }
+
+        /// <summary>
+        /// Конвертировать время в строку
+        /// </summary>
+        public static string ConvertTimeToStr(TimeSpan time)
+        {
+            return time.Hours == 23 && time.Minutes == 59 ? "24:00" : time.Hours.ToString("D2") + ":" + time.Minutes.ToString("D2");
+        }
+
     }
 
 
