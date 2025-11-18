@@ -1,18 +1,25 @@
 name: Run ScheduleDisconnectLight
 
 on:
-  workflow_dispatch: {}     # ручний запуск 11
+  workflow_dispatch: {}         # ручной запуск
   schedule:
-    - cron: '*/5 * * * *'   # кожні 5 хвилин по UTC
+    - cron: '*/5 * * * *'       # каждые 5 минут по UTC
   repository_dispatch:
     types: [manual-run]
+
 jobs:
   run:
     runs-on: windows-latest
 
+    # даём экшену право писать в репозиторий
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # нужен полный history, чтобы git pull --rebase работал
 
       - name: Run EXE
         env:
@@ -23,18 +30,22 @@ jobs:
           .\ScheduleDisconnectLight.exe
 
       - name: Commit updated state.json
-        if: success()    # только если Run EXE отработал без ошибок
+        if: success()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Добавляем файл в индекс
+          # Подтянуть последние изменения из main,
+          # чтобы не было ошибки "fetch first"
+          git pull --rebase origin main
+
+          # Добавляем state.json
           git add state.json
 
           # Делаем коммит, если есть изменения
           git commit -m "Update state.json" || echo "No changes to commit"
 
-          # Пушим в ту же ветку (main)
-          git push
+          # Пушим обратно в main
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
