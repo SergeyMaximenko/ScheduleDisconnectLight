@@ -24,13 +24,19 @@ namespace ScheduleDisconnectLight
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
             );
 
-            #if DEBUG
-                // Локальный файл, который НЕ нужен гиту
-                string stateFile = Path.Combine(repoRoot, "appState-local.json");
-#else
-                // Файл для GitHub Actions
-                string stateFile = Path.Combine(repoRoot, "appState.json");
-#endif
+            string stateFile = "";
+
+            if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+            {
+                Console.WriteLine("Это версия ГИТА");
+                stateFile = Path.Combine(repoRoot, "appState.json");
+            }
+            else
+            {
+                Console.WriteLine("Это локальная версия");
+                stateFile = Path.Combine(repoRoot, "appState-local.json");
+            }
+                
 
 
             // Загружаем состояние
@@ -42,6 +48,8 @@ namespace ScheduleDisconnectLight
             //--------------------------------
             //   С М Е Н А    Г Р А Ф И К А 
             //--------------------------------
+
+            Console.WriteLine("График:"+ schedule.GetScheduleHash());
 
             if (string.IsNullOrEmpty(state.ScheduleHash) || !state.ScheduleHash.Contains(schedule.GetScheduleHash()))
             {
@@ -66,7 +74,7 @@ namespace ScheduleDisconnectLight
                     message.Append("<i>P.S. Оновлено на Yasno " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
 
                     sendTelegramMessage(message.ToString());
-
+                    Console.WriteLine("Сообщение об изменении графика отправлено");
 
                     // Сохраняем статус 
                     state.ScheduleHashDateSet = GetCurrentDateTimeUa();
@@ -91,7 +99,7 @@ namespace ScheduleDisconnectLight
 
             if (scheduleOneDay != null)
             {
-
+                Console.WriteLine("Напоминание об отключении света: старт");
                 // за сколько минут до события отправлять оповещение в телеграм 
                 TimeSpan notifyBefore = TimeSpan.FromMinutes(30);
 
@@ -103,12 +111,17 @@ namespace ScheduleDisconnectLight
                 //----------------------------------------------------------------------
 
                 // відправити повідомлення з оповіщенням про відключення світла
+
+                var i = 0;
+
                 foreach (var interval in scheduleOneDay.Periods)
                 {
+                    i++;
 
                     var dateTimePowerOff = scheduleOneDay.Date + interval.Start;
                     if (dateTimePowerOff == state.DateTimePowerOffLastMessage)
                     {
+                        Console.WriteLine($"Напоминание об отключении света. Период {i}. Уже сообщение было отправлено для "+ dateTimePowerOff);
                         continue;
                     }
 
@@ -130,8 +143,16 @@ namespace ScheduleDisconnectLight
                                     );
 
                             AppState.SaveState(stateFile, state);
-
+                            Console.WriteLine($"Напоминание об отключении света. Период {i}. Сообщение отправлено. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOff}");
                         }
+                        else
+                        {
+                            Console.WriteLine($"Напоминание об отключении света. Период {i}. Еще не достигнуто 30 мин до отключения. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOff}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Напоминание об отключении света. Период {i}. Текущая дата {dateTimeCurrent} больше чем дата виключения света {dateTimePowerOff}");
                     }
                 }
 
@@ -141,9 +162,11 @@ namespace ScheduleDisconnectLight
                 // відправити повідомлення з оповіщенням про включення світла
                 if (!isSendMessageOff)
                 {
+                    Console.WriteLine("Напоминание о включении света: старт");
+                    i = 0;
                     foreach (var interval in scheduleOneDay.Periods)
                     {
-
+                        i++;
                         var timeEnd = interval.End;
                         // Если это конец дня, возможно на следующий день свет не планируется включаться
                         if (timeEnd.Hours == 23 &&
@@ -161,6 +184,7 @@ namespace ScheduleDisconnectLight
                         var dateTimePowerOn = scheduleOneDay.Date + timeEnd;
                         if (dateTimePowerOn == state.DateTimePowerOnLastMessage)
                         {
+                            Console.WriteLine($"Напоминание об включении света. Период {i}. Уже сообщение было отправлено для " + dateTimePowerOn);
                             continue;
                         }
 
@@ -181,8 +205,17 @@ namespace ScheduleDisconnectLight
                                     );
 
                                 AppState.SaveState(stateFile, state);
+                                Console.WriteLine($"Напоминание об включении света. Период {i}. Сообщение отправлено. Текущая дата {dateTimeCurrent}, дата выключения света {dateTimePowerOn}");
 
                             }
+                            else
+                            {
+                                Console.WriteLine($"Напоминание об включении света. Период {i}. Еще не достигнуто 30 мин до включении. Текущая дата {dateTimeCurrent}, дата включения света {dateTimePowerOn}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Напоминание об включении света. Период {i}. Текущая дата {dateTimeCurrent} больше чем дата включения света {dateTimePowerOn}");
                         }
                     }
                 }
@@ -192,7 +225,7 @@ namespace ScheduleDisconnectLight
 
 
 
-            Console.WriteLine("Отправляем сообщение...");
+            
         }
 
 
@@ -577,7 +610,7 @@ namespace ScheduleDisconnectLight
                     },
                     {
                       ""start"": 810,
-                      ""end"": 880,
+                      ""end"": 1134,
                       ""type"": ""Definite""
                     },
                     {
