@@ -49,7 +49,9 @@ namespace ScheduleDisconnectLight
             //   С М Е Н А    Г Р А Ф И К А 
             //--------------------------------
 
-            Console.WriteLine("График:"+ schedule.GetScheduleHash());
+            Console.WriteLine("График старий:" + state.ScheduleHash);
+
+            Console.WriteLine("График новий:"+ schedule.GetScheduleHash());
 
             if (string.IsNullOrEmpty(state.ScheduleHash) || !state.ScheduleHash.Contains(schedule.GetScheduleHash()))
             {
@@ -57,7 +59,7 @@ namespace ScheduleDisconnectLight
                 {
                     var message = new StringBuilder();
                     // Отправить сообщение об изменении графика 
-                    message.Append("⚡️<b>Оновлено графік виключення світла</b>\n");
+                    message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
                     message.Append("\n");
                     if (schedule.ScheduleDate1 != null)
                     {
@@ -82,6 +84,14 @@ namespace ScheduleDisconnectLight
 
                     AppState.SaveState(stateFile, state);
                 }
+                else
+                {
+                    Console.WriteLine("График по свету не изменился - 2");
+                }
+            }
+            else
+            {
+                Console.WriteLine("График по свету не изменился - 1");
             }
 
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
@@ -112,53 +122,63 @@ namespace ScheduleDisconnectLight
 
                 // відправити повідомлення з оповіщенням про відключення світла
 
-                
-
-                foreach (var interval in scheduleOneDay.Periods)
+                if (1==1)
                 {
-                    
 
-                    var dateTimePowerOff = scheduleOneDay.Date + interval.Start;
-                    
-                    Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetPeriodString()}. Дата выключения: {dateTimeToStr(dateTimePowerOff)}. Текущая дата {dateTimeToStr(dateTimeCurrent)}  ");
-
-                    if (dateTimePowerOff == state.DateTimePowerOffLastMessage)
+                    foreach (var interval in scheduleOneDay.Periods)
                     {
-                        Console.WriteLine($"      => уже сообщение было отправлено ранее");
-                        continue;
-                    }
-
-                    // если сейчас ещё не началось отключение
-                    if (dateTimeCurrent < dateTimePowerOff)
-                    {
-                        // время до начала отключения
-                        TimeSpan diff = dateTimePowerOff - dateTimeCurrent;
 
 
-                        // если осталось <= 30 минут
-                        if (diff <= notifyBefore)
+                        var dateTimePowerOff = scheduleOneDay.Date + interval.Start;
+
+                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetPeriodString()}. Дата выключения: {dateTimeToStr(dateTimePowerOff)}. Текущая дата {dateTimeToStr(dateTimeCurrent)}  ");
+
+                        if (dateTimePowerOff == state.DateTimePowerOffLastMessage)
                         {
-                            var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
-                            state.DateTimePowerOffLastMessage = dateTimePowerOff;
-                            isSendMessageOff = true;
-                            sendTelegramMessage("⚠️🔴 Світло може пропасти орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
-                                    (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
-                                    );
+                            Console.WriteLine($"      => уже сообщение было отправлено ранее");
+                            continue;
+                        }
 
-                            AppState.SaveState(stateFile, state);
-                            Console.WriteLine($"      => сообщение отправлено");
+                        // если сейчас ещё не началось отключение
+                        if (dateTimeCurrent < dateTimePowerOff)
+                        {
+                            // время до начала отключения
+                            TimeSpan diff = dateTimePowerOff - dateTimeCurrent;
+
+
+                            // если осталось <= 30 минут
+                            if (diff <= notifyBefore)
+                            {
+
+                                if (isPowerOn())
+                                {
+                                    var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
+                                    state.DateTimePowerOffLastMessage = dateTimePowerOff;
+                                    isSendMessageOff = true;
+                                    sendTelegramMessage("⚠️🔴 Світло може пропасти орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
+                                            (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
+                                            );
+
+                                    AppState.SaveState(stateFile, state);
+                                    Console.WriteLine($"      => сообщение отправлено");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"      => в EXCEL указано, что СВЕТА и так НЕТ");
+                                }
+                                
+                            }
+                            else
+                            {
+                                Console.WriteLine($"      => еще не достигнуто 30 мин.");
+                            }
                         }
                         else
                         {
-                            Console.WriteLine($"      => еще не достигнуто 30 мин.");
+                            Console.WriteLine($"      => текущая дата больше даты выключения");
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine($"      => текущая дата больше даты выключения");
-                    }
                 }
-
                 //----------------------------------------------------------------------
                 //   Н А П О М И Н А Н И Е    П Р О    В К Л Ю Ч Е Н И Е    С В Е Т А
                 //----------------------------------------------------------------------
@@ -169,22 +189,22 @@ namespace ScheduleDisconnectLight
               
                     foreach (var interval in scheduleOneDay.Periods)
                     {
-                        
-                        var timeEnd = interval.End;
+
+                        var dateTimePowerOn = scheduleOneDay.Date + interval.End;
                         // Если это конец дня, возможно на следующий день свет не планируется включаться
-                        if (timeEnd.Hours == 23 &&
-                            timeEnd.Minutes == 59 &&
+                        if (interval.End.Hours == 23 &&
+                            interval.End.Minutes == 59 &&
                             schedule.ScheduleDate2.Date == scheduleOneDay.Date.AddDays(1)
                             )
                         {
                             var timeNextDay = schedule.ScheduleDate2.Periods.FirstOrDefault();
                             if (timeNextDay != null && timeNextDay.Start.Hours == 0 && timeNextDay.Start.Minutes == 0)
                             {
-                                timeEnd = timeNextDay.End;
+                                dateTimePowerOn = schedule.ScheduleDate2.Date + timeNextDay.End;
                             }
                         }
 
-                        var dateTimePowerOn = scheduleOneDay.Date + timeEnd;
+                        
 
                         Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetPeriodString()}. Дата включения: {dateTimeToStr(dateTimePowerOn)}. Текущая дата {dateTimeToStr(dateTimeCurrent)}  ");
 
@@ -204,16 +224,22 @@ namespace ScheduleDisconnectLight
                             // если осталось <= 30 минут
                             if (diff <= notifyBefore)
                             {
-                                state.DateTimePowerOnLastMessage = dateTimePowerOn;
-                                var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
+                                if (!isPowerOn())
+                                {
+                                    state.DateTimePowerOnLastMessage = dateTimePowerOn;
+                                    var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
 
-                                sendTelegramMessage("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
-                                    (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
-                                    );
+                                    sendTelegramMessage("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
+                                        (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
+                                        );
 
-                                AppState.SaveState(stateFile, state);
-                                Console.WriteLine($"      => сообщение отправлено");
-
+                                    AppState.SaveState(stateFile, state);
+                                    Console.WriteLine($"      => сообщение отправлено");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"      => в EXCEL указано, что СВЕТ есть");
+                                }
                             }
                             else
                             {
@@ -226,12 +252,7 @@ namespace ScheduleDisconnectLight
                         }
                     }
                 }
-
             }
-
-
-
-
             
         }
 
@@ -255,7 +276,7 @@ namespace ScheduleDisconnectLight
 
         public static void sendTelegramMessage(string message)
         {
-            string botToken = "7911836999:AAHeC6qjw-Kis9xwA332YTq2ns1YI1AMdMI";
+            string botToken = "8571725999:AAF29-E6SmsTp5JpLz1ZWIhQUOKnoWCB1kg";
             string chatId = "-1002275491172";
 
             if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
@@ -289,10 +310,34 @@ namespace ScheduleDisconnectLight
             }
         }
 
+        private static bool isPowerOn()
+        {
+            string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
 
+            string result = "";
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    // Синхронный GET
+                    HttpResponseMessage response = httpClient.GetAsync(url).Result;
 
+                    // Если ошибка, бросим исключение
+                    response.EnsureSuccessStatusCode();
 
- 
+                    // Читаем тело ответа тоже синхронно
+                    result = response.Content.ReadAsStringAsync().Result;
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Ошибка: " + ex.Message);
+                    result = "+";
+                }
+            }
+
+            return result == "+";
+        }
 
     }
 
@@ -411,7 +456,7 @@ namespace ScheduleDisconnectLight
             Periods = new List<TimeRange>();
         }
     }
-
+    
 
     /// <summary>
     /// Описание периода времени
@@ -533,7 +578,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-            jsonYasnoTmp = jsonTmp();
+            //jsonYasnoTmp = jsonTmp();
 
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
@@ -632,8 +677,8 @@ namespace ScheduleDisconnectLight
                       ""type"": ""Definite""
                     },
                     {
-                      ""start"": 1039,
-                      ""end"": 1239,
+                      ""start"": 1200,
+                      ""end"": 1260,
                       ""type"": ""Definite""
                     }
                   ],
