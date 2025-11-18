@@ -4,7 +4,8 @@ on:
   workflow_dispatch: {}     # ручний запуск 11
   schedule:
     - cron: '*/5 * * * *'   # кожні 5 хвилин по UTC
-
+  repository_dispatch:
+    types: [manual-run]
 jobs:
   run:
     runs-on: windows-latest
