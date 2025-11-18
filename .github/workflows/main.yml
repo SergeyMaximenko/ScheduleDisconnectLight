@@ -2,8 +2,8 @@ name: Run ScheduleDisconnectLight
 
 on:
   workflow_dispatch: {}         # ручной запуск
-  schedule:
-    - cron: '*/5 * * * *'       # каждые 5 минут по UTC
+ #  schedule:
+ #   - cron: '*/5 * * * *'       # каждые 5 минут по UTC
   repository_dispatch:
     types: [manual-run]
 
