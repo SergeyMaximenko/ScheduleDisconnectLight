@@ -67,6 +67,7 @@ namespace ScheduleDisconnectLight
 
                     sendTelegramMessage(message.ToString());
 
+
                     // Сохраняем статус 
                     state.ScheduleHashDateSet = GetCurrentDateTimeUa();
                     state.ScheduleHash = schedule.GetScheduleHash();
