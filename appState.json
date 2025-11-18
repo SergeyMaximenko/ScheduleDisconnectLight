@@ -1,6 +1,6 @@
 {
-  "ScheduleHashDateSet": "2025-11-18T18:34:35.4054698",
-  "ScheduleHash": "[18.11.2025 08:00-09:30 => 13:30-18:53 => 17:18-20:38] [19.11.2025 00:00-02:30 => 08:30-12:30] ",
+  "ScheduleHashDateSet": "2025-11-18T18:58:10.7358505",
+  "ScheduleHash": "[18.11.2025 08:00 - 09:30 => 13:30 - 18:53 => 17:18 - 20:38] [19.11.2025 00:00 - 02:30 => 08:30 - 12:30] ",
   "DateTimePowerOffLastMessage": "0001-01-01T00:00:00",
-  "DateTimePowerOnLastMessage": "2025-11-18T18:53:00"
+  "DateTimePowerOnLastMessage": "2021-11-18T18:53:00"
 }
