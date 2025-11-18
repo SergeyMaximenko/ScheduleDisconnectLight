@@ -28,15 +28,15 @@ jobs:
           cd ScheduleDisconnectLight\bin\Debug
           .\ScheduleDisconnectLight.exe
 
-      - name: Commit updated state.json
+      - name: Commit updated appState.json
         if: success()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Добавляем state.json и коммитим, если есть изменения
-          git add state.json
-          git commit -m "Update state.json" || echo "No changes to commit"
+          # Добавляем appState.json и коммитим, если есть изменения
+          git add appState.json
+          git commit -m "Update appState.json" || echo "No changes to commit"
 
           # Подтягиваем последние изменения, не ломаясь из-за локальных правок
           git pull --rebase --autostash origin main || echo "Pull failed"
