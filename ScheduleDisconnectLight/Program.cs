@@ -26,11 +26,11 @@ namespace ScheduleDisconnectLight
 
             #if DEBUG
                 // Локальный файл, который НЕ нужен гиту
-                string stateFile = Path.Combine(repoRoot, "state-local.json");
-            #else
+                string stateFile = Path.Combine(repoRoot, "appState-local.json");
+#else
                 // Файл для GitHub Actions
-                string stateFile = Path.Combine(repoRoot, "state.json");
-            #endif
+                string stateFile = Path.Combine(repoRoot, "appState.json");
+#endif
 
 
             // Загружаем состояние
