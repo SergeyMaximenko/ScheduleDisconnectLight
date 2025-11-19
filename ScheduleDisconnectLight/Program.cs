@@ -622,7 +622,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-            jsonYasnoTmp = jsonTmp();
+            //jsonYasnoTmp = jsonTmp();
 
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
