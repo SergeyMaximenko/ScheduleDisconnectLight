@@ -194,6 +194,7 @@ namespace ScheduleDisconnectLight
                         // Если это конец дня, возможно на следующий день свет не планируется включаться
                         if (interval.End.Hours == 23 &&
                             interval.End.Minutes == 59 &&
+                            schedule.ScheduleDate2!=null &&
                             schedule.ScheduleDate2.Date == scheduleOneDay.Date.AddDays(1)
                             )
                         {
