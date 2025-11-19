@@ -6,7 +6,8 @@ on:
  #   - cron: '*/5 * * * *'       # каждые 5 минут по UTC
   repository_dispatch:
      types: [manual-run]
-
+env:
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 jobs:
   run:
     runs-on: windows-latest
