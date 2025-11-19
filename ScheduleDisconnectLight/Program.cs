@@ -81,7 +81,7 @@ namespace ScheduleDisconnectLight
                         message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
-                    message.Append("<i>P.S. Оновлено на Yasno " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
+                    message.Append("<i>P.S. Цей графік з'явився на Yasno " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
 
                     new SenderTelegram().Send(message.ToString());
                     Console.WriteLine("Сообщение об изменении графика отправлено");
