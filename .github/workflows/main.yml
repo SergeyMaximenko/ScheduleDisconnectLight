@@ -5,7 +5,7 @@ on:
  #  schedule:
  #   - cron: '*/5 * * * *'       # каждые 5 минут по UTC
   repository_dispatch:
-     types: [manual-run]
+     types: [run-from-crone]
 env:
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 jobs:
