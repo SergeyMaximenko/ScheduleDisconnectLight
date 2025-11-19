@@ -63,13 +63,13 @@ namespace ScheduleDisconnectLight
                     message.Append("\n");
                     if (schedule.ScheduleDate1 != null)
                     {
-                        message.Append($"📅 <b>{schedule.ScheduleDate1.GetCaptionDate()}</b>\n");
+                        message.Append($"🗓️ <b>{schedule.ScheduleDate1.GetCaptionDate()}</b>\n");
                         message.Append(schedule.ScheduleDate1.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
                     if (schedule.ScheduleDate2 != null)
                     {
-                        message.Append($"📅 <b>{schedule.ScheduleDate2.GetCaptionDate()}</b>\n");
+                        message.Append($"🗓️ <b>{schedule.ScheduleDate2.GetCaptionDate()}</b>\n");
                         message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
@@ -155,7 +155,7 @@ namespace ScheduleDisconnectLight
                                     var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
                                     state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     isSendMessageOff = true;
-                                    sendTelegramMessage("⚠️🔴 Світло може пропасти орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
+                                    sendTelegramMessage("⚠️🔴 Світло може зникнути орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
                                             (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
                                             );
 
@@ -231,7 +231,9 @@ namespace ScheduleDisconnectLight
                                     var messageTimeOff = scheduleOneDay.GetHtmlPeriod(dateTimeCurrent.TimeOfDay);
 
                                     sendTelegramMessage("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
-                                        (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
+                                        (!string.IsNullOrEmpty(messageTimeOff) 
+                                            ? "\nПланові відключення до кінця дня: \n" + messageTimeOff 
+                                            : "\nНа сьогодні відключення більше не заплановані 😊")
                                         );
 
                                     AppState.SaveState(stateFile, state);
