@@ -71,17 +71,19 @@ namespace ScheduleDisconnectLight
                 {
                     var message = new StringBuilder();
                     // Отправить сообщение об изменении графика 
-                    message.Append("⚡️<b>Оновлено графік відключення світла для Чавдар 13</b>\n");
+                    message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
                     message.Append("\n");
                     if (schedule.ScheduleDate1 != null)
                     {
                         message.Append($"🗓️ <b>{schedule.ScheduleDate1.GetCaptionDate()}</b>\n");
+                        message.Append($"📉 <b>{schedule.ScheduleDate1.GetPercentOffPower()}%</b> часу без світла\n");
                         message.Append(schedule.ScheduleDate1.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
                     if (schedule.ScheduleDate2 != null)
                     {
                         message.Append($"🗓️ <b>{schedule.ScheduleDate2.GetCaptionDate()}</b>\n");
+                        message.Append($"📉 <b>{schedule.ScheduleDate2.GetPercentOffPower()}%</b> часу без світла\n");
                         message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
@@ -387,6 +389,15 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public DateTime Date;
         public List<TimeRange> Periods;
+
+        /// <summary>
+        /// Получить процент времени, сколько выключен свет
+        /// </summary>
+        /// <returns></returns>
+        public int GetPercentOffPower()
+        {
+            return (int)Math.Round(Periods.Select(t => (t.End - t.Start).TotalMinutes).Sum()*100.0/ (60.0 * 24.0),0);
+        }
 
         /// <summary>
         /// Получить период в виде HTML
