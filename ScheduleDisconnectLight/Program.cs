@@ -29,7 +29,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            DateTimeUaCurrent = new DateTime(2025, 11, 20, 19, 35, 0);
+            //DateTimeUaCurrent = new DateTime(2025, 11, 20, 19, 35, 0);
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
