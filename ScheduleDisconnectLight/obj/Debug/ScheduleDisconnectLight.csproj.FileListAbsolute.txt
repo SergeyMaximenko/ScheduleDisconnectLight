@@ -8,4 +8,3 @@ C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLi
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\Schedule.79A2F7D6.Up2Date
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.pdb
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe.config
