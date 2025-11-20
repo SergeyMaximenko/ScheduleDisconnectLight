@@ -87,7 +87,7 @@ namespace ScheduleDisconnectLight
                         message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
-                    message.Append($"<i>P.S. Цей графік з'явився на ресурсі {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
+                    message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
 
                     new SenderTelegram().Send(message.ToString());
                     Console.WriteLine("Сообщение об изменении графика отправлено");
@@ -495,7 +495,7 @@ namespace ScheduleDisconnectLight
             if (addDiff)
             {
                 var diff = (End - Start);
-                addDiffText = $"  <i>({Math.Round(diff.TotalHours,1)} год.)</i>";
+                addDiffText = $"  <i>{getNameTimeSpan(diff)}</i>";
             }
 
             return ConvertTimeToStr(Start) + " - " + ConvertTimeToStr(End) + addDiffText;
@@ -514,10 +514,25 @@ namespace ScheduleDisconnectLight
                 {
                     diff = diff + EndNextDay;
                 }
-                addDiffText = $"  <i>({Math.Round(diff.TotalHours,1)} год.)</i>";
+                addDiffText = $"  <i>{getNameTimeSpan(diff)}</i>";
             }
 
             return ConvertTimeToStr(Start) + " - " + ConvertTimeToStr(EndNextDay != TimeSpan.Zero ? EndNextDay : End) + addDiffText;
+        }
+
+        private string getNameTimeSpan(TimeSpan timeSpan)
+        {
+            var result = "";
+            if (timeSpan.Hours > 0)
+            {
+                result = result + (!string.IsNullOrEmpty(result) ? " " : "") +  $"{timeSpan.Hours} год.";
+            }
+            if (timeSpan.Minutes > 0)
+            {
+                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{(timeSpan.Minutes == 29 || timeSpan.Minutes == 31 ? 30 : timeSpan.Minutes)} хв.";
+            }
+            return !string.IsNullOrEmpty(result) ? "(" + result + ")" : "";
+
         }
 
 
