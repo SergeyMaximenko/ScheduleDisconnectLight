@@ -29,7 +29,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            //DateTimeUaCurrent = new DateTime(2025, 11, 20, 19, 35, 0);
+           // DateTimeUaCurrent = new DateTime(2025, 11, 20, 20, 5, 0);
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
@@ -467,15 +467,15 @@ namespace ScheduleDisconnectLight
 
         public bool EndIsEndDay()
         {
-            return End.Hours == 23 && End.Minutes == 59;
+            return End.Days == 1 && End.Hours == 0 && End.Minutes == 0;
         }
         public bool StartIsStartDay()
         {
-            return Start.Hours == 0 && Start.Minutes == 0;
+            return Start.Days ==0 && Start.Hours == 0 && Start.Minutes == 0;
         }
 
 
-        // Период окончания графика на следующий день, если End = 23.59
+        // Период окончания графика на следующий день, если End = 24.00
         public TimeSpan EndNextDay { get; private set; }
 
         public TimeRange(TimeSpan start, TimeSpan end)
@@ -541,7 +541,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public static string ConvertTimeToStr(TimeSpan time)
         {
-            return time.Hours == 23 && time.Minutes == 59 ? "24:00" : time.Hours.ToString("D2") + ":" + time.Minutes.ToString("D2");
+            return time.Days == 1 && time.Hours ==0 && time.Minutes == 0 ? "24:00" : time.Hours.ToString("D2") + ":" + time.Minutes.ToString("D2");
         }
 
         /// <summary>
@@ -933,7 +933,7 @@ namespace ScheduleDisconnectLight
                             int hoursEnd = (int)valueEnd;                    // 8
                             int minutesEnd = (int)((valueEnd - hoursEnd) * 60); // 0.5 * 60 = 30
 
-                            var timeEnd = hoursEnd == 24 ? new TimeSpan(23, 59, 0) : new TimeSpan(hoursEnd, minutesEnd, 0);
+                            var timeEnd = new TimeSpan(hoursEnd, minutesEnd, 0);
 
                             scheduleOneDay.Periods.Add(new TimeRange(timeStart, timeEnd));
                         }
