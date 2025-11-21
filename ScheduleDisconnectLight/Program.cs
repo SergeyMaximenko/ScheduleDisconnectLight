@@ -618,7 +618,9 @@ namespace ScheduleDisconnectLight
         public void Send(string message)
         {
             string botToken = getBotToken();
-            string chatId = "-1002275491172";
+            //string chatId = "-1002275491172";
+            string chatId = "-1002336792682";
+            
 
             if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
             {
