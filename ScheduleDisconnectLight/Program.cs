@@ -618,9 +618,16 @@ namespace ScheduleDisconnectLight
         public void Send(string message)
         {
             string botToken = getBotToken();
+            // Тестова група
             //string chatId = "-1002275491172";
-            string chatId = "-1002336792682";
             
+            // Основная группа, которая была раньше
+            //string chatId = "-1002336792682";
+
+            // Текущая группа
+            string chatId = "-1001043114362";
+            string chatIdThread = "54031";
+
 
             if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
             {
@@ -637,10 +644,10 @@ namespace ScheduleDisconnectLight
                 var data = new Dictionary<string, string>
                     {
                         { "chat_id", chatId },
+                        { "message_thread_id", chatIdThread },
                         { "text", message },
                         { "parse_mode", "HTML"}
-                    }
-            ;
+                    };
 
                 using (var content = new FormUrlEncodedContent(data))
                 {
