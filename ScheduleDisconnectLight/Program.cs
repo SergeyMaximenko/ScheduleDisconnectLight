@@ -26,6 +26,9 @@ namespace ScheduleDisconnectLight
 
         static void Main(string[] args)
         {
+
+            return;
+
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
