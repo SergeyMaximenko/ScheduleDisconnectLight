@@ -620,7 +620,7 @@ namespace ScheduleDisconnectLight
 
         public void Send(string message)
         {
-            return;
+          
             string botToken = getBotToken();
             // Тестова група
             //string chatId = "-1002275491172";
