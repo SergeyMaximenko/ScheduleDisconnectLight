@@ -20,7 +20,15 @@ namespace ScheduleDisconnectLight
     internal class Program
     {
 
+
+
         public static bool IsSourceYasno = false;
+
+
+        public static bool IsGitHub()
+        {
+            return Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+        }
 
         public static DateTime DateTimeUaCurrent { get; set; }
 
@@ -40,7 +48,7 @@ namespace ScheduleDisconnectLight
 
             string stateFile = "";
 
-            if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+            if (IsGitHub())
             {
                 Console.WriteLine("Это версия ГИТА");
                 stateFile = Path.Combine(repoRoot, "appState.json");
@@ -624,14 +632,26 @@ namespace ScheduleDisconnectLight
             string botToken = getBotToken();
             // Тестова група
             //string chatId = "-1002275491172";
-            
+
             // Основная группа, которая была раньше
             //string chatId = "-1002336792682";
 
             // Текущая группа
-            string chatId = "-1001043114362";
-            string chatIdThread = "54031";
+            string chatId = "";
+            string chatIdThread = "";
 
+            if (Program.IsGitHub())
+            {
+                chatId = "-1001043114362";
+                chatIdThread = "54031";
+            }
+            else
+            {
+                chatId = "-1002275491172";
+                chatIdThread = "";
+            }
+
+            
 
             if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
             {
@@ -667,7 +687,7 @@ namespace ScheduleDisconnectLight
         private string getBotToken()
         {
             // 1. Если работаем в GitHub Actions
-            if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+            if (Program.IsGitHub())
             {
                 string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
 
