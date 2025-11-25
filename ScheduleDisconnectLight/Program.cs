@@ -726,7 +726,7 @@ namespace ScheduleDisconnectLight
                 Console.WriteLine(message);
                 Console.WriteLine("END SEND TELEGRAM:");
 
-                return;
+             
 
                 using (var content = new FormUrlEncodedContent(data))
                 {
