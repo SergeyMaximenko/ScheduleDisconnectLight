@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -66,6 +67,49 @@ namespace ScheduleDisconnectLight
 
             var schedule = IsSourceYasno ? new FormerScheduleFromYasno().Get() : new FormerScheduleFromDTEK().Get();
             schedule.FillServiceProp();
+
+
+
+            //--------------------------------
+            //   АВАРИЙНЫЕ ОТКЛЮЧЕНИЯ
+            //--------------------------------
+
+            //schedule.IsEmergencyShutdowns = false;
+
+            var emergencyShutdowns = schedule.IsEmergencyShutdowns ? "+" : "";
+
+            if (state.EmergencyShutdowns == emergencyShutdowns && emergencyShutdowns == "+")
+            {
+                Console.WriteLine("Сейчас действуют аварийные отключения. Уже было отправлено ранее. Выйти с програми");
+                return;
+            }
+
+            if (state.EmergencyShutdowns != emergencyShutdowns)
+            {
+
+                if (schedule.IsEmergencyShutdowns)
+                {
+                    new SenderTelegram().Send("🚨 ДТЕК: У Києві екстрені відключення. Графіки не діють");
+                    Console.WriteLine("Отправлено сообщение: Аварийные отключения!");
+                    // Сохраняем статус 
+                    state.EmergencyShutdowns = "+";
+                    AppState.SaveState(stateFile, state);
+
+                    return;
+                }
+                else
+                {
+                    new SenderTelegram().Send("✅ ДТЕК: Екстрені відключення скасовано");
+                    Console.WriteLine("Отправлено сообщение: Аварийные отключения скасовані!");
+
+                    state.EmergencyShutdowns = "";
+                    AppState.SaveState(stateFile, state);
+                }
+
+       
+            }
+
+
 
 
             //--------------------------------
@@ -247,7 +291,7 @@ namespace ScheduleDisconnectLight
                                     // Признак, что текущий день закончен. В этом случае не нужно писать, что на сегодня отключения больше не запланированы 
                                     var isDayOff = dateTimePowerOn >= new DateTime(DateTimeUaCurrent.Year, DateTimeUaCurrent.Month, DateTimeUaCurrent.Day, 23, 59, 0);
 
-                                    new SenderTelegram().Send("⚠️🟢 Світло має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
+                                    new SenderTelegram().Send("⚠️🟢 Світло за графіком має з'явити орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> \n" +
                                         (!string.IsNullOrEmpty(messageTimeOff)
                                             ? "\nПланові відключення до кінця дня: \n" + messageTimeOff
                                             : !isDayOff
@@ -330,6 +374,8 @@ namespace ScheduleDisconnectLight
     /// </summary>
     public class Schedule
     {
+        public bool IsEmergencyShutdowns;
+
         /// <summary>
         /// Дата последнего обновления
         /// </summary>
@@ -575,6 +621,8 @@ namespace ScheduleDisconnectLight
     /// </summary>
     class AppState
     {
+        public string EmergencyShutdowns { get; set; }
+
         /// <summary>
         /// Последнее время изменения файла
         /// </summary>
@@ -602,6 +650,7 @@ namespace ScheduleDisconnectLight
             {
                 return new AppState
                 {
+                    EmergencyShutdowns = "",
                     ScheduleHashDateSet = DateTime.MinValue,
                     ScheduleHash = string.Empty,
                     DateTimePowerOffLastMessage = DateTime.MinValue,
@@ -672,6 +721,12 @@ namespace ScheduleDisconnectLight
                         { "text", message },
                         { "parse_mode", "HTML"}
                     };
+
+                Console.WriteLine("START SEND TELEGRAM:");
+                Console.WriteLine(message);
+                Console.WriteLine("END SEND TELEGRAM:");
+
+                return;
 
                 using (var content = new FormUrlEncodedContent(data))
                 {
@@ -763,6 +818,15 @@ namespace ScheduleDisconnectLight
             var jsonDtek = new Json(jsonDtekTmp)["fact"];
             var schedule = new Schedule();
             schedule.DateLastUpdate = jsonDtek["update"].ValueDate;
+
+            var scheduleFromYasno = new FormerScheduleFromYasno().Get();
+            if (scheduleFromYasno.IsEmergencyShutdowns)
+            {
+                schedule.IsEmergencyShutdowns = true;
+                return schedule;
+            }
+
+
 
             var count = 0;
 
@@ -972,8 +1036,15 @@ namespace ScheduleDisconnectLight
                         }
                     }
                 }
+                if (jsonYasno[itemDate]["status"].Value == "EmergencyShutdowns")
+                {
+                    var scheduleDate = getDateUa(jsonYasno[itemDate]["date"].GetValue<DateTimeOffset>()).Date;
+                    if (scheduleDate == Program.DateTimeUaCurrent.Date)
+                    {
+                        schedule.IsEmergencyShutdowns = true;
+                    }
+                }
             }
-
             return schedule;
         }
 
