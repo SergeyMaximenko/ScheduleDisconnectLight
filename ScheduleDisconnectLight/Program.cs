@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
 
+// КРОН https://console.cron-job.org/jobs/6880027
+//      https://powergen.onrender.com/hello
+
 namespace ScheduleDisconnectLight
 {
     internal class Program
@@ -35,7 +38,7 @@ namespace ScheduleDisconnectLight
 
         static void Main(string[] args)
         {
-
+            new SenderTelegram().Send(DateTime.Now.ToString(),"+");
             
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
@@ -675,7 +678,7 @@ namespace ScheduleDisconnectLight
     public class SenderTelegram
     {
 
-        public void Send(string message)
+        public void Send(string message,string dd="")
         {
           
             string botToken = getBotToken();
@@ -689,7 +692,7 @@ namespace ScheduleDisconnectLight
             string chatId = "";
             string chatIdThread = "";
 
-            if (Program.IsGitHub())
+            if (Program.IsGitHub() && string.IsNullOrEmpty(dd))
             {
                 chatId = "-1001043114362";
                 chatIdThread = "54031";
