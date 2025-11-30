@@ -38,7 +38,7 @@ namespace ScheduleDisconnectLight
 
         static void Main(string[] args)
         {
-            new SenderTelegram().Send(DateTime.Now.ToString(),"+");
+           // new SenderTelegram().Send(DateTime.Now.ToString(),"+");
             
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
