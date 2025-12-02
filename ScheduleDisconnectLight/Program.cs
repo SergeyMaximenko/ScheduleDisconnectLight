@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
 
-// КРОН https://console.cron-job.org/jobs/6880027
-//      https://powergen.onrender.com/hello
+// КРОН //https://console.cron-job.org/jobs/6880027
+//      //https://powergen.onrender.com/hello
 
 namespace ScheduleDisconnectLight
 {
@@ -166,6 +166,8 @@ namespace ScheduleDisconnectLight
                 Console.WriteLine("График по свету не изменился - 1");
             }
 
+
+            /*
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
            ;
             ScheduleOneDay scheduleOneDay = null;
@@ -322,6 +324,7 @@ namespace ScheduleDisconnectLight
                     }
                 }
             }
+            */
 
         }
 
