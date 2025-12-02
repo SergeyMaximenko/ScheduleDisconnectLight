@@ -1,7 +1,7 @@
 {
   "EmergencyShutdowns": "",
-  "ScheduleHashDateSet": "2025-11-29T20:15:48.0505772",
-  "ScheduleHash": "[29.11.2025 08:00 - 11:30 => 14:30 - 19:30] [30.11.2025 11:30 - 16:30] ",
-  "DateTimePowerOffLastMessage": "2025-11-30T11:30:00",
-  "DateTimePowerOnLastMessage": "2025-11-29T19:30:00"
+  "ScheduleHashDateSet": "2025-12-01T20:10:36.4596547",
+  "ScheduleHash": "[01.12.2025 08:30 - 12:30 => 19:00 - 23:00] [02.12.2025 08:00 - 11:00 => 16:00 - 20:00] ",
+  "DateTimePowerOffLastMessage": "2025-12-02T08:00:00",
+  "DateTimePowerOnLastMessage": "2025-12-02T11:00:00"
 }
