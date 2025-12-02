@@ -1,5 +1,9 @@
 name: Run ScheduleDisconnectLight
 
+concurrency:
+  group: state-updater1
+  cancel-in-progress: false
+  
 on:
   workflow_dispatch: {}         # ручной запуск
  #  schedule:
