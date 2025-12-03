@@ -2,7 +2,7 @@
   "EmergencyShutdownsLastMessageId": 0,
   "EmergencyShutdownsDateSendMessage": "0001-01-01T00:00:00",
   "EmergencyShutdowns": "",
-  "ScheduleLastMessageId": 54538,
-  "ScheduleDateSendMessage": "2025-12-03T19:25:23.5037553",
-  "ScheduleHash": "[03.12.2025 12:30 - 16:00 => 23:00 - 24:00] [04.12.2025 09:30 - 13:00 => 20:00 - 23:00] "
+  "ScheduleLastMessageId": 54551,
+  "ScheduleDateSendMessage": "2025-12-03T23:10:28.0225407",
+  "ScheduleHash": "[03.12.2025 12:30 - 16:00] [04.12.2025 09:30 - 13:00 => 20:00 - 23:00] "
 }
