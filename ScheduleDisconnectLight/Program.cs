@@ -78,36 +78,38 @@ namespace ScheduleDisconnectLight
 
             //schedule.IsEmergencyShutdowns = false;
 
-            var emergencyShutdowns = schedule.IsEmergencyShutdowns ? "+" : "";
 
-            if (state.EmergencyShutdowns == emergencyShutdowns && emergencyShutdowns == "+")
-            {
-                Console.WriteLine("Сейчас действуют аварийные отключения. Уже было отправлено ранее. Выйти с програми");
-                return;
-            }
-
-            if (state.EmergencyShutdowns != emergencyShutdowns)
+ 
+            if (state.IsEmergencyShutdowns != schedule.IsEmergencyShutdowns)
             {
 
                 if (schedule.IsEmergencyShutdowns)
                 {
-                    new SenderTelegram().Send("🚨 ДТЕК: У Києві екстрені відключення. Графіки не діють");
+                    new SenderTelegram().Send(
+                        "🚨 <b>ДТЕК: У Києві екстрені відключення\r\n" +
+                        "😡 Графіки відключень не діють</b>");
                     Console.WriteLine("Отправлено сообщение: Аварийные отключения!");
                     // Сохраняем статус 
                     state.EmergencyShutdowns = "+";
                     AppState.SaveState(stateFile, state);
-
-                    return;
                 }
                 else
                 {
-                    new SenderTelegram().Send("✅ ДТЕК: Екстрені відключення скасовано");
+                    new SenderTelegram().Send(
+                        "✅ <b>ДТЕК: Екстрені відключення скасовано\r\n" +
+                        "👍 Далі відключення будуть по графікам</b>");
                     Console.WriteLine("Отправлено сообщение: Аварийные отключения скасовані!");
 
                     state.EmergencyShutdowns = "";
                     AppState.SaveState(stateFile, state);
                 }
-
+            }
+            else
+            {
+                if (schedule.IsEmergencyShutdowns)
+                {
+                    Console.WriteLine("Сейчас действуют аварийные отключения. Уже было отправлено ранее");
+                }
 
             }
 
@@ -166,6 +168,11 @@ namespace ScheduleDisconnectLight
             }
 
 
+            // Графики не действуют - оповещение не отправляем
+            if (schedule.IsEmergencyShutdowns)
+            {
+                return;
+            }
           
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
            ;
@@ -627,6 +634,9 @@ namespace ScheduleDisconnectLight
     class AppState
     {
         public string EmergencyShutdowns { get; set; }
+
+        [JsonIgnore]
+        public bool IsEmergencyShutdowns { get { return EmergencyShutdowns == "+"; } }
 
         /// <summary>
         /// Последнее время изменения файла
