@@ -850,7 +850,6 @@ namespace ScheduleDisconnectLight
                     continue;
                 }
 
-
                 var listTimeRange = new List<Tuple<TimeSpanUser, TimeSpanUser>>();
 
                 // Идем по часам
@@ -880,7 +879,7 @@ namespace ScheduleDisconnectLight
                     }
                 }
 
-                if (listTimeRange.Count() == 0)
+                if (listTimeRange.Count() == 0 && Program.DateTimeUaCurrent.Date != dateSchedule)
                 {
                     continue;
                 }
