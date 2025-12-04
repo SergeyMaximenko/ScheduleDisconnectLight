@@ -25,6 +25,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Sync with latest main
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          
       - name: Run EXE
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
