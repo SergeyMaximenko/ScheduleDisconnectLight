@@ -9,7 +9,6 @@ using System.Linq;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,8 +43,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            //DateTimeUaCurrent = new DateTime(2025, 12, 04, 1, 30, 0);
-
+            // DateTimeUaCurrent = new DateTime(2025, 11, 20, 20, 5, 0);
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
@@ -69,10 +67,7 @@ namespace ScheduleDisconnectLight
             // Загружаем состояние
             var state = AppState.LoadState(stateFile);
 
-            var schedule = IsSourceYasno
-                ? new FormerScheduleFromYasno().Get()
-                : new FormerScheduleFromDTEK().Get();
-
+            var schedule = IsSourceYasno ? new FormerScheduleFromYasno().Get() : new FormerScheduleFromDTEK().Get();
             schedule.FillServiceProp();
 
 
@@ -83,58 +78,37 @@ namespace ScheduleDisconnectLight
 
             //schedule.IsEmergencyShutdowns = false;
 
+            var emergencyShutdowns = schedule.IsEmergencyShutdowns ? "+" : "";
 
-
-
-            if (state.IsEmergencyShutdowns == schedule.IsEmergencyShutdowns)
+            if (state.EmergencyShutdowns == emergencyShutdowns && emergencyShutdowns == "+")
             {
+                Console.WriteLine("Сейчас действуют аварийные отключения. Уже было отправлено ранее. Выйти с програми");
+                return;
+            }
+
+            if (state.EmergencyShutdowns != emergencyShutdowns)
+            {
+
                 if (schedule.IsEmergencyShutdowns)
                 {
-                    Console.WriteLine("Сейчас действуют аварийные отключения. Уже было отправлено ранее. Выйти с програми");
+                    new SenderTelegram().Send("🚨 ДТЕК: У Києві екстрені відключення. Графіки не діють");
+                    Console.WriteLine("Отправлено сообщение: Аварийные отключения!");
+                    // Сохраняем статус 
+                    state.EmergencyShutdowns = "+";
+                    AppState.SaveState(stateFile, state);
+
                     return;
                 }
                 else
                 {
-                    // Аварийные отключения не действуют 
-                    // Проверить, когда было последнее сообщение. Если уже другой день и прошло больше 8 часов, удалить
-                    if (state.EmergencyShutdownsLastMessageId != 0 && state.EmergencyShutdownsDateSendMessage.Date < DateTimeUaCurrent && (DateTimeUaCurrent - state.EmergencyShutdownsDateSendMessage).TotalHours >= 8)
-                    {
-                        Console.WriteLine("Удалено последнее сообщение с аварийными отключениям");
-                        new TelegramApi().Delete(state.EmergencyShutdownsLastMessageId);
-                        state.EmergencyShutdownsLastMessageId = 0;
-                        AppState.SaveState(stateFile, state);
-                    }
-                }
-            }
-            else
-            {
-
-                if (schedule.IsEmergencyShutdowns)
-                {
-                    if (state.EmergencyShutdownsLastMessageId != 0)
-                    {
-                        new TelegramApi().Delete(state.EmergencyShutdownsLastMessageId);
-                    }
-                    var messageId = new TelegramApi().Send("🚨 ДТЕК: У Києві екстрені відключення. Графіки не діють");
-                    Console.WriteLine("Отправлено сообщение: Аварийные отключения!");
-                    state.EmergencyShutdownsLastMessageId = messageId;
-                    state.EmergencyShutdownsDateSendMessage = DateTimeUaCurrent;
-                    state.EmergencyShutdowns = "+"; // Сохраняем статус 
-                    AppState.SaveState(stateFile, state);
-                }
-                else
-                {
-                    if (state.EmergencyShutdownsLastMessageId != 0)
-                    {
-                        new TelegramApi().Delete(state.EmergencyShutdownsLastMessageId);
-                    }
-                    var messageId = new TelegramApi().Send("✅ ДТЕК: Екстрені відключення скасовано");
+                    new SenderTelegram().Send("✅ ДТЕК: Екстрені відключення скасовано");
                     Console.WriteLine("Отправлено сообщение: Аварийные отключения скасовані!");
-                    state.EmergencyShutdownsLastMessageId = messageId;
-                    state.EmergencyShutdownsDateSendMessage = DateTimeUaCurrent;
+
                     state.EmergencyShutdowns = "";
                     AppState.SaveState(stateFile, state);
                 }
+
+
             }
 
 
@@ -148,27 +122,14 @@ namespace ScheduleDisconnectLight
 
             Console.WriteLine("График новий:" + schedule.GetScheduleHash());
 
-            var isSendNewSchedule = false;
-
-            if (state.ScheduleHash.Trim() != schedule.GetScheduleHash().Trim())
+            if (string.IsNullOrEmpty(state.ScheduleHash) || !state.ScheduleHash.Contains(schedule.GetScheduleHash()))
             {
-
-                var message = new StringBuilder();
-                // Отправить сообщение об изменении графика 
-
-                if (state.ScheduleHash.Contains(schedule.GetScheduleHash()))
-                {
-                    message.Append("⚡️<b>Графік відключення світла</b>\n");
-                }
-                else
-                {
-                    message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
-                }
-
-                message.Append("\n");
-
                 if (schedule.ScheduleDate1 != null || schedule.ScheduleDate2 != null)
                 {
+                    var message = new StringBuilder();
+                    // Отправить сообщение об изменении графика 
+                    message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
+                    message.Append("\n");
                     if (schedule.ScheduleDate1 != null)
                     {
                         message.Append($"🗓️ <b>{schedule.ScheduleDate1.GetCaptionDate()}</b>\n");
@@ -183,31 +144,21 @@ namespace ScheduleDisconnectLight
                         message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
+                    message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
+
+                    new SenderTelegram().Send(message.ToString());
+                    Console.WriteLine("Сообщение об изменении графика отправлено");
+
+                    // Сохраняем статус 
+                    state.ScheduleHashDateSet = DateTimeUaCurrent;
+                    state.ScheduleHash = schedule.GetScheduleHash();
+
+                    AppState.SaveState(stateFile, state);
                 }
                 else
                 {
-                    message.Append($"🟢 Відключення не заплановані\n");
-                    message.Append("\n");
+                    Console.WriteLine("График по свету не изменился - 2");
                 }
-                message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
-
-                if (state.ScheduleLastMessageId != 0)
-                {
-                    new TelegramApi().Delete(state.ScheduleLastMessageId);
-                }
-
-                isSendNewSchedule = true;
-
-                var messageId = new TelegramApi().Send(message.ToString());
-                state.ScheduleLastMessageId = messageId;
-                Console.WriteLine("Сообщение об изменении графика отправлено");
-
-                // Сохраняем статус 
-                state.ScheduleDateSendMessage = DateTimeUaCurrent;
-                state.ScheduleHash = schedule.GetScheduleHash();
-
-                AppState.SaveState(stateFile, state);
-
             }
             else
             {
@@ -215,11 +166,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-
-
-
-
-            /*
+          
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
            ;
             ScheduleOneDay scheduleOneDay = null;
@@ -280,7 +227,7 @@ namespace ScheduleDisconnectLight
                                 {
                                     // messageTimeOff пустой быть не может 
                                     var messageTimeOff = scheduleOneDay.GetHtmlPeriod(DateTimeUaCurrent.TimeOfDay);
-
+                                    
                                     state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     isSendMessageOff = true;
                                     new SenderTelegram().Send("⚠️🔴 Світло може зникнути орієнтовно через <b>" + diff.Minutes.ToString() + $" хв.</b> в <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> \n" +
@@ -376,7 +323,7 @@ namespace ScheduleDisconnectLight
                     }
                 }
             }
-            */
+          
 
         }
 
@@ -679,38 +626,18 @@ namespace ScheduleDisconnectLight
     /// </summary>
     class AppState
     {
-        /// <summary>
-        /// Код последнего сообщения
-        /// </summary>
-        public int EmergencyShutdownsLastMessageId { get; set; }
-
-        /// <summary>
-        /// Дата последнего сообщения
-        /// </summary>
-        public DateTime EmergencyShutdownsDateSendMessage { get; set; }
-
         public string EmergencyShutdowns { get; set; }
 
-        [JsonIgnore]
-        public bool IsEmergencyShutdowns { get { return EmergencyShutdowns == "+"; } }
-
         /// <summary>
-        /// Код последнего сообщения
+        /// Последнее время изменения файла
         /// </summary>
-        public int ScheduleLastMessageId { get; set; }
-
-        /// <summary>
-        /// Дата последнего сообщения
-        /// </summary>
-        public DateTime ScheduleDateSendMessage { get; set; }
-
+        public DateTime ScheduleHashDateSet { get; set; }
 
         /// <summary>
         /// Условий Хер код
         /// </summary>
         public string ScheduleHash { get; set; }
 
-        /*
         /// <summary>
         /// Время выключения света, по которому уже было отправлено напоминание
         /// </summary>
@@ -720,23 +647,24 @@ namespace ScheduleDisconnectLight
         /// Время включения света, по которому уже было отправлено напоминание
         /// </summary>
         public DateTime DateTimePowerOnLastMessage { get; set; }
-        */
 
         // Считывание state.json
         public static AppState LoadState(string path)
         {
             if (!File.Exists(path))
             {
-                return new AppState();
+                return new AppState
+                {
+                    EmergencyShutdowns = "",
+                    ScheduleHashDateSet = DateTime.MinValue,
+                    ScheduleHash = string.Empty,
+                    DateTimePowerOffLastMessage = DateTime.MinValue,
+                    DateTimePowerOnLastMessage = DateTime.MinValue
+                };
             }
 
             string json = File.ReadAllText(path);
-            var result = JsonConvert.DeserializeObject<AppState>(json);
-            if (result == null)
-            {
-                result = new AppState();
-            }
-            return result;
+            return JsonConvert.DeserializeObject<AppState>(json);
         }
 
         // Сохранение state.json
@@ -749,76 +677,52 @@ namespace ScheduleDisconnectLight
 
     }
 
-    public class TelegramApi
+    public class SenderTelegram
     {
 
-        public void Delete(int messageId)
+        public void Send(string message, string dd = "")
         {
 
-            var param = Param.Get();
+            string botToken = getBotToken();
+            // Тестова група
+            //string chatId = "-1002275491172";
 
+            // Основная группа, которая была раньше
+            //string chatId = "-1002336792682";
 
-            if (string.IsNullOrWhiteSpace(param.BotToken))
+            // Текущая группа
+            string chatId = "";
+            string chatIdThread = "";
+
+            if (Program.IsGitHub() && string.IsNullOrEmpty(dd))
             {
-                Console.WriteLine("BOT_TOKEN не заданы.");
+                chatId = "-1001043114362";
+                chatIdThread = "54031";
+            }
+            else
+            {
+                chatId = "-1002275491172";
+                chatIdThread = "";
+            }
+
+
+
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
+            {
+                Console.WriteLine("BOT_TOKEN или CHAT_ID не заданы.");
                 return;
             }
 
             //string text = "11144__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
 
-
             using (var httpClient = new HttpClient())
             {
-                string url = $"https://api.telegram.org/bot{param.BotToken}/deleteMessage";
+                string url = $"https://api.telegram.org/bot{botToken}/sendMessage";
 
                 var data = new Dictionary<string, string>
                     {
-                        { "chat_id", param.ChatId },
-                        { "message_id", messageId.ToString() }
-                    };
-
-                Console.WriteLine("START DELETE TELEGRAM:");
-
-                using (var content = new FormUrlEncodedContent(data))
-                {
-                    // Синхронный POST
-                    HttpResponseMessage response = httpClient.PostAsync(url, content).Result;
-
-                    // Бросит исключение, если статус не 2xx
-                    response.EnsureSuccessStatusCode();
-
-                }
-                Console.WriteLine("END DELETE TELEGRAM:");
-
-            }
-            return;
-        }
-
-
-
-        public int Send(string message)
-        {
-
-            var param = Param.Get();
-
-
-            if (string.IsNullOrWhiteSpace(param.BotToken))
-            {
-                Console.WriteLine("BOT_TOKEN не заданы.");
-                return 0;
-            }
-
-            //string text = "11144__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
-
-            var messageId = 0;
-            using (var httpClient = new HttpClient())
-            {
-                string url = $"https://api.telegram.org/bot{param.BotToken}/sendMessage";
-
-                var data = new Dictionary<string, string>
-                    {
-                        { "chat_id", param.ChatId },
-                        { "message_thread_id", param.ChatIdThread },
+                        { "chat_id", chatId },
+                        { "message_thread_id", chatIdThread },
                         { "text", message },
                         { "parse_mode", "HTML"}
                     };
@@ -836,93 +740,45 @@ namespace ScheduleDisconnectLight
 
                     // Бросит исключение, если статус не 2xx
                     response.EnsureSuccessStatusCode();
-
-                    var responseString = response.Content.ReadAsStringAsync().Result;
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        messageId = new Json(responseString)["result"]["message_id"].ValueInt;
-                    }
-
                 }
             }
-            return messageId;
         }
 
-
-        private class Param
+        private string getBotToken()
         {
-            public string ChatId { get; private set; }
-            public string ChatIdThread { get; private set; }
-            public string BotToken { get; private set; }
-
-            public static Param Get()
+            // 1. Если работаем в GitHub Actions
+            if (Program.IsGitHub())
             {
-                var param = new Param();
+                string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
 
-                param.BotToken = getBotToken();
-                // Тестова група
-                //string chatId = "-1002275491172";
-
-                // Основная группа, которая была раньше
-                //string chatId = "-1002336792682";
-
-                // Текущая группа
-
-
-                if (Program.IsGitHub())
+                if (string.IsNullOrWhiteSpace(tokenFromGitHub))
                 {
-                    param.ChatId = "-1001043114362";
-                    param.ChatIdThread = "54031";
-                }
-                else
-                {
-                    param.ChatId = "-1002275491172";
-                    param.ChatIdThread = "";
+                    throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
                 }
 
-                return param;
-            }
-            private static string getBotToken()
-            {
-                // 1. Если работаем в GitHub Actions
-                if (Program.IsGitHub())
-                {
-                    string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
-
-                    if (string.IsNullOrWhiteSpace(tokenFromGitHub))
-                    {
-                        throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
-                    }
-
-                    return tokenFromGitHub;
-                }
-
-                // 2. Локальный режим → читаем appsettings.Local.json
-                string repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
-
-                string localPath = Path.Combine(repoRoot, "appsettings.Local.json");
-
-                if (!File.Exists(localPath))
-                {
-                    throw new Exception($"Файл {localPath} не найден!");
-                }
-
-                string token = new Json(File.ReadAllText(localPath))["BotToken"].Value;
-
-
-                if (string.IsNullOrWhiteSpace(token))
-                {
-                    throw new Exception("BotToken не найден в appsettings.Local.json");
-                }
-
-                return token;
+                return tokenFromGitHub;
             }
 
+            // 2. Локальный режим → читаем appsettings.Local.json
+            string repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
 
+            string localPath = Path.Combine(repoRoot, "appsettings.Local.json");
+
+            if (!File.Exists(localPath))
+            {
+                throw new Exception($"Файл {localPath} не найден!");
+            }
+
+            string token = new Json(File.ReadAllText(localPath))["BotToken"].Value;
+
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new Exception("BotToken не найден в appsettings.Local.json");
+            }
+
+            return token;
         }
-
-
     }
 
 
@@ -1131,7 +987,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-           // jsonYasnoTmp = jsonTmp();
+            //jsonYasnoTmp = jsonTmp();
 
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
@@ -1233,7 +1089,7 @@ namespace ScheduleDisconnectLight
                       ""type"": ""Definite""
                     }
                   ],
-                  ""date"": ""2025-12-02T00:00:00+02:00"",
+                  ""date"": ""2025-11-20T00:00:00+02:00"",
                   ""status"": ""ScheduleApplies""
                 },
                 ""tomorrow"": {
@@ -1249,7 +1105,7 @@ namespace ScheduleDisconnectLight
                       ""type"": ""Definite""
                     }
                   ],
-                  ""date"": ""2025-12-03T00:00:00+02:00"",
+                  ""date"": ""2025-11-21T00:00:00+02:00"",
                   ""status"": ""ScheduleApplies""
                 },
                 ""updatedOn"": ""2025-11-18T04:31:02+00:00""
