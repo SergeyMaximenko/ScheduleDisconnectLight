@@ -43,7 +43,8 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            // DateTimeUaCurrent = new DateTime(2025, 12, 5, 20, 05, 0);
+            //DateTimeUaCurrent = new DateTime(2025, 12, 5, 20, 6, 0);
+
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
@@ -235,7 +236,7 @@ namespace ScheduleDisconnectLight
                                     
                                     state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     isSendMessageOff = true;
-                                    new SenderTelegram().Send($"⚠️🔴 О <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~" + diff.Minutes.ToString() + " хв) планується відключення світла\n" +
+                                    new SenderTelegram().Send($"⚠️🔴 О <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) планується відключення світла\n" +
                                             (!string.IsNullOrEmpty(messageTimeOff) ? "\nПланові відключення до кінця дня: \n" + messageTimeOff : "")
                                             );
 
@@ -301,7 +302,7 @@ namespace ScheduleDisconnectLight
                                     var isDayOff = dateTimePowerOn >= new DateTime(DateTimeUaCurrent.Year, DateTimeUaCurrent.Month, DateTimeUaCurrent.Day, 23, 59, 0);
                                    
 
-                                    new SenderTelegram().Send($"⚠️🟢 В <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~"+diff.Minutes.ToString()+" хв) очікується відновлення світла\n" +
+                                    new SenderTelegram().Send($"⚠️🟢 В <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" +diff.Minutes.ToString()+ "</b> хв) очікується відновлення світла\n" +
                                         (!string.IsNullOrEmpty(messageTimeOff)
                                             ? "\nПланові відключення до кінця дня: \n" + messageTimeOff
                                             : !isDayOff
@@ -348,7 +349,8 @@ namespace ScheduleDisconnectLight
 
         private static bool isPowerOn()
         {
-          
+  
+
             string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
 
             string result = "";
