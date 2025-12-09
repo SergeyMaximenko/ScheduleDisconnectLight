@@ -27,7 +27,6 @@ namespace ScheduleDisconnectLight
 
         public static bool IsSourceYasno = false;
 
-
         public static bool IsGitHub()
         {
             return Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
@@ -43,7 +42,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            //DateTimeUaCurrent = new DateTime(2025, 12, 5, 20, 6, 0);
+            //DateTimeUaCurrent = new DateTime(2025, 12, 10, 20, 6, 0);
 
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
@@ -77,10 +76,10 @@ namespace ScheduleDisconnectLight
             //   АВАРИЙНЫЕ ОТКЛЮЧЕНИЯ
             //--------------------------------
 
-           // schedule.IsEmergencyShutdowns = false;
+            // schedule.IsEmergencyShutdowns = false;
 
 
- 
+
             if (state.IsEmergencyShutdowns != schedule.IsEmergencyShutdowns)
             {
 
@@ -125,24 +124,24 @@ namespace ScheduleDisconnectLight
 
             if (string.IsNullOrEmpty(state.ScheduleHash) || !state.ScheduleHash.Contains(schedule.GetScheduleHash()))
             {
-                if (schedule.ScheduleDate1 != null || schedule.ScheduleDate2 != null)
+                if (schedule.ScheduleCurrentDay != null || schedule.ScheduleNextDay != null)
                 {
                     var message = new StringBuilder();
                     // Отправить сообщение об изменении графика 
                     message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
                     message.Append("\n");
-                    if (schedule.ScheduleDate1 != null)
+                    if (schedule.ScheduleCurrentDay != null)
                     {
-                        message.Append($"🗓️ <b>{schedule.ScheduleDate1.GetCaptionDate()}</b>\n");
-                        message.Append($"📉 <b>{schedule.ScheduleDate1.GetPercentOffPower()}%</b> часу без світла\n");
-                        message.Append(schedule.ScheduleDate1.GetHtmlPeriod() + "\n");
+                        message.Append($"🗓️ <b>{schedule.ScheduleCurrentDay.GetCaptionDate()}</b>\n");
+                        message.Append($"📉 <b>{schedule.ScheduleCurrentDay.GetPercentOffPower()}%</b> часу без світла\n");
+                        message.Append(schedule.ScheduleCurrentDay.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
-                    if (schedule.ScheduleDate2 != null)
+                    if (schedule.ScheduleNextDay != null)
                     {
-                        message.Append($"🗓️ <b>{schedule.ScheduleDate2.GetCaptionDate()}</b>\n");
-                        message.Append($"📉 <b>{schedule.ScheduleDate2.GetPercentOffPower()}%</b> часу без світла\n");
-                        message.Append(schedule.ScheduleDate2.GetHtmlPeriod() + "\n");
+                        message.Append($"🗓️ <b>{schedule.ScheduleNextDay.GetCaptionDate()}</b>\n");
+                        message.Append($"📉 <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
+                        message.Append(schedule.ScheduleNextDay.GetHtmlPeriod() + "\n");
                         message.Append("\n");
                     }
                     message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
@@ -172,17 +171,17 @@ namespace ScheduleDisconnectLight
             {
                 return;
             }
-          
+
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
            ;
             ScheduleOneDay scheduleOneDay = null;
-            if (schedule.ScheduleDate1 != null && DateTimeUaCurrent.Date == schedule.ScheduleDate1.Date)
+            if (schedule.ScheduleCurrentDay != null && DateTimeUaCurrent.Date == schedule.ScheduleCurrentDay.Date)
             {
-                scheduleOneDay = schedule.ScheduleDate1;
+                scheduleOneDay = schedule.ScheduleCurrentDay;
             }
-            if (schedule.ScheduleDate2 != null && DateTimeUaCurrent.Date == schedule.ScheduleDate2.Date)
+            if (schedule.ScheduleNextDay != null && DateTimeUaCurrent.Date == schedule.ScheduleNextDay.Date)
             {
-                scheduleOneDay = schedule.ScheduleDate2;
+                scheduleOneDay = schedule.ScheduleNextDay;
             }
 
 
@@ -233,7 +232,7 @@ namespace ScheduleDisconnectLight
                                 {
                                     // messageTimeOff пустой быть не может 
                                     var messageTimeOff = scheduleOneDay.GetHtmlPeriod(DateTimeUaCurrent.TimeOfDay);
-                                    
+
                                     state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     isSendMessageOff = true;
                                     new SenderTelegram().Send($"⚠️🔴 О <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) планується відключення світла\n" +
@@ -300,9 +299,9 @@ namespace ScheduleDisconnectLight
 
                                     // Признак, что текущий день закончен. В этом случае не нужно писать, что на сегодня отключения больше не запланированы 
                                     var isDayOff = dateTimePowerOn >= new DateTime(DateTimeUaCurrent.Year, DateTimeUaCurrent.Month, DateTimeUaCurrent.Day, 23, 59, 0);
-                                   
 
-                                    new SenderTelegram().Send($"⚠️🟢 В <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" +diff.Minutes.ToString()+ "</b> хв) очікується відновлення світла\n" +
+
+                                    new SenderTelegram().Send($"⚠️🟢 В <b>{TimeRange.ConvertTimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) очікується відновлення світла\n" +
                                         (!string.IsNullOrEmpty(messageTimeOff)
                                             ? "\nПланові відключення до кінця дня: \n" + messageTimeOff
                                             : !isDayOff
@@ -330,7 +329,7 @@ namespace ScheduleDisconnectLight
                     }
                 }
             }
-          
+
 
         }
 
@@ -349,7 +348,7 @@ namespace ScheduleDisconnectLight
 
         private static bool isPowerOn()
         {
-  
+
 
             string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
 
@@ -382,6 +381,12 @@ namespace ScheduleDisconnectLight
 
 
 
+    public enum ScheduleDayType
+    {
+        CurrentDay,
+        NextDay
+    }
+
 
     /// <summary>
     /// График выключения света
@@ -398,13 +403,25 @@ namespace ScheduleDisconnectLight
         /// <summary>
         /// График для 1-й дати
         /// </summary>
-        public ScheduleOneDay ScheduleDate1;
+        public ScheduleOneDay ScheduleCurrentDay;
 
         /// <summary>
         /// График для 2-й дати
         /// </summary>
-        public ScheduleOneDay ScheduleDate2;
+        public ScheduleOneDay ScheduleNextDay;
 
+
+        public void SetSchedule(ScheduleOneDay scheduleOneDay, ScheduleDayType scheduleDayType)
+        {
+            if (scheduleDayType == ScheduleDayType.CurrentDay)
+            {
+                ScheduleCurrentDay = scheduleOneDay;
+            }
+            else
+            {
+                ScheduleNextDay = scheduleOneDay;
+            }
+        }
 
         /// <summary>
         /// Получить ХЕШ 
@@ -413,14 +430,14 @@ namespace ScheduleDisconnectLight
         public string GetScheduleHash()
         {
             var result = new StringBuilder();
-            if (ScheduleDate1 != null)
+            if (ScheduleCurrentDay != null)
             {
-                result.Append("[" + ScheduleDate1.Date.ToString("dd.MM.yyyy") + " " + ScheduleDate1.GetScheduleHash() + "] ");
+                result.Append("[" + ScheduleCurrentDay.Date.ToString("dd.MM.yyyy") + " " + ScheduleCurrentDay.GetScheduleHash() + "] ");
 
             }
-            if (ScheduleDate2 != null)
+            if (ScheduleNextDay != null)
             {
-                result.Append("[" + ScheduleDate2.Date.ToString("dd.MM.yyyy") + " " + ScheduleDate2.GetScheduleHash() + "] ");
+                result.Append("[" + ScheduleNextDay.Date.ToString("dd.MM.yyyy") + " " + ScheduleNextDay.GetScheduleHash() + "] ");
             }
             return result.ToString();
         }
@@ -432,15 +449,24 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public void FillServiceProp()
         {
-            if (ScheduleDate1 != null &&
-                ScheduleDate2 != null &&
-                ScheduleDate1.Periods.Count() > 0 &&
-                ScheduleDate2.Periods.Count() > 0 &&
-                ScheduleDate1.Date.AddDays(1) == ScheduleDate2.Date &&
-                ScheduleDate1.Periods.Last().EndIsEndDay() &&
-                ScheduleDate2.Periods.First().StartIsStartDay())
+            if (ScheduleCurrentDay == null)
             {
-                ScheduleDate1.Periods.Last().SetEndNextDay(ScheduleDate2.Periods.First().End);
+                ScheduleCurrentDay = new ScheduleOneDay()
+                {
+                    Date = Program.DateTimeUaCurrent.Date
+                };
+            }
+
+
+            if (ScheduleCurrentDay != null &&
+                ScheduleNextDay != null &&
+                ScheduleCurrentDay.Periods.Count() > 0 &&
+                ScheduleNextDay.Periods.Count() > 0 &&
+                ScheduleCurrentDay.Date.AddDays(1) == ScheduleNextDay.Date &&
+                ScheduleCurrentDay.Periods.Last().EndIsEndDay() &&
+                ScheduleNextDay.Periods.First().StartIsStartDay())
+            {
+                ScheduleCurrentDay.Periods.Last().SetEndNextDay(ScheduleNextDay.Periods.First().End);
             }
         }
     }
@@ -829,7 +855,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-            //jsonYasnoTmp = jsonTmp();
+            //jsonDtekTmp = jsonTmp();
 
 
             var jsonDtek = new Json(jsonDtekTmp)["fact"];
@@ -837,30 +863,36 @@ namespace ScheduleDisconnectLight
             schedule.DateLastUpdate = jsonDtek["update"].ValueDate;
 
             var scheduleFromYasno = new FormerScheduleFromYasno().Get();
-            if (scheduleFromYasno.IsEmergencyShutdowns)
-            {
-                schedule.IsEmergencyShutdowns = true;
-                return schedule;
-            }
+            schedule.IsEmergencyShutdowns = scheduleFromYasno.IsEmergencyShutdowns;
+            
 
 
-
-            var count = 0;
 
             // Идем по датам 
             foreach (var itemDates in jsonDtek["data"].GetDictionary())
             {
 
                 var dateSchedule = convertUnixUtcToDateUa(Convert.ToInt32(itemDates.Key)).Date;
-                if (dateSchedule < Program.DateTimeUaCurrent.Date)
+
+                ScheduleDayType? scheduleDayType = null;
+
+
+                if (dateSchedule == Program.DateTimeUaCurrent.Date)
+                {
+                    scheduleDayType = ScheduleDayType.CurrentDay;
+                }
+                else if (dateSchedule == Program.DateTimeUaCurrent.Date.AddDays(1))
+                {
+                    scheduleDayType = ScheduleDayType.NextDay;
+                }
+
+                if (scheduleDayType == null)
                 {
                     continue;
                 }
 
-                if (count >= 3)
-                {
-                    continue;
-                }
+
+
 
                 var listTimeRange = new List<Tuple<TimeSpanUser, TimeSpanUser>>();
 
@@ -891,22 +923,19 @@ namespace ScheduleDisconnectLight
                     }
                 }
 
-                if (listTimeRange.Count() == 0 && Program.DateTimeUaCurrent.Date != dateSchedule)
+
+
+
+                if (listTimeRange.Count() == 0)
                 {
                     continue;
                 }
 
-                count++;
                 var scheduleOneDay = new ScheduleOneDay();
-                if (count == 1)
-                {
-                    schedule.ScheduleDate1 = scheduleOneDay;
-                }
-                else
-                {
-                    schedule.ScheduleDate2 = scheduleOneDay;
-                }
                 scheduleOneDay.Date = dateSchedule;
+
+
+                schedule.SetSchedule(scheduleOneDay, (ScheduleDayType)scheduleDayType);
 
 
 
@@ -962,6 +991,80 @@ namespace ScheduleDisconnectLight
                 Minutes = minutes;
             }
         }
+
+
+        private string jsonTmp()
+        {
+            return @"
+{
+  ""regionId"": ""kyiv"",
+  ""lastUpdated"": ""2025-12-09T12:32:56.288Z"",
+  ""fact"": {
+    ""data"": {
+      ""1765231200"": {
+        ""GPV1.1"": {
+          ""1"": ""yes"",
+          ""2"": ""yes"",
+          ""3"": ""yes"",
+          ""4"": ""yes"",
+          ""5"": ""yes"",
+          ""6"": ""yes"",
+          ""7"": ""yes"",
+          ""8"": ""no"",
+          ""9"": ""no"",
+          ""10"": ""no"",
+          ""11"": ""no"",
+          ""12"": ""no"",
+          ""13"": ""yes"",
+          ""14"": ""yes"",
+          ""15"": ""yes"",
+          ""16"": ""second"",
+          ""17"": ""no"",
+          ""18"": ""no"",
+          ""19"": ""no"",
+          ""20"": ""no"",
+          ""21"": ""yes"",
+          ""22"": ""yes"",
+          ""23"": ""yes"",
+          ""24"": ""yes""
+        }
+      },
+      ""1765317600"": {
+        ""GPV1.1"": {
+          ""1"": ""yes"",
+          ""2"": ""yes"",
+          ""3"": ""yes"",
+          ""4"": ""yes"",
+          ""5"": ""yes"",
+          ""6"": ""yes"",
+          ""7"": ""yes"",
+          ""8"": ""yes"",
+          ""9"": ""yes"",
+          ""10"": ""yes"",
+          ""11"": ""yes"",
+          ""12"": ""yes"",
+          ""13"": ""yes"",
+          ""14"": ""yes"",
+          ""15"": ""yes"",
+          ""16"": ""yes"",
+          ""17"": ""yes"",
+          ""18"": ""yes"",
+          ""19"": ""yes"",
+          ""20"": ""yes"",
+          ""21"": ""yes"",
+          ""22"": ""yes"",
+          ""23"": ""yes"",
+          ""24"": ""yes""
+        }
+      }
+    },
+    ""update"": ""09.12.2025 12:09"",
+    ""today"": 1765231200
+  }
+}
+";
+        }
+
     }
 
 
@@ -998,7 +1101,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-            //jsonYasnoTmp = jsonTmp();
+            // jsonYasnoTmp = jsonTmp();
 
 
             var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
@@ -1007,50 +1110,64 @@ namespace ScheduleDisconnectLight
 
             var listDate = new[] { "today", "tomorrow" };
 
-            var count = 0;
+
             foreach (var itemDate in listDate)
             {
                 if (jsonYasno[itemDate]["status"].Value == "ScheduleApplies")
                 {
-                    var scheduleDate = getDateUa(jsonYasno[itemDate]["date"].GetValue<DateTimeOffset>()).Date;
-                    if (scheduleDate >= Program.DateTimeUaCurrent.Date)
+                    var dateSchedule = getDateUa(jsonYasno[itemDate]["date"].GetValue<DateTimeOffset>()).Date;
+
+
+                    ScheduleDayType? scheduleDayType = null;
+
+                    if (dateSchedule == Program.DateTimeUaCurrent.Date)
                     {
-                        count++;
-                        var scheduleOneDay = new ScheduleOneDay();
-                        if (count == 1)
-                        {
-                            schedule.ScheduleDate1 = scheduleOneDay;
-                        }
-                        else
-                        {
-                            schedule.ScheduleDate2 = scheduleOneDay;
-                        }
-
-                        scheduleOneDay.Date = scheduleDate;
-
-                        foreach (var item in jsonYasno[itemDate]["slots"].GetArray())
-                        {
-                            if (item["type"].Value != "Definite")
-                            {
-                                continue;
-                            }
-
-
-                            double valueStart = item["start"].ValueInt / 60.0;
-                            int hoursStart = (int)valueStart;                    // 8
-                            int minutesStart = (int)((valueStart - hoursStart) * 60); // 0.5 * 60 = 30
-                            var timeStart = new TimeSpan(hoursStart, minutesStart, 0);
-
-
-                            double valueEnd = item["end"].ValueInt / 60.0;
-                            int hoursEnd = (int)valueEnd;                    // 8
-                            int minutesEnd = (int)((valueEnd - hoursEnd) * 60); // 0.5 * 60 = 30
-
-                            var timeEnd = new TimeSpan(hoursEnd, minutesEnd, 0);
-
-                            scheduleOneDay.Periods.Add(new TimeRange(timeStart, timeEnd));
-                        }
+                        scheduleDayType = ScheduleDayType.CurrentDay;
                     }
+                    else if (dateSchedule == Program.DateTimeUaCurrent.Date.AddDays(1))
+                    {
+                        scheduleDayType = ScheduleDayType.NextDay;
+                    }
+
+                    if (scheduleDayType == null)
+                    {
+                        continue;
+                    }
+
+
+                    var scheduleOneDay = new ScheduleOneDay();
+                    scheduleOneDay.Date = dateSchedule;
+
+
+                    schedule.SetSchedule(scheduleOneDay, (ScheduleDayType)scheduleDayType);
+
+
+
+
+
+                    foreach (var item in jsonYasno[itemDate]["slots"].GetArray())
+                    {
+                        if (item["type"].Value != "Definite")
+                        {
+                            continue;
+                        }
+
+
+                        double valueStart = item["start"].ValueInt / 60.0;
+                        int hoursStart = (int)valueStart;                    // 8
+                        int minutesStart = (int)((valueStart - hoursStart) * 60); // 0.5 * 60 = 30
+                        var timeStart = new TimeSpan(hoursStart, minutesStart, 0);
+
+
+                        double valueEnd = item["end"].ValueInt / 60.0;
+                        int hoursEnd = (int)valueEnd;                    // 8
+                        int minutesEnd = (int)((valueEnd - hoursEnd) * 60); // 0.5 * 60 = 30
+
+                        var timeEnd = new TimeSpan(hoursEnd, minutesEnd, 0);
+
+                        scheduleOneDay.Periods.Add(new TimeRange(timeStart, timeEnd));
+                    }
+
                 }
                 if (jsonYasno[itemDate]["status"].Value == "EmergencyShutdowns")
                 {
@@ -1095,12 +1212,12 @@ namespace ScheduleDisconnectLight
                       ""type"": ""Definite""
                     },
                     {
-                      ""start"": 1200,
+                      ""start"": 1150,
                       ""end"": 1440,
                       ""type"": ""Definite""
                     }
                   ],
-                  ""date"": ""2025-11-20T00:00:00+02:00"",
+                  ""date"": ""2025-12-09T00:00:00+02:00"",
                   ""status"": ""ScheduleApplies""
                 },
                 ""tomorrow"": {
@@ -1116,7 +1233,7 @@ namespace ScheduleDisconnectLight
                       ""type"": ""Definite""
                     }
                   ],
-                  ""date"": ""2025-11-21T00:00:00+02:00"",
+                  ""date"": ""2025-12-10T00:00:00+02:00"",
                   ""status"": ""ScheduleApplies""
                 },
                 ""updatedOn"": ""2025-11-18T04:31:02+00:00""
