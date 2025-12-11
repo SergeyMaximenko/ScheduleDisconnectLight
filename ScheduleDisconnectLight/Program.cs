@@ -198,7 +198,7 @@ namespace ScheduleDisconnectLight
                     {
                         var totalTimeOffPowerNew = schedule.ScheduleNextDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateNextDay.ScheduleOneDay.GetTotalTimeOffPower();
-                        if (stateCurrentDay.IsDefine && totalTimeOffPowerNew != totalTimeOffPowerOld)
+                        if (stateNextDay.IsDefine && totalTimeOffPowerNew != totalTimeOffPowerOld)
                         {
                             if (totalTimeOffPowerNew > totalTimeOffPowerOld)
                             {
@@ -213,7 +213,7 @@ namespace ScheduleDisconnectLight
                         }
                         message.Append($"📉 <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
                     }
-                    message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateCurrentDay.IsDefine ? stateCurrentDay.ScheduleOneDay.Times : null) + "\n");
+                    message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateNextDay.IsDefine ? stateNextDay.ScheduleOneDay.Times : null) + "\n");
                     message.Append("\n");
                 }
                 message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
