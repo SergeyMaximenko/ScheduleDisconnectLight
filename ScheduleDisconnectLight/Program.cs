@@ -263,13 +263,13 @@ namespace ScheduleDisconnectLight
 
                                 if (isPowerOn())
                                 {
-                          
+                                    
                                     isSendMessageOff = true;
                                     new SenderTelegram().Send($"⚠️🔴 О <b>{TimeRange.ConvertTimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) планується відключення світла\n" +
                                         "\n" +
                                         schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(DateTimeUaCurrent.TimeOfDay));
-                                            
 
+                                    state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     AppState.SaveState(stateFile, state);
                                     Console.WriteLine($"      => сообщение отправлено");
                                 }
@@ -325,7 +325,7 @@ namespace ScheduleDisconnectLight
                             {
                                 if (!isPowerOn())
                                 {
-                                    state.DateTimePowerOnLastMessage = dateTimePowerOn;
+                                    
                                  
                                     // Признак, что текущий день закончен. В этом случае не нужно писать, что на сегодня отключения больше не запланированы 
                                     var isDayOff = dateTimePowerOn >= new DateTime(DateTimeUaCurrent.Year, DateTimeUaCurrent.Month, DateTimeUaCurrent.Day, 23, 59, 0);
@@ -339,6 +339,7 @@ namespace ScheduleDisconnectLight
                                          )
                                         );
 
+                                    state.DateTimePowerOnLastMessage = dateTimePowerOn;
                                     AppState.SaveState(stateFile, state);
                                     Console.WriteLine($"      => сообщение отправлено");
                                 }
@@ -646,11 +647,11 @@ namespace ScheduleDisconnectLight
 
             if (!string.IsNullOrEmpty(oldPeriod) && !oldPeriod.Contains(startStr + " -"))
             {
-                startStr = "<u>" + startStr + "</u>";
+                //startStr = "<u>" + startStr + "</u>";
             }
             if (!string.IsNullOrEmpty(oldPeriod) && !oldPeriod.Contains("- " + endStr))
             {
-                endStr = "<u>" + endStr + "</u>";
+                //endStr = "<u>" + endStr + "</u>";
             }
             return startStr + " - " + endStr + "  <i>" + getNameTimeSpan(End - Start) + "</i>";
         }
