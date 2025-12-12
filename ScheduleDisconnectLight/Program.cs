@@ -40,7 +40,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-           // Api.DateTimeUaCurrent = new DateTime(2025, 12, 11, 23, 35, 0);
+            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 10, 23, 35, 0);
 
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
@@ -165,19 +165,31 @@ namespace ScheduleDisconnectLight
                     {
                         var totalTimeOffPowerNew = schedule.ScheduleCurrentDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateCurrentDay.ScheduleOneDay.GetTotalTimeOffPower();
-                        if (stateCurrentDay.IsDefine && totalTimeOffPowerNew != totalTimeOffPowerOld)
+                        if (stateCurrentDay.IsDefine)
                         {
-                            if (totalTimeOffPowerNew > totalTimeOffPowerOld)
+                            if (totalTimeOffPowerNew != totalTimeOffPowerOld)
                             {
-                                //
-                                message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld,true) + "</b> відключень\n");
+                                if (totalTimeOffPowerNew > totalTimeOffPowerOld)
+                                {
+                                    //
+                                    message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                }
+                                else
+                                {
+                                    //⬇︎😊
+                                    message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                }
                             }
                             else
                             {
-                                //⬇︎😊
-                                message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                message.Append("💛 Графік на сьогодні <b>без змін</b>\n");
                             }
                         }
+                        else
+                        {
+                            message.Append("🔔 <b>З'явився</b> графік на сьогодні\n");
+                        }
+          
 
                         message.Append($"📉 <b>{schedule.ScheduleCurrentDay.GetPercentOffPower()}%</b> часу без світла\n");
                         
@@ -198,18 +210,29 @@ namespace ScheduleDisconnectLight
                     {
                         var totalTimeOffPowerNew = schedule.ScheduleNextDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateNextDay.ScheduleOneDay.GetTotalTimeOffPower();
-                        if (stateNextDay.IsDefine && totalTimeOffPowerNew != totalTimeOffPowerOld)
+                        if (stateNextDay.IsDefine)
                         {
-                            if (totalTimeOffPowerNew > totalTimeOffPowerOld)
+                            if (totalTimeOffPowerNew != totalTimeOffPowerOld)
                             {
-                                //
-                                message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                if (totalTimeOffPowerNew > totalTimeOffPowerOld)
+                                {
+                                    //
+                                    message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                }
+                                else
+                                {
+                                    //⬇︎😊
+                                    message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                }
                             }
                             else
                             {
-                                //⬇︎😊
-                                message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                message.Append("💛 Графік на завтра <b>без змін</b>\n");
                             }
+                        }
+                        else
+                        {
+                            message.Append("🔔 <b>З'явився</b> графік на завтра\n");
                         }
                         message.Append($"📉 <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
                     }
@@ -1111,7 +1134,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-           // jsonDtekTmp = jsonTmp();
+            //jsonDtekTmp = jsonTmp();
 
 
             var jsonDtek = new Json(jsonDtekTmp)["fact"];
@@ -1273,8 +1296,8 @@ namespace ScheduleDisconnectLight
           ""14"": ""yes"",
           ""15"": ""yes"",
           ""16"": ""yes"",
-          ""17"": ""no"",
-          ""18"": ""no"",
+          ""17"": ""yes"",
+          ""18"": ""yes"",
           ""19"": ""yes"",
           ""20"": ""yes"",
           ""21"": ""yes"",
@@ -1289,17 +1312,17 @@ namespace ScheduleDisconnectLight
           ""2"": ""no"",
           ""3"": ""first"",
           ""4"": ""yes"",
-          ""5"": ""yes"",
+          ""5"": ""first"",
           ""6"": ""yes"",
           ""7"": ""yes"",
           ""8"": ""yes"",
-          ""9"": ""yes"",
+          ""9"": ""second"",
           ""10"": ""second"",
           ""11"": ""no"",
           ""12"": ""no"",
           ""13"": ""no"",
           ""14"": ""no"",
-          ""15"": ""no"",
+          ""15"": ""first"",
           ""16"": ""no"",
           ""17"": ""first"",
           ""18"": ""yes"",
