@@ -16,10 +16,23 @@
           "To": "20:30"
         }
       ]
+    },
+    {
+      "Date": "2025-12-13T00:00:00",
+      "Times": [
+        {
+          "From": "03:30",
+          "To": "07:00"
+        },
+        {
+          "From": "14:00",
+          "To": "17:30"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleHashDateSet": "2025-12-12T12:52:08.0336807",
+  "ScheduleHashDateSet": "2025-12-12T20:00:52.0223949",
   "DateTimePowerOffLastMessage": "2025-12-12T17:00:00",
-  "DateTimePowerOnLastMessage": "2025-12-12T13:30:00"
+  "DateTimePowerOnLastMessage": "2025-12-12T20:30:00"
 }
