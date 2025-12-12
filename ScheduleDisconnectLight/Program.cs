@@ -40,7 +40,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 10, 23, 35, 0);
+            Api.DateTimeUaCurrent = new DateTime(2025, 12, 10, 23, 35, 0);
 
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(
@@ -182,7 +182,15 @@ namespace ScheduleDisconnectLight
                             }
                             else
                             {
-                                message.Append("💛 Графік <b>без змін</b>\n");
+                                if (scheduleCurrentDayIsChange)
+                                {
+                                    message.Append("💛 Графік <b>змінився</b>, але загальний час без змін\n");
+                                }
+                                else
+                                {
+                                    message.Append("💛 Графік <b>без змін</b>\n");
+                                }
+                                
                             }
                         }
                         else
@@ -227,7 +235,14 @@ namespace ScheduleDisconnectLight
                             }
                             else
                             {
-                                message.Append("💛 Графік <b>без змін</b>\n");
+                                if (scheduleNextDayIsChange)
+                                {
+                                    message.Append("💛 Графік <b>змінився</b>, але загальний час без змін\n");
+                                }
+                                else
+                                {
+                                    message.Append("💛 Графік <b>без змін</b>\n");
+                                }
                             }
                         }
                         else
@@ -1134,7 +1149,7 @@ namespace ScheduleDisconnectLight
             }
 
 
-            //jsonDtekTmp = jsonTmp();
+            jsonDtekTmp = jsonTmp();
 
 
             var jsonDtek = new Json(jsonDtekTmp)["fact"];
@@ -1289,13 +1304,13 @@ namespace ScheduleDisconnectLight
           ""7"": ""yes"",
           ""8"": ""no"",
           ""9"": ""yes"",
-          ""10"": ""no"",
+          ""10"": ""yes"",
           ""11"": ""yes"",
           ""12"": ""yes"",
           ""13"": ""no"",
           ""14"": ""yes"",
           ""15"": ""yes"",
-          ""16"": ""yes"",
+          ""16"": ""no"",
           ""17"": ""yes"",
           ""18"": ""yes"",
           ""19"": ""yes"",
@@ -1314,13 +1329,13 @@ namespace ScheduleDisconnectLight
           ""4"": ""yes"",
           ""5"": ""first"",
           ""6"": ""yes"",
-          ""7"": ""yes"",
+          ""7"": ""no"",
           ""8"": ""yes"",
           ""9"": ""second"",
           ""10"": ""second"",
           ""11"": ""no"",
           ""12"": ""no"",
-          ""13"": ""no"",
+          ""13"": ""yes"",
           ""14"": ""no"",
           ""15"": ""first"",
           ""16"": ""no"",
@@ -1329,7 +1344,7 @@ namespace ScheduleDisconnectLight
           ""19"": ""yes"",
           ""20"": ""yes"",
           ""21"": ""no"",
-          ""22"": ""no"",
+          ""22"": ""yes"",
           ""23"": ""no"",
           ""24"": ""no""
         }
