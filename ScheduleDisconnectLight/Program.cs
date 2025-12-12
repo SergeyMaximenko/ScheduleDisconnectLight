@@ -182,12 +182,12 @@ namespace ScheduleDisconnectLight
                             }
                             else
                             {
-                                message.Append("💛 Графік на сьогодні <b>без змін</b>\n");
+                                message.Append("💛 Графік <b>без змін</b>\n");
                             }
                         }
                         else
                         {
-                            message.Append("🔔 <b>З'явився</b> графік на сьогодні\n");
+                            message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
           
 
@@ -227,12 +227,12 @@ namespace ScheduleDisconnectLight
                             }
                             else
                             {
-                                message.Append("💛 Графік на завтра <b>без змін</b>\n");
+                                message.Append("💛 Графік <b>без змін</b>\n");
                             }
                         }
                         else
                         {
-                            message.Append("🔔 <b>З'явився</b> графік на завтра\n");
+                            message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
                         message.Append($"📉 <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
                     }
