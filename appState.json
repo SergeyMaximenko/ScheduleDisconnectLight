@@ -20,6 +20,6 @@
   ],
   "IsEmergencyShutdowns": false,
   "ScheduleHashDateSet": "2025-12-12T12:52:08.0336807",
-  "DateTimePowerOffLastMessage": "0001-01-01T00:00:00",
+  "DateTimePowerOffLastMessage": "2025-12-12T17:00:00",
   "DateTimePowerOnLastMessage": "2025-12-12T13:30:00"
 }
