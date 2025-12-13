@@ -2,11 +2,16 @@
   "SchedulesHash": [
     {
       "Date": "2025-12-13T00:00:00",
-      "Times": []
+      "Times": [
+        {
+          "From": "14:00",
+          "To": "18:00"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleHashDateSet": "2025-12-13T14:18:09.4045704",
+  "ScheduleHashDateSet": "2025-12-13T14:19:09.9215237",
   "DateTimePowerOffLastMessage": "2025-12-13T03:30:00",
   "DateTimePowerOnLastMessage": "2025-12-12T20:30:00"
 }
