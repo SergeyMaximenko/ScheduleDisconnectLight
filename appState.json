@@ -13,7 +13,7 @@
         },
         {
           "From": "22:00",
-          "To": "24:00"
+          "To": "23:30"
         }
       ]
     },
@@ -32,7 +32,7 @@
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleHashDateSet": "2025-12-14T21:50:30.5061455",
+  "ScheduleHashDateSet": "2025-12-14T23:35:33.6810258",
   "DateTimePowerOffLastMessage": "2025-12-14T22:00:00",
   "DateTimePowerOnLastMessage": "2025-12-15T00:00:00"
 }
