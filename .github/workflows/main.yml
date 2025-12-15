@@ -54,5 +54,23 @@ jobs:
 
           # Пушим обратно в main
           git push origin HEAD:main || echo "Push failed"
+
+
+      - name: Commit updated appState1_.json
+        if: success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          # Добавляем appState1_.json и коммитим, если есть изменения
+          git add appState1_.json
+          git commit -m "Update appState1_.json" || echo "No changes to commit"
+
+          # Подтягиваем последние изменения, не ломаясь из-за локальных правок
+          git pull --rebase --autostash origin main || echo "Pull failed"
+
+          # Пушим обратно в main
+          git push origin HEAD:main || echo "Push failed"
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
