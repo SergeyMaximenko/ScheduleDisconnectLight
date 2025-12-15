@@ -270,7 +270,7 @@ namespace ScheduleDisconnectLight
                     var rnd = new Random();
                     string factJsonText = "";
                     int i = 0;
-                    for (i = 1; i <= 7; i++)
+                    for (i = 1; i <= 10; i++)
                     {
                         var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
                         var html = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
@@ -281,8 +281,7 @@ namespace ScheduleDisconnectLight
                             break;
                         }
 
-                        Thread.Sleep(350 + rnd.Next(0, 400));
-
+                        Thread.Sleep(450 + rnd.Next(100, 650));
                     }
 
                     if (i > 1)
