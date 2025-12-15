@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 
 namespace ScheduleDisconnectLight
@@ -19,17 +20,36 @@ namespace ScheduleDisconnectLight
                 string jsonStr = "";
                 using (var httpClient = new HttpClient(new HttpClientHandler
                 {
-                    AutomaticDecompression = DecompressionMethods.None
+                    AutomaticDecompression =
+                        DecompressionMethods.GZip |
+                        DecompressionMethods.Deflate
                 }))
                 {
-
+                    
                     // Иногда полезно притвориться браузером
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36");
 
-                    var html = httpClient.GetStringAsync(url).Result;
+                    httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+                    httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
 
-                    var factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
+                    httpClient.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7");
+
+                    string factJsonText = "";
+                    for (int i = 1; i <= 4; i++)
+                    {
+                        var html = httpClient.GetStringAsync(url).GetAwaiter().GetResult();
+                        factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
+                        if (!string.IsNullOrEmpty(factJsonText))
+                        {
+                            break;
+                        }
+                        Thread.Sleep(1500);
+
+                    }
+
+                    
                     if (string.IsNullOrEmpty(factJsonText))
                     {
                         Console.WriteLine("ParseDTEK: Не найдено 'DisconSchedule.fact = ...' в HTML.");
