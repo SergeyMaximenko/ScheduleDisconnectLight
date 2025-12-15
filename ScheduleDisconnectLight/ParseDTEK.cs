@@ -218,161 +218,129 @@ namespace ScheduleDisconnectLight
         {
 
 
-
-
-
-            string repoRoot = Path.GetFullPath(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
-
-            string stateFile = "";
-
-            if (Api.IsGitHub())
-            {
-                
-                stateFile = Path.Combine(repoRoot, "appState1_.json");
-            }
-
-
-
-
-            var url = "https://www.dtek-kem.com.ua/ua/shutdowns";
+            var baseUrl = "https://www.dtek-kem.com.ua";
+            var warmupUrl = baseUrl + "/ua/";
+            var url = baseUrl + "/ua/shutdowns";
 
             try
             {
-
-
-
-                // иногда на net48 полезно явно включить TLS 1.2
+                // NET48: иногда полезно явно включить TLS 1.2
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 var cookies = new CookieContainer();
                 string jsonStr = "";
-                using (var httpClient = new HttpClient(new HttpClientHandler
+
+                using (var handler = new HttpClientHandler
                 {
-                    AutomaticDecompression =
-                        DecompressionMethods.GZip |
-                        DecompressionMethods.Deflate,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                     CookieContainer = cookies,
                     UseCookies = true,
                     AllowAutoRedirect = true
-                }))
+                })
+                using (var httpClient = new HttpClient(handler))
                 {
                     httpClient.Timeout = TimeSpan.FromSeconds(25);
 
-                    // UA як у Playwright
+                    // Базовый набор заголовков (без "Sec-Fetch" и "sec-ch-ua" — они часто палят бота)
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
 
-                    // Мова (locale)
-                    httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7");
-
-                    // Забороняємо br, бо у тебе немає Brotli-розпакування
-                    httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
-                    httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
-
-                    // ✅ ВАЖНО: Accept
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
                         "Accept",
                         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
 
-                    // Типові браузерні заголовки
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cache-Control", "no-cache");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Pragma", "no-cache");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Dest", "document");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Mode", "navigate");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Site", "none");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-User", "?1");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua", "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\"");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-mobile", "?0");
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-platform", "\"Windows\"");
+                    httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7");
 
-                    // Не обов'язково, але інколи допомагає
-                    httpClient.DefaultRequestHeaders.Referrer = new Uri(url);
+                    // br НЕ просим, т.к. Brotli на net48 обычно нет
+                    httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate");
+
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
+
+                    // Нормальный referrer (не "сам на себя")
+                    httpClient.DefaultRequestHeaders.Referrer = new Uri(warmupUrl);
+
+
 
                     var rnd = new Random();
                     string factJsonText = "";
-                    int i = 0;
-                    for (i = 1; i <= 10; i++)
+                    int attempt;
+
+                    for (attempt = 1; attempt <= 10; attempt++)
                     {
+                        // 1) Прогрев (получить базовые cookies)
+                        try
+                        {
+                            var warm = httpClient.GetAsync(warmupUrl).GetAwaiter().GetResult();
+                            warm.Dispose();
+                        }
+                        catch
+                        {
+                            // прогрев не критичен — идем дальше
+                        }
+
+                        // 2) Основной запрос
                         var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
                         var html = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
 
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
                             break;
                         }
-                        if (Api.IsGitHub())
-                        {
-                            File.WriteAllText(stateFile, html);
-                        }
+
+          
 
                         Thread.Sleep(1000 + rnd.Next(0, 500));
                     }
 
-                    if (i > 1)
+                    if (attempt > 1)
                     {
                         if (string.IsNullOrEmpty(factJsonText))
                         {
-                            new SenderTelegram() { IsTest = true }.Send("НЕ подключено с " + i + " попытки");
+                            new SenderTelegram() { IsTest = true }.Send("НЕ подключено (до 10 попыток).");
                         }
                         else
                         {
-                            new SenderTelegram() { IsTest = true }.Send("Подключено с " + i + " попытки");
+                            new SenderTelegram() { IsTest = true }.Send("Подключено с " + attempt + " попытки");
                         }
                     }
-
-
-
 
                     if (string.IsNullOrEmpty(factJsonText))
                     {
                         Console.WriteLine("ParseDTEK: Не найдено 'DisconSchedule.fact = ...' в HTML.");
-                        //Console.WriteLine("Проверь: страница реально содержит данные (антибот может отдавать заглушку).");
                         return string.Empty;
                     }
 
-                    // Попытка привести JS-объект к JSON (на твоём скрине оно уже похоже на JSON)
+                    // Приводим JS-объект к JSON
                     var normalized = normalizeJsObjectToJson(factJsonText);
-                    if (normalized == "null" || string.IsNullOrEmpty(normalized))
+                    if (normalized == "null" || string.IsNullOrWhiteSpace(normalized))
                     {
-                        Console.WriteLine("ParseDTEK: В 'DisconSchedule.fact значение null");
+                        Console.WriteLine("ParseDTEK: В 'DisconSchedule.fact' значение null/empty.");
                         return string.Empty;
                     }
 
-
-
-                    // Проверим, что это валидный JSON
+                    // Проверка JSON
                     var doc = JsonDocument.Parse(normalized);
 
-                    // Проверить, что есть дата 
-                    if (!doc.RootElement.TryGetProperty("data", out var data))
+                    // Проверка что есть data
+                    if (!doc.RootElement.TryGetProperty("data", out var _))
                     {
-                        Console.WriteLine($"ParseDTEK. Нет атрибута data");
+                        Console.WriteLine("ParseDTEK: Нет атрибута data");
                         return string.Empty;
                     }
 
-                    var wrapper = new
-                    {
-                        fact = doc.RootElement
-                    };
-
+                    var wrapper = new { fact = doc.RootElement };
 
                     jsonStr = JsonSerializer.Serialize(wrapper, new JsonSerializerOptions
                     {
                         WriteIndented = true
                     });
 
-
-
-                    //var outPath = Path.Combine(Environment.CurrentDirectory, "fact.json");
-                    //File.WriteAllText(outPath, jsonStr);
-                    //Console.WriteLine($"OK. Сохранено: " + outPath);
+                    return jsonStr;
                 }
-
-
-                return jsonStr;
             }
             catch (Exception ex)
             {
