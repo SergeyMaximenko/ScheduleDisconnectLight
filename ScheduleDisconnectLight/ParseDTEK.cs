@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.Remoting.Messaging;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -69,7 +71,7 @@ namespace ScheduleDisconnectLight
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
-                            break;
+                           break;
                         }
 
 
@@ -87,19 +89,8 @@ namespace ScheduleDisconnectLight
                         Console.WriteLine(message1);
                         new SenderTelegram() { IsTest = true }.Send(message1);
 
-                        if (!string.IsNullOrEmpty(html))
-                        {
-                            var message2 = $"Attempt {i}: HTML head: " + html.Substring(0, Math.Min(250, html.Length));
-                            Console.WriteLine($"len={html.Length}");
-                            Console.WriteLine($"has_fact={(html.Contains("DisconSchedule.fact") ? "YES" : "NO")}");
-                            Console.WriteLine($"has_ajaxUrl={(html.Contains("meta name=\"ajaxUrl\"") ? "YES" : "NO")}");
-                            Console.WriteLine($"has_cloudflare={(html.Contains("cf-chl") || html.Contains("cloudflare") ? "YES" : "NO")}");
-                            Console.WriteLine($"has_datadome={(html.Contains("datadome") ? "YES" : "NO")}");
-                            Console.WriteLine($"has_turnstile={(html.Contains("turnstile") ? "YES" : "NO")}");
-                            Console.WriteLine($"has_recaptcha={(html.Contains("recaptcha") ? "YES" : "NO")}");
-
-                            // new SenderTelegram() { IsTest = true }.Send(message2);
-                        }
+                        // ЛОГ: когда факта нет
+                        LogAttempt(i, resp, html, cookies, new Uri(url));
 
 
 
@@ -162,6 +153,63 @@ namespace ScheduleDisconnectLight
                 Console.WriteLine("ParseDTEK, ошибка: " + ex.Message);
                 return string.Empty;
             }
+        }
+
+
+
+        private static string Clip(string s, int max)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            return s.Length <= max ? s : s.Substring(0, max);
+        }
+
+        private static void LogAttempt(
+            int attempt,
+            HttpResponseMessage resp,
+            string html,
+            CookieContainer cookies,
+            Uri url,
+            string tag = "DTEK")
+        {
+            var finalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? "(unknown)";
+            var ct = resp.Content.Headers.ContentType?.ToString() ?? "(none)";
+            var enc = resp.Content.Headers.ContentEncoding?.Any() == true
+                ? string.Join(",", resp.Content.Headers.ContentEncoding)
+                : "(none)";
+
+            var setCookie = resp.Headers.TryGetValues("Set-Cookie", out var sc)
+                ? string.Join(" | ", sc.Take(5)) // чтобы не раздувать лог
+                : "<none>";
+
+            // cookies, которые реально сохранились в контейнере
+            var jarCookies = "<none>";
+            try
+            {
+                var arr = cookies.GetCookies(url).Cast<Cookie>().ToArray();
+                if (arr.Length > 0)
+                    jarCookies = string.Join("; ", arr.Take(10).Select(c => $"{c.Name}={Clip(c.Value, 30)}"));
+            }
+            catch { /* ignore */ }
+
+            var head = Clip(html ?? "", 300);
+            var tail = (html ?? "").Length <= 300 ? (html ?? "") : html.Substring(html.Length - 300);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"[{tag}] Attempt {attempt}: HTTP {(int)resp.StatusCode} {resp.StatusCode}");
+            sb.AppendLine($"finalUrl={finalUrl}");
+            sb.AppendLine($"ct={ct}, enc={enc}, len={html?.Length ?? 0}");
+            sb.AppendLine($"has_fact={(html?.Contains("DisconSchedule.fact") == true ? "YES" : "NO")}, has_ajaxUrl={(html?.Contains("meta name=\"ajaxUrl\"") == true ? "YES" : "NO")}");
+            sb.AppendLine($"Set-Cookie: {setCookie}");
+            sb.AppendLine($"Jar-Cookies: {jarCookies}");
+            sb.AppendLine($"HEAD: {head}");
+            sb.AppendLine($"TAIL: {tail}");
+
+            var msg = sb.ToString();
+
+            Console.WriteLine(msg);
+
+            // если хочешь в Telegram — лучше отправлять ТОЛЬКО шапку, иначе лимиты
+            // new SenderTelegram(){ IsTest = true }.Send(Clip(msg, 3500));
         }
 
         static void WriteLong(string text, int chunkSize = 1000)
