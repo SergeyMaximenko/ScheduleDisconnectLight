@@ -66,6 +66,17 @@ namespace ScheduleDisconnectLight
             var state = AppState.LoadState(stateFile);
 
             var schedule = IsSourceYasno ? new FormerScheduleFromYasno().Get() : new FormerScheduleFromDTEK().Get();
+
+            if (schedule == null)
+            {
+                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий");
+                schedule = Schedule.FormScheduleByState(state);
+            }
+            if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate) 
+            {
+                schedule = Schedule.FormScheduleByState(state);
+            }
+            
             schedule.FillServiceProp();
 
 
@@ -264,6 +275,7 @@ namespace ScheduleDisconnectLight
 
                 // Сохраняем статус 
                 state.ScheduleHashDateSet = Api.DateTimeUaCurrent;
+                state.ScheduleDateLastUpdate = schedule.DateLastUpdate;
                 state.SchedulesHash = scheduleHashNew;
 
                 AppState.SaveState(stateFile, state);
@@ -273,7 +285,7 @@ namespace ScheduleDisconnectLight
             {
    
 
-                Console.WriteLine("График по свету не изменился - 2");
+                Console.WriteLine("График по свету не изменился");
             }
 
 
@@ -527,6 +539,16 @@ namespace ScheduleDisconnectLight
             return ScheduleCurrentDay.GetHashStr() + " " + ScheduleNextDay.GetHashStr();
         }
 
+        
+        public static Schedule FormScheduleByState(AppState state)
+        {
+            var shedule = new Schedule();
+            shedule.ScheduleCurrentDay = state.GetParamCurrentDay().ScheduleOneDay;
+            shedule.ScheduleNextDay = state.GetParamNextDay().ScheduleOneDay;
+            shedule.IsEmergencyShutdowns = state.IsEmergencyShutdowns;
+            shedule.DateLastUpdate = state.ScheduleDateLastUpdate;
+            return shedule;
+        }
 
 
 
@@ -912,7 +934,7 @@ namespace ScheduleDisconnectLight
     /// <summary>
     /// Класс мини база данных 
     /// </summary>
-    class AppState
+    public class AppState
     {
 
         /// <summary>
@@ -921,8 +943,15 @@ namespace ScheduleDisconnectLight
         [JsonProperty("IsEmergencyShutdowns")]
         public bool IsEmergencyShutdowns { get; set; }
 
+
         /// <summary>
-        /// Последнее время изменения файла
+        /// Последнее время изменения графика на ДТЕК
+        /// </summary>
+        [JsonProperty("ScheduleDateLastUpdate")]
+        public DateTime ScheduleDateLastUpdate { get; set; }
+
+        /// <summary>
+        /// Последнее время установки графика 
         /// </summary>
         [JsonProperty("ScheduleHashDateSet")]
         public DateTime ScheduleHashDateSet { get; set; }
@@ -1012,8 +1041,9 @@ namespace ScheduleDisconnectLight
 
     public class SenderTelegram
     {
+        public bool IsTest { get; set; }
 
-        public void Send(string message, string dd = "")
+        public void Send(string message)
         {
 
             string botToken = getBotToken();
@@ -1027,7 +1057,7 @@ namespace ScheduleDisconnectLight
             string chatId = "";
             string chatIdThread = "";
 
-            if (Api.IsGitHub() && string.IsNullOrEmpty(dd))
+            if (Api.IsGitHub() && !IsTest)
             {
                 chatId = "-1001043114362";
                 chatIdThread = "54031";
@@ -1126,35 +1156,55 @@ namespace ScheduleDisconnectLight
             string url = "https://raw.githubusercontent.com/Baskerville42/outage-data-ua/main/data/kyiv.json";
 
 
-            string jsonDtekTmp = "";
-            using (var httpClient = new HttpClient())
+            string jsonDtekTmp = new ParseDTEK().Get();
+
+            if (string.IsNullOrEmpty(jsonDtekTmp))
             {
-                try
+                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий");
+
+
+
+                using (var httpClient = new HttpClient())
                 {
-                    // Синхронный GET
-                    HttpResponseMessage response = httpClient.GetAsync(url).Result;
+                    try
+                    {
+                        // Синхронный GET
+                        HttpResponseMessage response = httpClient.GetAsync(url).Result;
 
-                    // Если ошибка, бросим исключение
-                    response.EnsureSuccessStatusCode();
+                        // Если ошибка, бросим исключение
+                        response.EnsureSuccessStatusCode();
 
-                    // Читаем тело ответа тоже синхронно
-                    jsonDtekTmp = response.Content.ReadAsStringAsync().Result;
+                        // Читаем тело ответа тоже синхронно
+                        jsonDtekTmp = response.Content.ReadAsStringAsync().Result;
 
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("FormerScheduleFromDTEK Ошибка: " + ex.Message);
+                        jsonDtekTmp = string.Empty;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Ошибка: " + ex.Message);
-                    jsonDtekTmp = string.Empty;
-                }
+                Console.WriteLine("Текущий график взят із https://github.com/Baskerville42");
+            }
+            else
+            {
+                Console.WriteLine("Текущий график взят напрямую из DTEK");
             }
 
+            if (string.IsNullOrEmpty(jsonDtekTmp))
+            {
+                return null;
+            }
 
-          //  jsonDtekTmp = jsonTmp();
+            //  jsonDtekTmp = jsonTmp();
 
 
             var jsonDtek = new Json(jsonDtekTmp)["fact"];
             var schedule = new Schedule();
             schedule.DateLastUpdate = jsonDtek["update"].ValueDate;
+
+            
+
 
             var scheduleFromYasno = new FormerScheduleFromYasno().Get();
             schedule.IsEmergencyShutdowns = scheduleFromYasno.IsEmergencyShutdowns;
@@ -1387,11 +1437,15 @@ namespace ScheduleDisconnectLight
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Ошибка: " + ex.Message);
+                    Console.WriteLine("FormerScheduleFromYasno Ошибка: " + ex.Message);
                     jsonYasnoTmp = string.Empty;
                 }
             }
 
+            if (string.IsNullOrEmpty(jsonYasnoTmp))
+            {
+                return null;
+            }
 
             // jsonYasnoTmp = jsonTmp();
 
