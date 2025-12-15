@@ -90,7 +90,7 @@ namespace ScheduleDisconnectLight
                         if (!string.IsNullOrEmpty(html))
                         {
                             var message2 = $"Attempt {i}: HTML head: " + html.Substring(0, Math.Min(250, html.Length));
-                            Console.WriteLine(message2);
+                            WriteLong(message2);
                             // new SenderTelegram() { IsTest = true }.Send(message2);
                         }
 
@@ -154,6 +154,14 @@ namespace ScheduleDisconnectLight
             {
                 Console.WriteLine("ParseDTEK, ошибка: " + ex.Message);
                 return string.Empty;
+            }
+        }
+
+        static void WriteLong(string text, int chunkSize = 1000)
+        {
+            for (int i = 0; i < text.Length; i += chunkSize)
+            {
+                Console.WriteLine(text.Substring(i, Math.Min(chunkSize, text.Length - i)));
             }
         }
 
