@@ -347,7 +347,7 @@ namespace ScheduleDisconnectLight
                                 {
                                     
                                     isSendMessageOff = true;
-                                    new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) планується відключення світла\n" +
+                                    new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes+1).ToString() + "</b> хв) планується відключення світла\n" +
                                         "\n" +
                                         schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(Api.DateTimeUaCurrent.TimeOfDay));
 
@@ -413,7 +413,7 @@ namespace ScheduleDisconnectLight
                                     var isDayOff = dateTimePowerOn >= new DateTime(Api.DateTimeUaCurrent.Year, Api.DateTimeUaCurrent.Month, Api.DateTimeUaCurrent.Day, 23, 59, 0);
 
 
-                                    new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + diff.Minutes.ToString() + "</b> хв) очікується відновлення світла\n" +
+                                    new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
                                         "\n"+ 
                                         (isDayOff
                                             ? ""
