@@ -104,9 +104,6 @@ namespace ScheduleDisconnectLight
                         fact = doc.RootElement
                     };
 
-                    
-
-
 
                     jsonStr = JsonSerializer.Serialize(wrapper, new JsonSerializerOptions
                     {

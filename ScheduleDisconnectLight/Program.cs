@@ -69,11 +69,13 @@ namespace ScheduleDisconnectLight
 
             if (schedule == null)
             {
-                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий");
+                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
+                Console.WriteLine("Не найден не один график на ДТЕК. ");
                 schedule = Schedule.FormScheduleByState(state);
             }
             if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate) 
             {
+                Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
                 schedule = Schedule.FormScheduleByState(state);
             }
             
@@ -1160,7 +1162,7 @@ namespace ScheduleDisconnectLight
 
             if (string.IsNullOrEmpty(jsonDtekTmp))
             {
-                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий");
+                new SenderTelegram() { IsTest = true }.Send("Ручний парсер сайту ДТЕК повернув пусте значення");
 
 
 
