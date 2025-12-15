@@ -90,7 +90,14 @@ namespace ScheduleDisconnectLight
                         if (!string.IsNullOrEmpty(html))
                         {
                             var message2 = $"Attempt {i}: HTML head: " + html.Substring(0, Math.Min(250, html.Length));
-                            WriteLong(message2);
+                            Console.WriteLine($"len={html.Length}");
+                            Console.WriteLine($"has_fact={(html.Contains("DisconSchedule.fact") ? "YES" : "NO")}");
+                            Console.WriteLine($"has_ajaxUrl={(html.Contains("meta name=\"ajaxUrl\"") ? "YES" : "NO")}");
+                            Console.WriteLine($"has_cloudflare={(html.Contains("cf-chl") || html.Contains("cloudflare") ? "YES" : "NO")}");
+                            Console.WriteLine($"has_datadome={(html.Contains("datadome") ? "YES" : "NO")}");
+                            Console.WriteLine($"has_turnstile={(html.Contains("turnstile") ? "YES" : "NO")}");
+                            Console.WriteLine($"has_recaptcha={(html.Contains("recaptcha") ? "YES" : "NO")}");
+
                             // new SenderTelegram() { IsTest = true }.Send(message2);
                         }
 
