@@ -17,27 +17,49 @@ namespace ScheduleDisconnectLight
 
             try
             {
+                var cookies = new CookieContainer();
                 string jsonStr = "";
                 using (var httpClient = new HttpClient(new HttpClientHandler
                 {
                     AutomaticDecompression =
                         DecompressionMethods.GZip |
-                        DecompressionMethods.Deflate
+                        DecompressionMethods.Deflate,
+                    CookieContainer = cookies,
+                    UseCookies = true,
+                    AllowAutoRedirect = true
                 }))
                 {
-                    
-                    // Иногда полезно притвориться браузером
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36");
 
+                    // UA як у Playwright
+                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
+
+                    // Мова (locale)
+                    httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7");
+
+                    // Забороняємо br, бо у тебе немає Brotli-розпакування
                     httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
                     httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
 
-                    httpClient.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-                    httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7");
+                    // Типові браузерні заголовки
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cache-Control", "no-cache");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Pragma", "no-cache");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Dest", "document");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Mode", "navigate");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Site", "none");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-User", "?1");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua", "\"Chromium\";v=\"128\", \"Not;A=Brand\";v=\"24\"");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-mobile", "?0");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-platform", "\"Windows\"");
+
+                    // Не обов'язково, але інколи допомагає
+                    httpClient.DefaultRequestHeaders.Referrer = new Uri(url);
+
 
                     string factJsonText = "";
-                    for (int i = 1; i <= 4; i++)
+                    for (int i = 1; i <= 5; i++)
                     {
                         var html = httpClient.GetStringAsync(url).GetAwaiter().GetResult();
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
