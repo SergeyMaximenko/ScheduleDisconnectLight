@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -215,10 +216,32 @@ namespace ScheduleDisconnectLight
     {
         public string Get()
         {
+
+
+
+
+
+            string repoRoot = Path.GetFullPath(
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+
+            string stateFile = "";
+
+            if (Api.IsGitHub())
+            {
+                
+                stateFile = Path.Combine(repoRoot, "appState1_.json");
+            }
+
+
+
+
             var url = "https://www.dtek-kem.com.ua/ua/shutdowns";
 
             try
             {
+
+
+
                 // иногда на net48 полезно явно включить TLS 1.2
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
@@ -280,8 +303,12 @@ namespace ScheduleDisconnectLight
                         {
                             break;
                         }
+                        if (Api.IsGitHub())
+                        {
+                            File.WriteAllText(stateFile, html);
+                        }
 
-                        Thread.Sleep(450 + rnd.Next(100, 650));
+                        Thread.Sleep(1000 + rnd.Next(0, 500));
                     }
 
                     if (i > 1)
