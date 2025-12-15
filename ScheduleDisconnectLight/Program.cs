@@ -1,20 +1,13 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
-using static System.Net.Mime.MediaTypeNames;
+
 
 
 // КРОН //https://console.cron-job.org/jobs/6880027
@@ -28,9 +21,6 @@ namespace ScheduleDisconnectLight
         public static bool IsSourceYasno = false;
 
 
-
-
-        
 
         static void Main(string[] args)
         {

@@ -1,17 +1,216 @@
-﻿using System;
-using System.Linq;
+﻿//using Microsoft.Playwright;
+
+using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 
 
+
+
+
 namespace ScheduleDisconnectLight
 {
+
+    /*
+    public class ParseDTEK
+    {
+        public string Get()
+        {
+            var url = "https://www.dtek-kem.com.ua/ua/shutdowns";
+
+            IPlaywright playwright = null;
+            IBrowser browser = null;
+            IBrowserContext context = null;
+
+            try
+            {
+                playwright = Playwright.CreateAsync().GetAwaiter().GetResult();
+
+                browser = playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+                {
+                    Headless = true,
+                    Args = new[] { "--no-sandbox", "--disable-dev-shm-usage" }
+                }).GetAwaiter().GetResult();
+
+                context = browser.NewContextAsync(new BrowserNewContextOptions
+                {
+                    UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+                    Locale = "uk-UA",
+                    TimezoneId = "Europe/Kyiv"
+                }).GetAwaiter().GetResult();
+
+                context.SetExtraHTTPHeadersAsync(new Dictionary<string, string>
+                {
+                    ["Accept-Language"] = "uk-UA,uk;q=0.9,ru;q=0.8,en;q=0.7"
+                }).GetAwaiter().GetResult();
+
+                string factJsonText = "";
+                int i;
+
+                for (i = 1; i <= 5; i++)
+                {
+                    IPage page = null;
+                    try
+                    {
+                        page = context.NewPageAsync().GetAwaiter().GetResult();
+
+                        page.GotoAsync(url, new PageGotoOptions
+                        {
+                            WaitUntil = WaitUntilState.NetworkIdle,
+                            Timeout = 120_000
+                        }).GetAwaiter().GetResult();
+
+                        page.WaitForTimeoutAsync(500).GetAwaiter().GetResult();
+
+                        var html = page.ContentAsync().GetAwaiter().GetResult();
+
+                        factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
+                        if (!string.IsNullOrEmpty(factJsonText))
+                            break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("ParseDTEK-1, ошибка: " + ex.Message);
+                        return string.Empty;
+                    }
+                    finally
+                    {
+                        if (page != null)
+                        {
+                            page.CloseAsync().GetAwaiter().GetResult();
+                        }
+                            
+                    }
+
+                    Thread.Sleep(1500);
+                }
+
+                if (i > 1)
+                {
+                    if (string.IsNullOrEmpty(factJsonText))
+                    {
+                        new SenderTelegram() { IsTest = true }.Send("НЕ Подключено с " + i + " попытки");
+                    }
+                    else
+                    {
+                        new SenderTelegram() { IsTest = true }.Send("Подключено с " + i + " попытки");
+                    }
+                }
+
+                if (string.IsNullOrEmpty(factJsonText))
+                {
+                    Console.WriteLine("ParseDTEK: Не найдено 'DisconSchedule.fact = ...' в HTML.");
+                    return string.Empty;
+                }
+
+                var normalized = normalizeJsObjectToJson(factJsonText);
+                if (normalized == "null" || string.IsNullOrEmpty(normalized))
+                {
+                    Console.WriteLine("ParseDTEK: В 'DisconSchedule.fact' значение null");
+                    return string.Empty;
+                }
+
+                using (var doc = JsonDocument.Parse(normalized))
+                {
+                    if (!doc.RootElement.TryGetProperty("data", out _))
+                    {
+                        Console.WriteLine("ParseDTEK: Нет атрибута data");
+                        return string.Empty;
+                    }
+
+                    var wrapper = new { fact = doc.RootElement };
+
+                    var jsonStr = JsonSerializer.Serialize(wrapper, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    });
+
+                    return jsonStr;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ParseDTEK, ошибка: " + ex.Message);
+                return string.Empty;
+            }
+            finally
+            {
+                try { if (context != null) context.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                try { if (browser != null) browser.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                try { if (playwright != null) playwright.Dispose(); } catch { }
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Достаёт объект справа от "varName = { ... }" до ; учитывая вложенные скобки.
+        /// </summary>
+        private static string extractJsAssignmentObject(string html, string varName)
+        {
+            // Находим позицию "DisconSchedule.fact"
+            var idx = html.IndexOf(varName, StringComparison.Ordinal);
+            if (idx < 0) return null;
+
+            // Находим '='
+            var eq = html.IndexOf('=', idx);
+            if (eq < 0) return null;
+
+            // Ищем начало объекта '{' после '='
+            var start = html.IndexOf('{', eq);
+            if (start < 0) return null;
+
+            // Идём по символам и считаем баланс фигурных скобок
+            int depth = 0;
+            for (int i = start; i < html.Length; i++)
+            {
+                char c = html[i];
+
+                if (c == '{') depth++;
+                else if (c == '}') depth--;
+
+                if (depth == 0)
+                {
+                    // i — позиция закрывающей '}'
+                    var obj = html.Substring(start, i - start + 1);
+                    return obj.Trim();
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Мини-нормализация "JS object" -> "JSON".
+        /// Если в объекте уже двойные кавычки и true/false/null — обычно ничего не ломает.
+        /// </summary>
+        private static string normalizeJsObjectToJson(string jsObject)
+        {
+            var s = jsObject.Trim();
+
+            // Иногда встречается одинарная кавычка — заменим на двойную (упрощённо).
+            // Если у тебя внутри текста есть апострофы — скажи, сделаю аккуратнее.
+            s = s.Replace("'", "\"");
+
+            // JS undefined -> JSON null
+            s = Regex.Replace(s, @"\bundefined\b", "null");
+
+            return s;
+        }
+    }
+
+
+    */
+
+
+
+
     public class ParseDTEK
     {
         public string Get()
@@ -45,7 +244,7 @@ namespace ScheduleDisconnectLight
                     httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
 
                     // Типові браузерні заголовки
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                   
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cache-Control", "no-cache");
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Pragma", "no-cache");
@@ -63,7 +262,7 @@ namespace ScheduleDisconnectLight
 
                     string factJsonText = "";
                     int i = 0;
-                    for (i = 1; i <= 5; i++)
+                    for (i = 1; i <= 7; i++)
                     {
                         var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
                         var html = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
@@ -71,32 +270,25 @@ namespace ScheduleDisconnectLight
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
-                           break;
+                            break;
                         }
-
-
-                        // ✅ ЛОГ СЮДИ (коли fact не знайшовся)
-                        var enc = resp.Content.Headers.ContentEncoding != null
-                            ? string.Join(",", resp.Content.Headers.ContentEncoding)
-                            : "(none)";
-                        var ct = resp.Content.Headers.ContentType?.ToString() ?? "(none)";
-                        var finalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? "(unknown)";
-
-                        var message1 =
-                            $"Attempt {i}: HTTP {(int)resp.StatusCode} {resp.StatusCode}, " +
-                            $"len={html?.Length ?? 0}, ct={ct}, enc={enc}, url={finalUrl}";
-
-                        Console.WriteLine(message1);
-                        new SenderTelegram() { IsTest = true }.Send(message1);
-
-                        // ЛОГ: когда факта нет
-                        LogAttempt(i, resp, html, cookies, new Uri(url));
-
-
 
                         Thread.Sleep(1500);
 
                     }
+
+                    if (i > 1)
+                    {
+                        if (string.IsNullOrEmpty(factJsonText))
+                        {
+                            new SenderTelegram() { IsTest = true }.Send("НЕ подключено с " + i + " попытки");
+                        }
+                        else
+                        {
+                            new SenderTelegram() { IsTest = true }.Send("Подключено с " + i + " попытки");
+                        }
+                    }
+
 
 
 
@@ -157,68 +349,7 @@ namespace ScheduleDisconnectLight
 
 
 
-        private static string Clip(string s, int max)
-        {
-            if (string.IsNullOrEmpty(s)) return "";
-            return s.Length <= max ? s : s.Substring(0, max);
-        }
 
-        private static void LogAttempt(
-            int attempt,
-            HttpResponseMessage resp,
-            string html,
-            CookieContainer cookies,
-            Uri url,
-            string tag = "DTEK")
-        {
-            var finalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? "(unknown)";
-            var ct = resp.Content.Headers.ContentType?.ToString() ?? "(none)";
-            var enc = resp.Content.Headers.ContentEncoding?.Any() == true
-                ? string.Join(",", resp.Content.Headers.ContentEncoding)
-                : "(none)";
-
-            var setCookie = resp.Headers.TryGetValues("Set-Cookie", out var sc)
-                ? string.Join(" | ", sc.Take(5)) // чтобы не раздувать лог
-                : "<none>";
-
-            // cookies, которые реально сохранились в контейнере
-            var jarCookies = "<none>";
-            try
-            {
-                var arr = cookies.GetCookies(url).Cast<Cookie>().ToArray();
-                if (arr.Length > 0)
-                    jarCookies = string.Join("; ", arr.Take(10).Select(c => $"{c.Name}={Clip(c.Value, 30)}"));
-            }
-            catch { /* ignore */ }
-
-            var head = Clip(html ?? "", 300);
-            var tail = (html ?? "").Length <= 300 ? (html ?? "") : html.Substring(html.Length - 300);
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"[{tag}] Attempt {attempt}: HTTP {(int)resp.StatusCode} {resp.StatusCode}");
-            sb.AppendLine($"finalUrl={finalUrl}");
-            sb.AppendLine($"ct={ct}, enc={enc}, len={html?.Length ?? 0}");
-            sb.AppendLine($"has_fact={(html?.Contains("DisconSchedule.fact") == true ? "YES" : "NO")}, has_ajaxUrl={(html?.Contains("meta name=\"ajaxUrl\"") == true ? "YES" : "NO")}");
-            sb.AppendLine($"Set-Cookie: {setCookie}");
-            sb.AppendLine($"Jar-Cookies: {jarCookies}");
-            sb.AppendLine($"HEAD: {head}");
-            sb.AppendLine($"TAIL: {tail}");
-
-            var msg = sb.ToString();
-
-            Console.WriteLine(msg);
-
-            // если хочешь в Telegram — лучше отправлять ТОЛЬКО шапку, иначе лимиты
-            // new SenderTelegram(){ IsTest = true }.Send(Clip(msg, 3500));
-        }
-
-        static void WriteLong(string text, int chunkSize = 1000)
-        {
-            for (int i = 0; i < text.Length; i += chunkSize)
-            {
-                Console.WriteLine(text.Substring(i, Math.Min(chunkSize, text.Length - i)));
-            }
-        }
 
         /// <summary>
         /// Достаёт объект справа от "varName = { ... }" до ; учитывая вложенные скобки.
@@ -275,6 +406,7 @@ namespace ScheduleDisconnectLight
             return s;
         }
     }
+
+ 
+
 }
-
-

@@ -1,15 +1,10 @@
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.AssemblyReference.cache
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.CoreCompileInputs.cache
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe.config
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.pdb
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.dll
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.xml
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.AssemblyReference.cache
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.csproj.CoreCompileInputs.cache
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\Schedule.79A2F7D6.Up2Date
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.pdb
-C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe.config
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Buffers.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.IO.Pipelines.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Memory.dll
@@ -19,6 +14,7 @@ C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLi
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Text.Json.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Threading.Tasks.Extensions.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Buffers.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.IO.Pipelines.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Memory.xml
@@ -27,3 +23,7 @@ C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLi
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Text.Encodings.Web.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Text.Json.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\Schedule.79A2F7D6.Up2Date
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\obj\Debug\ScheduleDisconnectLight.exe.config
