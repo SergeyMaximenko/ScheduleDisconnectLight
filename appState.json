@@ -1,23 +1,6 @@
 {
   "SchedulesHash": [
     {
-      "Date": "2025-12-14T00:00:00",
-      "Times": [
-        {
-          "From": "00:30",
-          "To": "04:00"
-        },
-        {
-          "From": "11:00",
-          "To": "15:00"
-        },
-        {
-          "From": "22:00",
-          "To": "23:30"
-        }
-      ]
-    },
-    {
       "Date": "2025-12-15T00:00:00",
       "Times": [
         {
@@ -26,14 +9,27 @@
         },
         {
           "From": "18:30",
-          "To": "22:00"
+          "To": "21:00"
+        }
+      ]
+    },
+    {
+      "Date": "2025-12-16T00:00:00",
+      "Times": [
+        {
+          "From": "08:00",
+          "To": "12:00"
+        },
+        {
+          "From": "16:00",
+          "To": "20:00"
         }
       ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "0001-01-01T00:00:00",
-  "ScheduleHashDateSet": "2025-12-14T23:35:33.6810258",
+  "ScheduleDateLastUpdate": "2025-12-15T21:18:00",
+  "ScheduleHashDateSet": "2025-12-15T21:22:42.3017129",
   "DateTimePowerOffLastMessage": "2025-12-15T18:30:00",
   "DateTimePowerOnLastMessage": "2025-12-15T15:00:00"
 }
