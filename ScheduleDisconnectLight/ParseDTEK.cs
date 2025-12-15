@@ -70,8 +70,8 @@ namespace ScheduleDisconnectLight
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
                             break;
-                        }    
-                            
+                        }
+
 
                         // ✅ ЛОГ СЮДИ (коли fact не знайшовся)
                         var enc = resp.Content.Headers.ContentEncoding != null
@@ -91,17 +91,17 @@ namespace ScheduleDisconnectLight
                         {
                             var message2 = $"Attempt {i}: HTML head: " + html.Substring(0, Math.Min(250, html.Length));
                             Console.WriteLine(message2);
-                            new SenderTelegram() { IsTest = true }.Send(message2);
+                            // new SenderTelegram() { IsTest = true }.Send(message2);
                         }
-                            
 
-                        
+
+
                         Thread.Sleep(1500);
 
                     }
 
-          
-                    
+
+
                     if (string.IsNullOrEmpty(factJsonText))
                     {
                         Console.WriteLine("ParseDTEK: Не найдено 'DisconSchedule.fact = ...' в HTML.");
@@ -117,7 +117,7 @@ namespace ScheduleDisconnectLight
                         return string.Empty;
                     }
 
-                
+
 
                     // Проверим, что это валидный JSON
                     var doc = JsonDocument.Parse(normalized);
