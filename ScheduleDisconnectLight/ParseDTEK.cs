@@ -219,6 +219,9 @@ namespace ScheduleDisconnectLight
 
             try
             {
+                // иногда на net48 полезно явно включить TLS 1.2
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
                 var cookies = new CookieContainer();
                 string jsonStr = "";
                 using (var httpClient = new HttpClient(new HttpClientHandler
@@ -231,6 +234,7 @@ namespace ScheduleDisconnectLight
                     AllowAutoRedirect = true
                 }))
                 {
+                    httpClient.Timeout = TimeSpan.FromSeconds(25);
 
                     // UA як у Playwright
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -243,8 +247,12 @@ namespace ScheduleDisconnectLight
                     httpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
                     httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
 
+                    // ✅ ВАЖНО: Accept
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                        "Accept",
+                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+
                     // Типові браузерні заголовки
-                   
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cache-Control", "no-cache");
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Pragma", "no-cache");
@@ -259,7 +267,7 @@ namespace ScheduleDisconnectLight
                     // Не обов'язково, але інколи допомагає
                     httpClient.DefaultRequestHeaders.Referrer = new Uri(url);
 
-
+                    var rnd = new Random();
                     string factJsonText = "";
                     int i = 0;
                     for (i = 1; i <= 7; i++)
@@ -273,7 +281,7 @@ namespace ScheduleDisconnectLight
                             break;
                         }
 
-                        Thread.Sleep(1500);
+                        Thread.Sleep(350 + rnd.Next(0, 400));
 
                     }
 
