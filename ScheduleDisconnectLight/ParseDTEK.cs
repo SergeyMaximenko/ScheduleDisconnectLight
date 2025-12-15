@@ -59,7 +59,8 @@ namespace ScheduleDisconnectLight
 
 
                     string factJsonText = "";
-                    for (int i = 1; i <= 5; i++)
+                    int i = 0;
+                    for (i = 1; i <= 5; i++)
                     {
                         var html = httpClient.GetStringAsync(url).GetAwaiter().GetResult();
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
@@ -71,6 +72,10 @@ namespace ScheduleDisconnectLight
 
                     }
 
+                    if (i > 1)
+                    {
+                        new SenderTelegram() { IsTest = true }.Send("Підключили до ДТЕК з "+i+" спроби");
+                    }
                     
                     if (string.IsNullOrEmpty(factJsonText))
                     {
