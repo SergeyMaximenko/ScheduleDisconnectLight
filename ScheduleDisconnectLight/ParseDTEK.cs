@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Runtime.Remoting.Messaging;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -62,20 +63,44 @@ namespace ScheduleDisconnectLight
                     int i = 0;
                     for (i = 1; i <= 5; i++)
                     {
-                        var html = httpClient.GetStringAsync(url).GetAwaiter().GetResult();
+                        var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
+                        var html = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
                             break;
+                        }    
+                            
+
+                        // ✅ ЛОГ СЮДИ (коли fact не знайшовся)
+                        var enc = resp.Content.Headers.ContentEncoding != null
+                            ? string.Join(",", resp.Content.Headers.ContentEncoding)
+                            : "(none)";
+                        var ct = resp.Content.Headers.ContentType?.ToString() ?? "(none)";
+                        var finalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? "(unknown)";
+
+                        var message1 =
+                            $"Attempt {i}: HTTP {(int)resp.StatusCode} {resp.StatusCode}, " +
+                            $"len={html?.Length ?? 0}, ct={ct}, enc={enc}, url={finalUrl}";
+
+                        Console.WriteLine(message1);
+                        new SenderTelegram() { IsTest = true }.Send(message1);
+
+                        if (!string.IsNullOrEmpty(html))
+                        {
+                            var message2 = $"Attempt {i}: HTML head: " + html.Substring(0, Math.Min(250, html.Length));
+                            Console.WriteLine(message2);
+                            new SenderTelegram() { IsTest = true }.Send(message2);
                         }
+                            
+
+                        
                         Thread.Sleep(1500);
 
                     }
 
-                    if (i > 1)
-                    {
-                        new SenderTelegram() { IsTest = true }.Send("Підключили до ДТЕК з "+i+" спроби");
-                    }
+          
                     
                     if (string.IsNullOrEmpty(factJsonText))
                     {
