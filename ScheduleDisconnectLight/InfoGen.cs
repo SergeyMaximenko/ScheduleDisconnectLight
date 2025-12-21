@@ -17,7 +17,7 @@ namespace ScheduleDisconnectLight
     {
 
 
-        private bool _sendOnlyTestGroup = true;
+        private bool _sendOnlyTestGroup = false;
 
 
         private SheetsService _service;
