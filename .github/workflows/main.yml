@@ -30,10 +30,22 @@ jobs:
           git fetch origin main
           git checkout main
           git reset --hard origin/main
+
+
+
+      - name: Create GCP key file
+        shell: pwsh
+        run: |
+          $keyPath = Join-Path $env:GITHUB_WORKSPACE "gcp-key.json"
+          '${{ secrets.GCP_SA_KEY }}' | Out-File -FilePath $keyPath -Encoding utf8 -NoNewline
+          "Wrote key to: $keyPath"
+          # (опционально) проверка что это JSON
+          Get-Content $keyPath | Select-Object -First 1
           
       - name: Run EXE
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}\gcp-key.json
           CHAT_ID:  ${{ secrets.CHAT_ID }}
         run: |
           cd ScheduleDisconnectLight\bin\Debug
