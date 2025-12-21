@@ -846,7 +846,6 @@ namespace ScheduleDisconnectLight
         public SheetsService Get()
         {
 
-
             string repoRoot = Path.GetFullPath(
                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
                );
