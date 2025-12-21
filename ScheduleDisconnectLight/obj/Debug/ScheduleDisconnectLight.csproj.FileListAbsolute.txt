@@ -1,6 +1,10 @@
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe.config
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Auth.dll
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Core.dll
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.dll
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Sheets.v4.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Buffers.dll
@@ -11,6 +15,14 @@ C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLi
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Text.Encodings.Web.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Text.Json.dll
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.xml
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Auth.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Auth.xml
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Core.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Core.xml
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Sheets.v4.pdb
+C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Google.Apis.Sheets.v4.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\Newtonsoft.Json.xml
 C:\Users\maximenko\Documents\GitHub\ScheduleDisconnectLight\ScheduleDisconnectLight\bin\Debug\System.Buffers.xml

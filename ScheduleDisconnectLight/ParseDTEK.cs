@@ -217,7 +217,7 @@ namespace ScheduleDisconnectLight
         public string Get()
         {
 
-
+            //return "";
 
 
             var url = "https://www.dtek-kem.com.ua/ua/shutdowns";
@@ -296,11 +296,11 @@ namespace ScheduleDisconnectLight
                     {
                         if (string.IsNullOrEmpty(factJsonText))
                         {
-                            new SenderTelegram() { IsTest = true }.Send("НЕ подключено с " + i + " попытки");
+                            new SenderTelegram() { SendOnlyTestGroup = true }.Send("НЕ подключено с " + i + " попытки");
                         }
                         else
                         {
-                            new SenderTelegram() { IsTest = true }.Send("Подключено с " + i + " попытки");
+                            //new SenderTelegram() { SendOnlyTestGroup = true }.Send("Подключено с " + i + " попытки");
                         }
                     }
 

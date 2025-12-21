@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "nodal-reserve-445809-v0",
+  "private_key_id": "cc5f64e252c98d708c0e4f001f37997cdaed0305",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCmS1v1OpJhbWz9\ngRnnAgTR2/UZpDgZYvgZgj/l9oRiA+CcWDKNm9a9XqqysbuWfHphn5LXZ/BP9s++\nbb6g4W0y7PeDzhl4s60NZjQ37xOhociX9kPtoDD47lNxiGKjZ53LkHoJTmCmy0Bi\nflpmF7kmvuiXALrCxEhKLs2YdwYyTU0WnWONgSvX9hyb3rlAgsZdZY8Z4hvgjegA\n7J/hKokDwT+Aun0eq9j2ekpvDHXSDNZy9zPGTurGku6KpRlJNEwOxDMD1irzli3G\n7O3qge8oRtl4TARdc3cS8BCJtu+pcFZjLuAtm/TZ+qmudw/IhQup6oTuHmYDEm0m\njjzLaG+lAgMBAAECggEAD/6clCwziyJqwsFJnAICM6sr2nEEolB2G4H/Il/BIOpN\njswe5KbyExnJYlGdAN7tKHmgNo69Ovu6xI6qsK+uAKFxNyC6K3VgtjK34A9jPH8i\nm5cotnDbdP37Uaa0EhJzx3IYgs+ilThkc3TCviIXAWaIWYnM7NHTQCtbRAhitLC5\n/JRpfI59uEOeGsy+Xf5hW7cOxj1TEQudNaZcC9Cc2GxvKBcOLLoqYNJwodzyvTsm\nl1+xvPDIf9sUpUtABC0eWX/aDy9+0hEe2oS7RYYy8QSeqR9igAo2FoMFcU7EZKJF\npH3UOAaHzeJ2daxi4cj6kLKIja3B9PqHnjUq+a4XsQKBgQDVN8xEWgXTJ7UNA9UB\nPK/DQD6QnLq0yHm/+ArwR3Mbyc4klA7bMwMpqUmLJ9rgMOcWv7auxkcHNRlp0tKo\nEqzvZzlf93onasD58hb5trBLUTPMSd0tob2fnL9GDhyfbcpyhjJOU/WcY1uWFAgH\n9TtaB72oJ2mqex79pw/HnNj7zQKBgQDHqUYKy28R/giN3G9yLB86Liwcl0N+eMT4\n5LFzZ+YlCVNFoJ19GA4CIYTrC8EVh+QbLbT9wWfbvqcV3yjKtJBQ30EXHPKF4Jk4\no2g1IZXMkMWd5MfV9vSFiZlPBzg0w0QqYDoB923HiqcalUMLjgJDSFYyEucGgx5b\n32NxbnDbOQKBgE7nmEtPOUqcLi9D1Mbha3YJR14C8kFG02+MXpfvCRUmiIgW1qyd\n4zS+tj2uIRzIXCyaBAQH0m9DYkU8RML4LlFmVOBD2EvQANw+j+wXhIRK561ZRGXH\nrkHsIwjM3iDN45agPOupvIIEbvdKMHKpeS5nIPOiqkLxz1U1RuyrCc2dAoGAX5tI\n9OZRO1Zflj6WBx/lnCB78vzjzu3ZtC0eY9q+s8FxZIfyofIg0xhl439vZ/X4XqNW\nZaR1LR5wN+LyT46DBJbDPmQYJc9Uz3A/+CEq8Bfq6R6iKmzkzgUDqnoUif9u5rPJ\nUyO+J6zXM72Bq0jHAJzk2Xl/sviaUvf3UFvIItECgYEAstC92hy3pCIfPCvOXUBc\n/V6d1LM6iLTz5OfR/kGzTRRO0x9ElCTUDgNY/jQXTRtpA7PXC1GSFK13tc1tU+ci\n4/vPtfNCXHBDvDZF36wg02EwK2srxNcSYWsPRWsUD9I0rdFrPNsxzmgYXH4WkKWT\nCiOJa3YxM2cy9iSiYpwhy3s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "maximenko-apple-service-accoun@nodal-reserve-445809-v0.iam.gserviceaccount.com",
+  "client_id": "116704643057496613112",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/maximenko-apple-service-accoun%40nodal-reserve-445809-v0.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

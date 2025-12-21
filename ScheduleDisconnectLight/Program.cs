@@ -1,11 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
+using static ScheduleDisconnectLight.Api;
 
 
 
@@ -55,11 +61,24 @@ namespace ScheduleDisconnectLight
             // Загружаем состояние
             var state = AppState.LoadState(stateFile);
 
+
+            try
+            {
+                new InfoGen().Check();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка в InfoGen");
+
+            }
+   
+
             var schedule = IsSourceYasno ? new FormerScheduleFromYasno().Get() : new FormerScheduleFromDTEK().Get();
 
             if (schedule == null)
             {
-                new SenderTelegram() { IsTest = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
                 Console.WriteLine("Не найден не один график на ДТЕК. ");
                 schedule = Schedule.FormScheduleByState(state);
             }
@@ -175,12 +194,12 @@ namespace ScheduleDisconnectLight
                                 if (totalTimeOffPowerNew > totalTimeOffPowerOld)
                                 {
                                     //
-                                    message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                    message.Append("😡 Плюс <b>" + Api.GetNameTime(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
                                 }
                                 else
                                 {
                                     //⬇︎😊
-                                    message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    message.Append("💚 Мінус <b>" + Api.GetNameTime(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
                                 }
                             }
                             else
@@ -228,12 +247,12 @@ namespace ScheduleDisconnectLight
                                 if (totalTimeOffPowerNew > totalTimeOffPowerOld)
                                 {
                                     //
-                                    message.Append("😡 Плюс <b>" + Api.GetNameTimeSpan(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                    message.Append("😡 Плюс <b>" + Api.GetNameTime(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
                                 }
                                 else
                                 {
                                     //⬇︎😊
-                                    message.Append("💚 Мінус <b>" + Api.GetNameTimeSpan(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    message.Append("💚 Мінус <b>" + Api.GetNameTime(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
                                 }
                             }
                             else
@@ -257,7 +276,7 @@ namespace ScheduleDisconnectLight
                     message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateNextDay.IsDefine ? stateNextDay.ScheduleOneDay.Times : null) + "\n");
                     message.Append("\n");
                 }
-                message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + schedule.DateLastUpdate.ToString("dd.MM.yyyy HH:mm") + "</i>");
+                message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + Api.DateTimeToStr(schedule.DateLastUpdate) + "</i>");
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
@@ -314,7 +333,7 @@ namespace ScheduleDisconnectLight
 
                         var dateTimePowerOff = schedule.ScheduleCurrentDay.Date + interval.Start;
 
-                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetHashStr()}. Дата выключения: {dateTimeToStr(dateTimePowerOff)}. Текущая дата {dateTimeToStr(Api.DateTimeUaCurrent)}  ");
+                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetHashStr()}. Дата выключения: {Api.DateTimeToStr(dateTimePowerOff)}. Текущая дата {Api.DateTimeToStr(Api.DateTimeUaCurrent)}  ");
 
                         if (dateTimePowerOff == state.DateTimePowerOffLastMessage)
                         {
@@ -377,7 +396,7 @@ namespace ScheduleDisconnectLight
                             ? schedule.ScheduleCurrentDay.Date.AddDays(1) + interval.EndNextDay
                             : schedule.ScheduleCurrentDay.Date + interval.End;
 
-                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetHashStr()}. Дата включения: {dateTimeToStr(dateTimePowerOn)}. Текущая дата {dateTimeToStr(Api.DateTimeUaCurrent)}  ");
+                        Console.WriteLine($"  - Напоминание о включении света. Период {interval.GetHashStr()}. Дата включения: {Api.DateTimeToStr(dateTimePowerOn)}. Текущая дата {Api.DateTimeToStr(Api.DateTimeUaCurrent)}  ");
 
 
                         if (dateTimePowerOn == state.DateTimePowerOnLastMessage)
@@ -437,10 +456,6 @@ namespace ScheduleDisconnectLight
         }
 
 
-        private static string dateTimeToStr(DateTime dateTime)
-        {
-            return dateTime.ToString("dd.MM.yyyy HH:mm");
-        }
 
 
 
@@ -660,20 +675,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public string GetCaptionDate()
         {
-            // Дата
-            var result = Api.DateToStr(Date);
-            // День недели
-            result = result + " " + Date.ToString("ddd", new CultureInfo("uk-UA"));
-
-            if (Date == Api.DateUaCurrent)
-            {
-                result = result + " " + "(сьогодні)";
-            }
-            else if (Date == Api.DateUaNext.Date)
-            {
-                result = result + " " + "(завтра)";
-            }
-            return result;
+            return Api.GetCaptionDate(Date);
         }
 
         /// <summary>
@@ -796,7 +798,7 @@ namespace ScheduleDisconnectLight
             {
                 endStr = "<u>" + endStr + "</u>";
             }
-            return startStr + " - " + endStr + "  <i>" + Api.GetNameTimeSpan(End - Start) + "</i>";
+            return startStr + " - " + endStr + "  <i>" + Api.GetNameTime(End - Start) + "</i>";
         }
 
         /// <summary>
@@ -815,7 +817,7 @@ namespace ScheduleDisconnectLight
             {
                 endTmp = End;
             }
-            return Api.TimeToStr(Start) + " - " + Api.TimeToStr(endTmp) + "  <i>" + Api.GetNameTimeSpan(diff) + "</i>";
+            return Api.TimeToStr(Start) + " - " + Api.TimeToStr(endTmp) + "  <i>" + Api.GetNameTime(diff) + "</i>";
         }
 
 
@@ -836,9 +838,329 @@ namespace ScheduleDisconnectLight
         }
     }
 
+    public class SpreadSheet
+    {
+
+
+        public SheetsService Get()
+        {
+
+
+            string repoRoot = Path.GetFullPath(
+               Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
+               );
+            string serviceAccountFile = Path.Combine(repoRoot, "nodal-reserve-445809-v0-cc5f64e252c9.json");
+
+
+            // Авторизация
+            GoogleCredential credential;
+            using (var stream = new FileStream(serviceAccountFile, FileMode.Open, FileAccess.Read))
+            {
+                credential = GoogleCredential.FromStream(stream).CreateScoped(SheetsService.Scope.Spreadsheets);
+            }
+
+            return new SheetsService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "Sheets Processor"
+            });
+
+        }
+
+
+        public static void AddNote(SheetsService service, string pageExcel, int rowIndex, int columnIndex, string note)
+        {
+
+            var spreadsheet = service.Spreadsheets.Get(Api.SpreadsheetId).Execute();
+
+            var sheet = spreadsheet.Sheets
+                .FirstOrDefault(s => s.Properties.Title == pageExcel);
+
+            if (sheet == null)
+            {
+                Console.WriteLine($"Лист '{pageExcel}' не знайдено");
+                return;
+
+            }
+
+            var sheetId = (int)sheet.Properties.SheetId;
+
+            var request = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request>
+                {
+                    new Request
+                    {
+                        UpdateCells = new UpdateCellsRequest
+                        {
+                            Start = new GridCoordinate
+                            {
+                                SheetId = sheetId,   // ID листа!
+                                RowIndex = rowIndex,        // 0-based
+                                ColumnIndex = columnIndex      // 0-based
+                            },
+                            Rows = new List<RowData>
+                            {
+                                new RowData
+                                {
+                                    Values = new List<CellData>
+                                    {
+                                        new CellData
+                                        {
+                                            Note = note
+                                        }
+                                    }
+                                }
+                            },
+                            Fields = "note"
+                        }
+                    }
+                }
+            };
+
+            service.Spreadsheets
+                .BatchUpdate(request, Api.SpreadsheetId)
+                .Execute();
+
+        }
+
+
+        public static string GetNote(SheetsService service, string spreadsheetId, string pageExcel, int rowIndex, int columnIndex )
+        {
+            var request = service.Spreadsheets.Get(spreadsheetId);
+
+            // Беремо ТІЛЬКИ note — швидко і без зайвого
+            request.Fields =
+                "sheets(data(rowData(values(note))))";
+
+
+            var response = request.Execute();
+
+            var spreadsheet = service.Spreadsheets.Get(Api.SpreadsheetId).Execute();
+
+            var sheet = spreadsheet.Sheets
+                .FirstOrDefault(s => s.Properties.Title == pageExcel);
+
+            if (sheet == null)
+            {
+                Console.WriteLine($"Лист '{pageExcel}' не знайдено");
+                return string.Empty;
+
+            }
+
+            
+
+            var cell = sheet.Data[0]
+                .RowData[rowIndex]
+                .Values[columnIndex];
+
+            return cell.Note;
+        }
+
+        private static string columnIndexToLetter(int columnIndex)
+        {
+            // 0 -> A, 1 -> B, 25 -> Z, 26 -> AA
+            columnIndex++; // переводимо в 1-based
+            string columnLetter = "";
+
+            while (columnIndex > 0)
+            {
+                int mod = (columnIndex - 1) % 26;
+                columnLetter = (char)('A' + mod) + columnLetter;
+                columnIndex = (columnIndex - mod) / 26;
+            }
+
+            return columnLetter;
+        }
+
+        public static void SetValue(SheetsService service,  string pageExcel, int rowIndex, int columnIndex, object value)
+        {
+            string columnLetter = columnIndexToLetter(columnIndex);
+
+       
+                // RowIndex предполагается 1-based (как у тебя сейчас)
+                string updateRange = $"{pageExcel}!{columnLetter}{rowIndex+1}";
+
+                var valueRange = new ValueRange
+                {
+                    Values = new List<IList<object>>
+                    {
+                        new List<object> { value }
+                    }
+                };
+
+                var updateRequest = service.Spreadsheets.Values.Update(
+                    valueRange,
+                    Api.SpreadsheetId,
+                    updateRange);
+
+                updateRequest.ValueInputOption =
+                    SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+
+                updateRequest.Execute();
+           
+        }
+
+        public static object GetValue(SheetsService service,  string pageExcel,  int rowIndex, int columnIndex )
+        {
+            string columnLetter = columnIndexToLetter(columnIndex);
+            string range = $"{pageExcel}!{columnLetter}{rowIndex+1}";
+
+            var request = service.Spreadsheets.Values.Get(
+                Api.SpreadsheetId,
+                range
+            );
+
+            var response = request.Execute();
+
+            if (response.Values == null || response.Values.Count == 0)
+                return null;
+
+            if (response.Values[0].Count == 0)
+                return null;
+
+            return response.Values[0][0];
+        }
+
+    }
 
     public static class Api
     {
+
+        public static string DateToStr(DateTime date)
+        {
+            return date.Date.ToString("dd.MM.yyyy");
+        }
+
+        public static string DateTimeToStr(DateTime dateTime)
+        {
+            return DateToStr(dateTime) + " " + TimeToStr(dateTime);
+        }
+        
+
+        public static string GetCaptionDate(DateTime datePar)
+        {
+            var date = datePar.Date;
+            // Дата
+            var result = DateToStr(date);
+            // День недели
+            result = result + " " + date.ToString("ddd", new CultureInfo("uk-UA"));
+
+            if (date == Api.DateUaCurrent)
+            {
+                result = result + " " + "(сьогодні)";
+            }
+            else if (date == Api.DateUaNext.Date)
+            {
+                result = result + " " + "(завтра)";
+            }
+            else if (date == Api.DateUaCurrent.AddDays(-1).Date)
+            {
+                result = result + " " + "(вчора)";
+            }
+            else if (date == Api.DateUaCurrent.AddDays(-2).Date)
+            {
+                result = result + " " + "(позавчора)";
+            }
+            return result;
+        }
+
+        public static string GetCaptionDateTime(DateTime dateTimePar)
+        {
+            return GetCaptionDate(dateTimePar) + " " + TimeToStr(dateTimePar);
+            
+        }
+
+        public static bool SendOnlyTestGroup(bool sendOnlyTestGroup)
+        {
+            return !Api.IsGitHub() || sendOnlyTestGroup; 
+        }
+
+        public class ConnectParam
+        {
+            public string BotToken { get; private set; }
+            
+            public string ChatId { get; private set; }
+            public string ChatIdThread { get; private set; }
+
+            public readonly string BotUsername = "Chavdar13_2bot";
+
+            public bool SendInTestGroup { get; private set; }
+
+
+            public ConnectParam(bool sendOnlyTestGroup = false)
+            {
+
+                if (SendOnlyTestGroup(sendOnlyTestGroup))
+                {
+                    SendInTestGroup = true;
+                    ChatId = "-1002275491172";
+                    ChatIdThread = "";
+
+               }
+                else
+                {
+
+                    SendInTestGroup = false;
+                    ChatId = "-1001043114362";
+                    ChatIdThread = "54031";
+
+                    //ChatId = "-1003462831682";
+                    //ChatIdThread = "2";
+
+
+
+                }
+
+
+
+                // 1. Если работаем в GitHub Actions
+                if (Api.IsGitHub())
+                {
+                    string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
+
+                    if (string.IsNullOrWhiteSpace(tokenFromGitHub))
+                    {
+                        throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
+                    }
+
+                    BotToken = tokenFromGitHub;
+                }
+                else
+                {
+                    // 2. Локальный режим → читаем appsettings.Local.json
+                    string repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+
+                    string localPath = Path.Combine(repoRoot, "appsettings.Local.json");
+
+                    if (!File.Exists(localPath))
+                    {
+                        throw new Exception($"Файл {localPath} не найден!");
+                    }
+
+                    BotToken = new Json(File.ReadAllText(localPath))["BotToken"].Value;
+
+                    if (string.IsNullOrWhiteSpace(BotToken))
+                    {
+                        throw new Exception("BotToken не найден в appsettings.Local.json");
+                    }
+                }
+
+            }
+
+        }
+
+        public static string SpreadsheetId = "1G20MV3_PX9OIu1vSaCB_vaOFJjeu9lnVg3ZR2QiPI2s";
+
+
+        /// <summary>
+        /// Конвертировать время в строку
+        /// </summary>
+        public static string TimeToStr(DateTime dateTime)
+        {
+            return TimeToStr(dateTime.TimeOfDay);
+        }
+
         /// <summary>
         /// Конвертировать время в строку
         /// </summary>
@@ -860,15 +1182,14 @@ namespace ScheduleDisconnectLight
             return new TimeSpan(Convert.ToInt32(strSplit[0]), Convert.ToInt32(strSplit[1]), 0);
         }
 
-        public static string DateToStr(DateTime date)
-        {
-            return date.ToString("dd.MM.yyyy");
-        }
+
 
         public static bool IsGitHub()
         {
             return Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
         }
+
+        
 
         public static DateTime DateTimeUaCurrent { get; set; }
 
@@ -880,17 +1201,31 @@ namespace ScheduleDisconnectLight
         /// <summary>
         /// Получить наименования количества часов
         /// </summary>
-        public static string GetNameTimeSpan(TimeSpan timeSpan, bool notAddBrackets = false)
+        public static string GetNameTime(decimal hours, bool notAddBrackets = false)
+        {
+            return GetNameTime(TimeSpan.FromHours((double)hours), notAddBrackets);
+        }
+
+        /// <summary>
+        /// Получить наименования количества часов
+        /// </summary>
+        public static string GetNameTime(TimeSpan timeSpan, bool notAddBrackets = false)
         {
             var result = "";
             if (timeSpan.Hours > 0)
             {
-                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{timeSpan.Hours} год.";
+                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{timeSpan.Hours} год";
             }
             if (timeSpan.Minutes > 0)
             {
-                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{(timeSpan.Minutes == 29 || timeSpan.Minutes == 31 ? 30 : timeSpan.Minutes)} хв.";
+                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{(timeSpan.Minutes == 29 || timeSpan.Minutes == 31 ? 30 : timeSpan.Minutes)} хв";
             }
+            if (string.IsNullOrEmpty(result))
+            {
+                result = "0 год 0 хв.";
+            }
+
+
             if (notAddBrackets)
             {
                 return !string.IsNullOrEmpty(result) ? result : "";
@@ -1033,54 +1368,32 @@ namespace ScheduleDisconnectLight
 
     public class SenderTelegram
     {
-        public bool IsTest { get; set; }
+        public bool SendOnlyTestGroup { get; set; }
+
+        public string ReplyMarkupObj { get; set; }
 
         public void Send(string message)
         {
+            var connect = new ConnectParam(SendOnlyTestGroup);
 
-            string botToken = getBotToken();
-            // Тестова група
-            //string chatId = "-1002275491172";
-
-            // Основная группа, которая была раньше
-            //string chatId = "-1002336792682";
-
-            // Текущая группа
-            string chatId = "";
-            string chatIdThread = "";
-
-            if (Api.IsGitHub() && !IsTest)
-            {
-                chatId = "-1001043114362";
-                chatIdThread = "54031";
-            }
-            else
-            {
-                chatId = "-1002275491172";
-                chatIdThread = "";
-            }
-
-
-
-            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
-            {
-                Console.WriteLine("BOT_TOKEN или CHAT_ID не заданы.");
-                return;
-            }
-
-            //string text = "11144__-555ёё221122Ping из C# (.NET Framework 4.7.2)";
+           
 
             using (var httpClient = new HttpClient())
             {
-                string url = $"https://api.telegram.org/bot{botToken}/sendMessage";
+                string url = $"https://api.telegram.org/bot{connect.BotToken}/sendMessage";
 
                 var data = new Dictionary<string, string>
                     {
-                        { "chat_id", chatId },
-                        { "message_thread_id", chatIdThread },
+                        { "chat_id", connect.ChatId },
+                        { "message_thread_id", connect.ChatIdThread },
                         { "text", message },
                         { "parse_mode", "HTML"}
                     };
+
+                if (!string.IsNullOrEmpty(ReplyMarkupObj))
+                {
+                    data.Add("reply_markup", ReplyMarkupObj);
+                }
 
                 Console.WriteLine("START SEND TELEGRAM:");
                 Console.WriteLine(message);
@@ -1093,46 +1406,31 @@ namespace ScheduleDisconnectLight
                     // Синхронный POST
                     HttpResponseMessage response = httpClient.PostAsync(url, content).Result;
 
-                    // Бросит исключение, если статус не 2xx
-                    response.EnsureSuccessStatusCode();
+                    
+                                        
+
+                    var responseString = response.Content.ReadAsStringAsync().Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var idMessage = new Json(responseString)["result"]["message_id"].ValueInt;
+                    }
+                    else
+                    {
+                         Console.WriteLine(new Json(responseString)["description"].Value);
+
+                        // Бросит исключение, если статус не 2xx
+                        response.EnsureSuccessStatusCode();
+
+                        
+
+                    }
+
                 }
             }
         }
 
-        private string getBotToken()
-        {
-            // 1. Если работаем в GitHub Actions
-            if (Api.IsGitHub())
-            {
-                string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
-
-                if (string.IsNullOrWhiteSpace(tokenFromGitHub))
-                {
-                    throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
-                }
-
-                return tokenFromGitHub;
-            }
-
-            // 2. Локальный режим → читаем appsettings.Local.json
-            string repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
-
-            string localPath = Path.Combine(repoRoot, "appsettings.Local.json");
-
-            if (!File.Exists(localPath))
-            {
-                throw new Exception($"Файл {localPath} не найден!");
-            }
-
-            string token = new Json(File.ReadAllText(localPath))["BotToken"].Value;
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new Exception("BotToken не найден в appsettings.Local.json");
-            }
-
-            return token;
-        }
+        
     }
 
 
@@ -1152,7 +1450,7 @@ namespace ScheduleDisconnectLight
 
             if (string.IsNullOrEmpty(jsonDtekTmp))
             {
-                new SenderTelegram() { IsTest = true }.Send("Ручний парсер сайту ДТЕК повернув пусте значення");
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Ручний парсер сайту ДТЕК повернув пусте значення");
 
 
 
