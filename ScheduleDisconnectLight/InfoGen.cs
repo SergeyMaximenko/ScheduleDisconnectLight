@@ -86,7 +86,7 @@ namespace ScheduleDisconnectLight
             
             if (paramZP.BalanceHours >= 4) 
             {
-                Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours);
+                Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours+ " Відправлений показник "+ balanceHoursOld);
                 if (balanceHoursOld !=999)
                 {
                     saveHours(999);
@@ -163,11 +163,11 @@ namespace ScheduleDisconnectLight
 
             if (_isTest)
             {
-                return  Convert.ToDecimal(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 2));
+                return ParamLasZP.ConverValue<decimal>(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 2));
             }
             else
             {
-                return Convert.ToDecimal(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 1));
+                return ParamLasZP.ConverValue<decimal>(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 1));
             }
 
 

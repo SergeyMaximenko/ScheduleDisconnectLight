@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using static ScheduleDisconnectLight.Api;
 using static ScheduleDisconnectLight.ParamLasZP;
 using static System.Net.Mime.MediaTypeNames;
+using System.Globalization;
 
 
 namespace ScheduleDisconnectLight
@@ -518,9 +519,20 @@ namespace ScheduleDisconnectLight
                 return default(T);
             }
 
-            Type t = typeof(T);
-            var value = row[i];
 
+            return ConverValue<T>(row[i]);
+
+            
+
+
+
+
+        }
+
+
+        public static T ConverValue<T>(object value)
+        {
+            Type t = typeof(T);
             // null / DBNull
             if (value == null || value == DBNull.Value)
                 return default(T);
@@ -550,13 +562,35 @@ namespace ScheduleDisconnectLight
             // decimal
             if (targetType == typeof(decimal))
             {
-                if (value is decimal m)
-                    return (T)(object)m;
+                if (value is decimal dm)
+                    return (T)(object)dm;
+
+                // Google Sheets / Excel API часто возвращает double
+                if (value is double dd)
+                    return (T)(object)Convert.ToDecimal(dd, CultureInfo.InvariantCulture);
+
+                if (value is float ff)
+                    return (T)(object)Convert.ToDecimal(ff, CultureInfo.InvariantCulture);
 
                 if (value is string s)
-                    return (T)(object)decimal.Parse(s.Trim());
+                {
+                    s = s.Trim();
 
-                return (T)(object)Convert.ToDecimal(value);
+                    // 1) пробуем украинскую/русскую культуру (запятая как дробь)
+                    if (decimal.TryParse(s, NumberStyles.Number, CultureInfo.GetCultureInfo("uk-UA"), out var v1) ||
+                        decimal.TryParse(s, NumberStyles.Number, CultureInfo.GetCultureInfo("ru-RU"), out v1))
+                        return (T)(object)v1;
+
+                    // 2) пробуем инвариантную (точка как дробь)
+                    if (decimal.TryParse(s, NumberStyles.Number, CultureInfo.InvariantCulture, out var v2))
+                        return (T)(object)v2;
+
+                    // 3) последний шанс: нормализуем запятую в точку
+                    s = s.Replace(" ", "").Replace(",", ".");
+                    return (T)(object)decimal.Parse(s, NumberStyles.Number, CultureInfo.InvariantCulture);
+                }
+
+                return (T)(object)Convert.ToDecimal(value, CultureInfo.InvariantCulture);
             }
 
             if (targetType == typeof(int))
@@ -572,12 +606,7 @@ namespace ScheduleDisconnectLight
 
             // остальные типы
             return (T)Convert.ChangeType(value, targetType);
-
-
-
-
         }
-
 
 
         class Range

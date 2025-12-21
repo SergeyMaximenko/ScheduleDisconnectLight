@@ -64,7 +64,7 @@ namespace ScheduleDisconnectLight
             try
             {
                 Console.WriteLine("Запуск InfoGen");
-              //  new InfoGen().Check();
+                new InfoGen().Check();
             }
             catch (Exception ex)
             {
