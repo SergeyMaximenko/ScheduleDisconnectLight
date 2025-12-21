@@ -845,20 +845,28 @@ namespace ScheduleDisconnectLight
 
         public SheetsService Get()
         {
-
-            string repoRoot = Path.GetFullPath(
-               Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
-               );
-            string serviceAccountFile = Path.Combine(repoRoot, "connectExcel.json");
-
-
-            // Авторизация
             GoogleCredential credential;
-            using (var stream = new FileStream(serviceAccountFile, FileMode.Open, FileAccess.Read))
+            if (Api.IsGitHub())
             {
-                credential = GoogleCredential.FromStream(stream).CreateScoped(SheetsService.Scope.Spreadsheets);
-            }
+                credential = GoogleCredential.GetApplicationDefault();
 
+            }
+            else
+            {
+
+                string repoRoot = Path.GetFullPath(
+                   Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
+                   );
+                string serviceAccountFile = Path.Combine(repoRoot, "nodal-reserve-445809-v0-a6ece564837c.json");
+
+
+                // Авторизация
+               
+                using (var stream = new FileStream(serviceAccountFile, FileMode.Open, FileAccess.Read))
+                {
+                    credential = GoogleCredential.FromStream(stream).CreateScoped(SheetsService.Scope.Spreadsheets);
+                }
+            }
             return new SheetsService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
