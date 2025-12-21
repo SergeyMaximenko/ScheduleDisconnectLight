@@ -850,7 +850,7 @@ namespace ScheduleDisconnectLight
             string repoRoot = Path.GetFullPath(
                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
                );
-            string serviceAccountFile = Path.Combine(repoRoot, "nodal-reserve-445809-v0-cc5f64e252c9.json");
+            string serviceAccountFile = Path.Combine(repoRoot, "connectExcel.json");
 
 
             // Авторизация
