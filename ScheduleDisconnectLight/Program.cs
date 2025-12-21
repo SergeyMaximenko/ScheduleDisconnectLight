@@ -27,7 +27,6 @@ namespace ScheduleDisconnectLight
         public static bool IsSourceYasno = false;
 
 
-
         static void Main(string[] args)
         {
             // new SenderTelegram().Send(DateTime.Now.ToString(),"+");
