@@ -58,7 +58,7 @@ namespace ScheduleDisconnectLight
                     $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
                     "\n" +
                     $"<b>Остання заправка:</b>\n" +
-                    $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime) }\n " +
+                    $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime) }\n" +
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
                     $"⚙️ Відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
                     $"🛢️ Спожито палива ~ <b>{paramZP.ExecLiters} л</b>\n" +
