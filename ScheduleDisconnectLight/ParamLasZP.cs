@@ -43,6 +43,7 @@ namespace ScheduleDisconnectLight
     public class ParamLasZP
     {
         private bool _sendOnlyTestGroup;
+        private int _countSendTg = 0;
         public ParamLasZP(bool sendOnlyTestGroup)
         {
             _sendOnlyTestGroup = sendOnlyTestGroup;
@@ -417,7 +418,13 @@ namespace ScheduleDisconnectLight
 
         private void sendTestTelegram(string message)
         {
-            new SenderTelegram() { SendOnlyTestGroup = true }.Send(message);
+            _countSendTg++;
+            // Иначе через спам может быть ошибка
+            if (_countSendTg <= 5)
+            {
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send(message);
+            }
+            
         }
 
         public class Param

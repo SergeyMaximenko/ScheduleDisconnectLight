@@ -26,6 +26,14 @@ namespace ScheduleDisconnectLight
         {
             _service = new SpreadSheet().Get();
             _isTest = Api.SendOnlyTestGroup(_sendOnlyTestGroup);
+
+           /*
+            new SenderTelegram()
+            {
+                SendOnlyTestGroup = _sendOnlyTestGroup,
+                ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroup)
+            }.Send("_");
+           */
         }
 
 
@@ -84,7 +92,7 @@ namespace ScheduleDisconnectLight
 
 
             
-            if (paramZP.BalanceHours >= 4) 
+            if (paramZP.BalanceHours >= 5) 
             {
                 Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours+ " Відправлений показник "+ balanceHoursOld);
                 if (balanceHoursOld !=999)

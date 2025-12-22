@@ -1104,7 +1104,10 @@ namespace ScheduleDisconnectLight
                     ChatId = "-1002275491172";
                     ChatIdThread = "";
 
-               }
+                    //ChatId = "-1003462831682";
+                    //ChatIdThread = "2";
+
+                }
                 else
                 {
 
@@ -1112,8 +1115,7 @@ namespace ScheduleDisconnectLight
                     ChatId = "-1001043114362";
                     ChatIdThread = "54031";
 
-                    //ChatId = "-1003462831682";
-                    //ChatIdThread = "2";
+                    
 
 
 
