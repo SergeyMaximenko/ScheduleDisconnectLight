@@ -92,7 +92,7 @@ namespace ScheduleDisconnectLight
 
 
             
-            if (paramZP.BalanceHours >= 5) 
+            if (paramZP.BalanceHours >= 4) 
             {
                 Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours+ " Відправлений показник "+ balanceHoursOld);
                 if (balanceHoursOld !=999)
