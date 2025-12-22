@@ -62,7 +62,7 @@ namespace ScheduleDisconnectLight
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
                     $"⚙️ Відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
                     $"🛢️ Спожито палива ~ <b>{paramZP.ExecLiters} л</b>\n" +
-                    $"🙏 Заправляв <b>{paramZP.LastZP_UserName}</b>\n " +
+                    $"🙏 Заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
                     (paramZP.IsBalanceEmpty
                     ? "\n\n🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i> "
