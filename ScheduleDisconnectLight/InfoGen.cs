@@ -290,7 +290,18 @@ namespace ScheduleDisconnectLight
                     {
                         dateTimeFrom = Api.DateTimeUaCurrent;
                     }
+
+                    dateTimeFrom = new[] { new DateTime(dateTimeFrom.Year, dateTimeFrom.Month, dateTimeFrom.Day, 6, 0, 0), dateTimeFrom }.Max();
+                    dateTimeTo = new[] { new DateTime(dateTimeTo.Year, dateTimeTo.Month, dateTimeTo.Day, 23, 0, 0), dateTimeTo }.Min();
+
+
                     var diff = (decimal)(dateTimeTo - dateTimeFrom).TotalHours;
+
+                    if (diff<0)
+                    {
+                        continue;
+                    }
+
                     if (hoursCuurent <= diff)
                     {
                         dateTimeToResult = dateTimeFrom + TimeSpan.FromHours((double)hoursCuurent);
