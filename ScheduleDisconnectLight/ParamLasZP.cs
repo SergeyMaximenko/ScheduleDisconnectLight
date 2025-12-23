@@ -44,9 +44,13 @@ namespace ScheduleDisconnectLight
     {
         private bool _sendOnlyTestGroup;
         private int _countSendTg = 0;
-        public ParamLasZP(bool sendOnlyTestGroup)
+        private DateTime? _excludeDate;
+        private SheetsService _service;
+        public ParamLasZP(bool sendOnlyTestGroup, DateTime? excludeDate = null )
         {
             _sendOnlyTestGroup = sendOnlyTestGroup;
+            _excludeDate = excludeDate;
+            _service = new SpreadSheet().Get();
         }
 
 
@@ -56,12 +60,13 @@ namespace ScheduleDisconnectLight
 
         public Param GetParam()
         {
-            var service = new SpreadSheet().Get();
+            
 
 
-            var rowLastZpObj = getRowLastZp(service);
-            var rowLastZp = rowLastZpObj.Item3;
-            var rowCountZp = rowLastZpObj.Item2;
+            var rowLastZpObj = getRowLastZp();
+            var rowLastZp = rowLastZpObj.Item2;
+            var rowCountZpAll = rowLastZpObj.Item3;
+            var rowCountZpMonth = rowLastZpObj.Item4;
             var rowILastZp = rowLastZpObj.Item1;
 
             if (rowLastZp == null)
@@ -75,39 +80,9 @@ namespace ScheduleDisconnectLight
             var lastZP_IsSend = fromRow<string>(rowLastZp, 8);
             var maxDateZP = fromRow<DateTime>(rowLastZp, 1);
 
-            if (lastZP_IsSend != "так")
-            {
+            var hoursAfterZP = getTimeAfterZP(maxDateZP);
 
-                var message =
-                  
-                  $"✅ <b>Генератор заправлено</b>\n" +
-                  $"\n" +
-                  $"🙏 Дякуємо <b>{lastZP_UserName}</b>\n" +
-                   (!string.IsNullOrEmpty(lastZP_UserCode) ? $"👤 <b>@{lastZP_UserCode}</b>\n" : "") +
-                  (lastZP_Liters !=0 ?  $"⛽️ Дозаправлено <b>{lastZP_Liters} л.</b>\n" : "") +
-                  $"💪 Це Ваша <b>{rowCountZp}</b> заправка\n" +
-                 "\n" +
-                  "<b>Дата заправки</b>:\n" +
-                  $"📅 {Api.GetCaptionDate(maxDateZP)}\n" +
-                  $"🕒 {Api.TimeToStr(maxDateZP)}\n";
-                
-                new SenderTelegram()
-                {
-                    SendOnlyTestGroup = _sendOnlyTestGroup,
-                    ReplyMarkupObj = InfoGen.GetReplyMarkup(_sendOnlyTestGroup)
-                }.Send(message);
-
-                SpreadSheet.SetValue(service, _sheetNameZP, rowILastZp, 8, "так");
-            }
-
-
-           
-
-            var hoursAfterZP = getTimeAfterZP(service, maxDateZP);
-
-
-
-            return new Param()
+            var result = new Param()
             {
                 LastZP_DateTime = maxDateZP,
                 ExecHours = hoursAfterZP,
@@ -115,13 +90,56 @@ namespace ScheduleDisconnectLight
                 LastZP_UserName = lastZP_UserName,
                 LastZP_Liters = lastZP_Liters
             };
+
+            if (lastZP_IsSend != "так" && _excludeDate == null)
+            {
+                var oldZp = new ParamLasZP(_sendOnlyTestGroup, maxDateZP).GetParam();
+
+                var message =
+
+                  $"✅ <b>Генератор заправлено</b>\n" +
+                  $"\n" +
+                  $"🙏 <b>Дякуємо {lastZP_UserName}</b>\n" +
+                   (!string.IsNullOrEmpty(lastZP_UserCode) ? $"👤 <b>@{lastZP_UserCode}</b>\n" : "") +
+                  (lastZP_Liters != 0 ? $"⛽️ дозаправлено - <b>{lastZP_Liters} л</b>\n" : "") +
+                  (oldZp != null ? $"⚙️ використано ~ <b>{oldZp.ExecLitersStr} л</b>\n" : "") +
+                  "\n" +
+                  "<b>Дата заправки</b>:\n" +
+                  $"📅 {Api.GetCaptionDate(maxDateZP)}\n" +
+                  $"🕒 {Api.TimeToStr(maxDateZP)}\n" +
+                  $"\n" +
+                  $"<b>Ваша винагорода:</b>\n" +
+                  $"📅 за <b>{Api.GetMonthName(maxDateZP.Month)}</b>\n" +
+                  $"💪 заправок: <b>{rowCountZpMonth}</b>\n" +
+                  $"💰 <b>винагорода:</b> {rowCountZpMonth}*200=<b>{rowCountZpMonth * 200} грн</b>\n" +
+                  $"📈 всього Ваших заправок: <b>{rowCountZpAll}</b>";
+
+                
+                new SenderTelegram()
+                {
+                    SendOnlyTestGroup = _sendOnlyTestGroup,
+                    ReplyMarkupObj = InfoGen.GetReplyMarkup(_sendOnlyTestGroup)
+                }.Send(message);
+
+                SpreadSheet.SetValue(_service, _sheetNameZP, rowILastZp, 8, "так");
+            }
+
+            return result;
+
+
+
+
+
+
+
+
         }
 
 
 
-        private Tuple<int, int, IList<object>> getRowLastZp(SheetsService service)
+        private Tuple<int, IList<object>, int, int> getRowLastZp()
         {
-            var requestZP = service.Spreadsheets.Values.Get(Api.SpreadsheetId, $"{_sheetNameZP}!A:I");
+            var requestZP = _service.Spreadsheets.Values.Get(Api.SpreadsheetId, $"{_sheetNameZP}!A:I");
             var valuesZP = requestZP.Execute().Values;
 
 
@@ -141,16 +159,9 @@ namespace ScheduleDisconnectLight
 
             for (int i = 0; i < valuesZP.Count; i++)
             {
-                // Пропускаем заголовок
-                if (i == 0)
-                {
-                    continue;
-                }
-
-
                 var row = valuesZP[i];
 
-                if (skipRowZp(row))
+                if (skipRowZp(i, row))
                 {
                     continue;
                 }
@@ -164,7 +175,8 @@ namespace ScheduleDisconnectLight
                     rowMaxDateZP = row;
                 }
             }
-            var countZP = 0;
+            var countZPAll = 0;
+            var countZPMonth = 0;
 
             if (rowMaxDateZP != null)
             {
@@ -175,23 +187,44 @@ namespace ScheduleDisconnectLight
                 {
                     var row = valuesZP[i];
 
-                    if (skipRowZp(row))
+                    if (skipRowZp(i, row))
                     {
                         continue;
                     }
 
                     if (fromRow<string>(row, 3) == userId)
                     {
-                        countZP = countZP + 1;
+
+
+                        countZPAll = countZPAll + 1;
+
+                        var dateRow = fromRow<DateTime>(row, 1);
+
+                        if (maxDateZP.Year == dateRow.Year && maxDateZP.Month == dateRow.Month)
+                        {
+                            countZPMonth = countZPMonth + 1;
+                        }
                     }
                 }
             }
-            return Tuple.Create(maxIDateZP, countZP, rowMaxDateZP);
+            return Tuple.Create(maxIDateZP, rowMaxDateZP, countZPAll, countZPMonth);
 
         }
 
-        private bool skipRowZp(IList<object> row)
+        private bool skipRowZp(int i, IList<object> row)
         {
+            // Пропускаем заголовок
+            if (i == 0)
+            {
+                return true;
+            }
+
+            // Пропустить дату, если она указана
+            if (_excludeDate != null && fromRow<DateTime>(row, 1) == _excludeDate)
+            {
+                return true;
+            }
+
             var regTest = fromRow<string>(row, 7);
             if (Api.SendOnlyTestGroup(_sendOnlyTestGroup))
             {
@@ -213,11 +246,11 @@ namespace ScheduleDisconnectLight
 
 
 
-        private decimal getTimeAfterZP(SheetsService service, DateTime maxDateZP)
+        private decimal getTimeAfterZP(DateTime maxDateZP)
         {
 
 
-            var requestOnOff = service.Spreadsheets.Values.Get(Api.SpreadsheetId, $"{_sheetNameOnOff}!A:F");
+            var requestOnOff = _service.Spreadsheets.Values.Get(Api.SpreadsheetId, $"{_sheetNameOnOff}!A:F");
             var valuesOnOff = requestOnOff.Execute().Values;
 
 
@@ -418,6 +451,11 @@ namespace ScheduleDisconnectLight
 
         private void sendTestTelegram(string message)
         {
+            if (_excludeDate != null)
+            {
+                return;
+            }
+
             _countSendTg++;
             // Иначе через спам может быть ошибка
             if (_countSendTg <= 5)
@@ -438,7 +476,18 @@ namespace ScheduleDisconnectLight
             /// </summary>
             public decimal BalanceLiters
             {
-                get { return Math.Max(0, Math.Round(TotalLiters - ExecLiters, 1)); }
+                get { return Math.Max(0, TotalLiters - ExecLiters); }
+            }
+
+            /// <summary>
+            /// Использовано. Сколько литров
+            /// </summary>
+            public string BalanceLitersStr
+            {
+                get
+                {
+                    return BalanceLiters > 0 && BalanceLiters < 1 ? "1" : ((int)Math.Round(BalanceLiters, 0)).ToString();
+                }
             }
 
             public int BalancePercent
@@ -483,10 +532,20 @@ namespace ScheduleDisconnectLight
             {
                 get
                 {
-                    return Math.Round(_liter1Horse * ExecHours, 1);
+                    return _liter1Horse * ExecHours;
                 }
             }
 
+            /// <summary>
+            /// Использовано. Сколько литров
+            /// </summary>
+            public string ExecLitersStr
+            {
+                get
+                {
+                    return ExecLiters > 0 && ExecLiters < 1 ? "1" : ((int)Math.Round(ExecLiters, 0)).ToString();
+                }
+            }
 
             /// <summary>
             /// Использовано. Сколько часов

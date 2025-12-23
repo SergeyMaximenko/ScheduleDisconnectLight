@@ -99,7 +99,7 @@ namespace ScheduleDisconnectLight
                 messageStatus =
                     $"<b>Паливо в генераторі:</b>\n" +
                     $"⏳ вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
-                    $"⛽️ залишилось ~ <b>{Math.Round(paramZP.BalanceLiters > 0 && paramZP.BalanceLiters<=1 ? 1 : paramZP.BalanceLiters, 0)} л</b>\n" +
+                    $"⛽️ залишилось ~ <b>{paramZP.BalanceLitersStr} л</b>\n" +
                     $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
                     "\n" +
                     messageForecast.ToString() +
@@ -108,7 +108,7 @@ namespace ScheduleDisconnectLight
                     $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
                     $"⚙️ відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{Math.Round(paramZP.ExecLiters>0 && paramZP.ExecLiters <= 1 ? 1 : paramZP.ExecLiters, 0 )} л</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{paramZP.ExecLitersStr} л</b>\n" +
                     $"🙏 заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
                     (paramZP.IsBalanceEmpty

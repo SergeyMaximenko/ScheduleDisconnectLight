@@ -60,18 +60,18 @@ namespace ScheduleDisconnectLight
             //--------------------------------
             //   ЗАПРАВКА ТОПЛИВА НА ГЕНЕРАТОР
             //--------------------------------
-            try
-            {
+           // try
+            //{
                 Console.WriteLine("Запуск InfoGen");
                 new InfoGen(schedule).Check();
-            }
+            /*}
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка в InfoGen");
 
             }
-
+            */
 
 
         }
@@ -1096,6 +1096,37 @@ namespace ScheduleDisconnectLight
 
     public static class Api
     {
+        public static string GetMonthName(int month)
+        {
+            if (month < 1 || month > 12)
+                throw new ArgumentOutOfRangeException(nameof(month), "Місяць має бути від 1 до 12");
+
+            var cultureInfo = new CultureInfo("uk-UA");
+            return cultureInfo.DateTimeFormat.GetMonthName(month);
+        }
+
+        //DecimalToString(5m);        // "5"
+        //DecimalToString(5.0m);      // "5"
+        //DecimalToString(5.25m);     // "5.25"
+        //DecimalToString(5.200m);    // "5.2"
+        //DecimalToString(0.75m);     // "0.75"
+        //DecimalToString(10.123400m);// "10.1234"
+
+
+
+
+        public static string DecimalToString(decimal value)
+        {
+            // Проверяем, есть ли дробная часть
+            if (value == decimal.Truncate(value))
+            {
+                // Целое число → без .0
+                return value.ToString("0", CultureInfo.InvariantCulture);
+            }
+
+            // Дробное число → с точкой
+            return value.ToString("0.################", CultureInfo.InvariantCulture);
+        }
 
         public static string DateToStr(DateTime date)
         {
@@ -1294,7 +1325,7 @@ namespace ScheduleDisconnectLight
             }
             if (string.IsNullOrEmpty(result))
             {
-                result = "0 год 0 хв.";
+                result = "0 год 0 хв";
             }
 
 
