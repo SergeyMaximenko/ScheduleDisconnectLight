@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Remoting.Messaging;
+using System.Security.Cryptography;
 using System.Text;
 using static ScheduleDisconnectLight.Api;
 
@@ -61,10 +62,45 @@ namespace ScheduleDisconnectLight
             var state = AppState.LoadState(stateFile);
 
 
+            //--------------------------------
+            //   ПОЛУЧИТЬ ГРАФИКИ
+            //--------------------------------
+
+            Schedule schedule = null;
+            try
+            {
+                schedule = IsSourceYasno
+                ? new FormerScheduleFromYasno().Get()
+                : new FormerScheduleFromDTEK().Get();
+
+                if (schedule == null)
+                {
+                    new SenderTelegram() { SendOnlyTestGroup = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
+                    Console.WriteLine("Не найден не один график на ДТЕК. ");
+                    schedule = Schedule.FormScheduleByState(state);
+                }
+                if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate)
+                {
+                    Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
+                    schedule = Schedule.FormScheduleByState(state);
+                }
+                schedule.FillServiceProp();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка Отримання графіку");
+
+            }
+
+
+            //--------------------------------
+            //   ЗАПРАВКА ТОПЛИВА НА ГЕНЕРАТОР
+            //--------------------------------
             try
             {
                 Console.WriteLine("Запуск InfoGen");
-                new InfoGen().Check();
+                new InfoGen(schedule).Check();
             }
             catch (Exception ex)
             {
@@ -72,23 +108,13 @@ namespace ScheduleDisconnectLight
                 new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка в InfoGen");
 
             }
-   
 
-            var schedule = IsSourceYasno ? new FormerScheduleFromYasno().Get() : new FormerScheduleFromDTEK().Get();
 
-            if (schedule == null)
+            if (schedule == null) 
             {
-                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
-                Console.WriteLine("Не найден не один график на ДТЕК. ");
-                schedule = Schedule.FormScheduleByState(state);
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Збой в системі. Графік пустий");
+                return;
             }
-            if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate) 
-            {
-                Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
-                schedule = Schedule.FormScheduleByState(state);
-            }
-            
-            schedule.FillServiceProp();
 
 
 
@@ -194,12 +220,12 @@ namespace ScheduleDisconnectLight
                                 if (totalTimeOffPowerNew > totalTimeOffPowerOld)
                                 {
                                     //
-                                    message.Append("😡 Плюс <b>" + Api.GetNameTime(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                    message.Append("😡 Плюс <b>" + Api.GetTimeHours(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
                                 }
                                 else
                                 {
                                     //⬇︎😊
-                                    message.Append("💚 Мінус <b>" + Api.GetNameTime(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    message.Append("💚 Мінус <b>" + Api.GetTimeHours(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
                                 }
                             }
                             else
@@ -247,12 +273,12 @@ namespace ScheduleDisconnectLight
                                 if (totalTimeOffPowerNew > totalTimeOffPowerOld)
                                 {
                                     //
-                                    message.Append("😡 Плюс <b>" + Api.GetNameTime(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
+                                    message.Append("😡 Плюс <b>" + Api.GetTimeHours(totalTimeOffPowerNew - totalTimeOffPowerOld, true) + "</b> відключень\n");
                                 }
                                 else
                                 {
                                     //⬇︎😊
-                                    message.Append("💚 Мінус <b>" + Api.GetNameTime(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    message.Append("💚 Мінус <b>" + Api.GetTimeHours(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
                                 }
                             }
                             else
@@ -529,6 +555,9 @@ namespace ScheduleDisconnectLight
         public ScheduleOneDay ScheduleNextDay;
 
 
+      
+
+
         public void SetSchedule(ScheduleOneDay scheduleOneDay, ScheduleDayType scheduleDayType)
         {
             if (scheduleDayType == ScheduleDayType.CurrentDay)
@@ -657,6 +686,26 @@ namespace ScheduleDisconnectLight
         }
 
         /// <summary>
+        /// Получить период в виде HTML для статуса генератора
+        /// </summary>
+        public string GetPeriodStrForHtmlStatusGen()
+        {
+            
+            if (Date == Api.DateUaCurrent)
+            {
+                var periods = Times.Where(t => t.End >= Api.DateTimeUaCurrent.TimeOfDay);
+                if (periods.Count() == 0)
+                {
+                    return "🟢 На сьогодні відключень більше немає";
+                }
+                return string.Join("\n", periods.Select(t => "🔴 " + t.GetPeriodStrForHtmlSchedule(null)));
+            }
+            
+            return string.Join("\n", Times.Select(t => "🔴 " + t.GetPeriodStrForHtmlSchedule(null)));
+            
+        }
+
+        /// <summary>
         /// Получить период в виде HTML
         /// </summary>
         public string GetPeriodStrForHtmlSchedule(List<TimeRange> oldTimes)
@@ -668,6 +717,8 @@ namespace ScheduleDisconnectLight
 
             return string.Join("\n", Times.Select(t => "🔴 " + t.GetPeriodStrForHtmlSchedule(oldTimes)));
         }
+
+
 
 
         /// <summary>
@@ -798,7 +849,7 @@ namespace ScheduleDisconnectLight
             {
                 endStr = "<u>" + endStr + "</u>";
             }
-            return startStr + " - " + endStr + "  <i>" + Api.GetNameTime(End - Start) + "</i>";
+            return startStr + " - " + endStr + "  <i>" + Api.GetTimeHours(End - Start) + "</i>";
         }
 
         /// <summary>
@@ -817,7 +868,7 @@ namespace ScheduleDisconnectLight
             {
                 endTmp = End;
             }
-            return Api.TimeToStr(Start) + " - " + Api.TimeToStr(endTmp) + "  <i>" + Api.GetNameTime(diff) + "</i>";
+            return Api.TimeToStr(Start) + " - " + Api.TimeToStr(endTmp) + "  <i>" + Api.GetTimeHours(diff) + "</i>";
         }
 
 
@@ -1210,15 +1261,15 @@ namespace ScheduleDisconnectLight
         /// <summary>
         /// Получить наименования количества часов
         /// </summary>
-        public static string GetNameTime(decimal hours, bool notAddBrackets = false)
+        public static string GetTimeHours(decimal hours, bool notAddBrackets = false)
         {
-            return GetNameTime(TimeSpan.FromHours((double)hours), notAddBrackets);
+            return GetTimeHours(TimeSpan.FromHours((double)hours), notAddBrackets);
         }
 
         /// <summary>
         /// Получить наименования количества часов
         /// </summary>
-        public static string GetNameTime(TimeSpan timeSpan, bool notAddBrackets = false)
+        public static string GetTimeHours(TimeSpan timeSpan, bool notAddBrackets = false)
         {
             var result = "";
             if (timeSpan.Hours > 0)

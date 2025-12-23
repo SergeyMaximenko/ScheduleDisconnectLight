@@ -465,7 +465,7 @@ namespace ScheduleDisconnectLight
             {
                 get
                 {
-                    return Api.GetNameTime(BalanceHours, true);
+                    return Api.GetTimeHours(BalanceHours, true);
                 }
             }
 
@@ -490,7 +490,7 @@ namespace ScheduleDisconnectLight
             {
                 get
                 {
-                    return Api.GetNameTime(ExecHours, true);
+                    return Api.GetTimeHours(ExecHours, true);
                 }
             }
 

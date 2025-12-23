@@ -19,13 +19,15 @@ namespace ScheduleDisconnectLight
 
         private bool _sendOnlyTestGroup = false;
 
-
+        private Schedule _schedule;
         private SheetsService _service;
         private bool _isTest;
-        public InfoGen()
+        public InfoGen(Schedule schedule)
         {
             _service = new SpreadSheet().Get();
             _isTest = Api.SendOnlyTestGroup(_sendOnlyTestGroup);
+
+            _schedule = schedule;
 
            /*
             new SenderTelegram()
@@ -51,18 +53,64 @@ namespace ScheduleDisconnectLight
             }
             else
             {
+                var messageForecast = new StringBuilder();
+                if (_schedule != null && paramZP.BalanceHours != 0) //
+                {
+
+                    getTimeForecast(_schedule, paramZP.BalanceHours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
+                   
+                    if (dateStopGenStr != DateTime.MinValue)
+                    {
+                        messageForecast.Append(
+                            "<b>Прогноз відповідно графіків відключень:</b>\n" +
+                               "⛔️ паливо скінчиться:\n" +
+                              $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n" +
+                              $"🕒 <b>{Api.TimeToStr(dateStopGenStr)}</b>\n");
+                               
+                           
+
+                    }
+                    else
+                    {
+                        messageForecast.Append(
+                            "<b>Прогноз відповідно графіків відключень:</b>\n" +
+                           $"📅 <b>{(isCurrentDay ? "сьогодні" : "завтра")}</b> на прикінці дня поточного запасу палива вистачить приблизно на:\n " +
+                           $"⏳ ~ <b>{balanceTimeStr}</b> роботи генератора\n");
+
+                    }
+
+                    messageForecast.Append("\n");
+
+                    // Отправить сообщение об изменении графика 
+                    messageForecast.Append("<b>Запланові відключення:</b>\n");
+                    messageForecast.Append($"🗓️ {_schedule.ScheduleCurrentDay.GetCaptionDate()}\n");
+                    messageForecast.Append(_schedule.ScheduleCurrentDay.GetPeriodStrForHtmlStatusGen() + "\n");
+                    if (!_schedule.ScheduleNextDay.IsEmpty())
+                    {
+                        messageForecast.Append($"🗓️ {_schedule.ScheduleNextDay.GetCaptionDate()}\n");
+                        messageForecast.Append(_schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
+                    }
+
+                    messageForecast.Append("\n");
+
+
+                }
+
                 messageStatus =
-                    $"<b>Палива в генераторі:</b>\n" +
-                    $"⏳ Вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
-                    $"⛽️ Залишилось ~ <b>{paramZP.BalanceLiters} л</b>\n" +
+                    $"<b>Паливо в генераторі:</b>\n" +
+                    $"⏳ вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
+                    $"⛽️ залишилось ~ <b>{paramZP.BalanceLiters} л</b>\n" +
                     $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
                     "\n" +
+                    (messageForecast.Length !=0 
+                    ? messageForecast.ToString()
+                    : "")+
                     $"<b>Остання заправка:</b>\n" +
                     $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime) }\n" +
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
-                    $"⚙️ Відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
-                    $"🛢️ Спожито палива ~ <b>{paramZP.ExecLiters} л</b>\n" +
-                    $"🙏 Заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
+                    $"⚙️ відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{paramZP.ExecLiters} л</b>\n" +
+                    $"🙏 заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
                     (paramZP.IsBalanceEmpty
                     ? "\n\n🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i> "
@@ -219,6 +267,74 @@ namespace ScheduleDisconnectLight
             return JsonSerializer.Serialize(replyMarkupObj);
 
         }
+
+        private static void getTimeForecast(Schedule schedule, decimal hours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay)
+        {
+            dateStopGenStr = DateTime.MinValue;
+            balanceTimeStr = string.Empty;
+            isCurrentDay = false;
+
+            var dateTimeToResult = DateTime.MinValue;
+            foreach (var scheduleDay in new[] { schedule.ScheduleCurrentDay, schedule.ScheduleNextDay })
+            {
+                foreach (var item in scheduleDay.Times)
+                {
+                    var dateTimeTo = scheduleDay.Date + item.End;
+                    var dateTimeFrom = scheduleDay.Date + item.Start;
+                    if (Api.DateTimeUaCurrent > dateTimeTo)
+                    {
+                        continue;
+                    }
+
+                    if (Api.DateTimeUaCurrent >= scheduleDay.Date + item.Start)
+                    {
+                        dateTimeFrom = Api.DateTimeUaCurrent;
+                    }
+                    var diff = (decimal)(dateTimeTo - dateTimeFrom).TotalHours;
+                    if (hours <= diff)
+                    {
+                        dateTimeToResult = dateTimeFrom + TimeSpan.FromHours((double)hours);
+                        break;
+                    }
+                    else
+                    {
+                        hours = hours - diff;
+                    }
+                }
+
+                if (dateTimeToResult != DateTime.MinValue)
+                {
+                    break;
+                }
+            }
+
+            if (dateTimeToResult != DateTime.MinValue)
+            {
+                dateStopGenStr = dateTimeToResult;
+                // З Врахуванням графік відключень, генератор зупиниться в  dateTimeToResult
+            }
+            else
+            {
+                balanceTimeStr = Api.GetTimeHours(hours, true);
+
+                if (schedule.ScheduleNextDay.IsEmpty())
+                {
+                    isCurrentDay = true;
+                    // З врахуванням графіку відключень, на кінець потого дня в залишку паливу в генераторі вистачить на balanceTimeStr 
+                }
+                else
+                {
+                    isCurrentDay = false;
+
+                    // З врахуванням графіку відключень, на кінець завтрашнього дня в залишку паливу в генераторі вистачить на balanceTimeStr
+                }
+
+                // З Врахуванням графіку відключень, на кінець для в генераторі буде залишок 
+            }
+
+        }
+
+
     }
 
 }
