@@ -93,7 +93,7 @@ namespace ScheduleDisconnectLight
 
             if (lastZP_IsSend != "так" && _excludeDate == null)
             {
-                var oldZp = new ParamLasZP(_sendOnlyTestGroup, maxDateZP).GetParam();
+                //var oldZp = new ParamLasZP(_sendOnlyTestGroup, maxDateZP).GetParam();
 
                 var message =
 
@@ -102,7 +102,7 @@ namespace ScheduleDisconnectLight
                   $"🙏 <b>Дякуємо {lastZP_UserName}</b>\n" +
                    (!string.IsNullOrEmpty(lastZP_UserCode) ? $"👤 <b>@{lastZP_UserCode}</b>\n" : "") +
                   (lastZP_Liters != 0 ? $"⛽️ дозаправлено - <b>{lastZP_Liters} л</b>\n" : "") +
-                  (oldZp != null ? $"⚙️ використано ~ <b>{oldZp.ExecLitersStr} л</b>\n" : "") +
+                //  (oldZp != null ? $"⚙️ використано ~ <b>{oldZp.ExecLitersStr} л</b>\n" : "") +
                   "\n" +
                   "<b>Дата заправки</b>:\n" +
                   $"📅 {Api.GetCaptionDate(maxDateZP)}\n" +
