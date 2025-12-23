@@ -35,62 +35,25 @@ namespace ScheduleDisconnectLight
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
+            
+            // Api.DateTimeUaCurrent = new DateTime(2025, 12, 23, 20, 45, 0);
 
-            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 23, 18, 30, 0);
-
-            // Определяем путь к корню репозитория
-            string repoRoot = Path.GetFullPath(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
-            );
-
-            string stateFile = "";
-
-            if (Api.IsGitHub())
-            {
-                Console.WriteLine("Это версия ГИТА");
-                stateFile = Path.Combine(repoRoot, "appState.json");
-            }
-            else
-            {
-                Console.WriteLine("Это локальная версия");
-                stateFile = Path.Combine(repoRoot, "appState-local.json");
-            }
-
-
-
-            // Загружаем состояние
-            var state = AppState.LoadState(stateFile);
-
-
-            //--------------------------------
-            //   ПОЛУЧИТЬ ГРАФИКИ
-            //--------------------------------
 
             Schedule schedule = null;
+            
+            //--------------------------------
+            //   СФОРМИРОВАТЬ ГРАФИК
+            //--------------------------------
+
             try
             {
-                schedule = IsSourceYasno
-                ? new FormerScheduleFromYasno().Get()
-                : new FormerScheduleFromDTEK().Get();
-
-                if (schedule == null)
-                {
-                    new SenderTelegram() { SendOnlyTestGroup = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
-                    Console.WriteLine("Не найден не один график на ДТЕК. ");
-                    schedule = Schedule.FormScheduleByState(state);
-                }
-                if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate)
-                {
-                    Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
-                    schedule = Schedule.FormScheduleByState(state);
-                }
-                schedule.FillServiceProp();
+                Console.WriteLine("Запуск scheduleFormer");
+                schedule = scheduleFormer();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка Отримання графіку");
-
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Помилка в scheduleFormer");
             }
 
 
@@ -110,11 +73,59 @@ namespace ScheduleDisconnectLight
             }
 
 
-            if (schedule == null) 
+
+        }
+
+        private static Schedule scheduleFormer()
+        {
+
+
+           
+
+            // Определяем путь к корню репозитория
+            string repoRoot = Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..")
+            );
+
+            string stateFile = "";
+
+            if (Api.IsGitHub())
             {
-                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Збой в системі. Графік пустий");
-                return;
+                Console.WriteLine("Это версия ГИТА");
+                stateFile = Path.Combine(repoRoot, "appState.json");
             }
+            else
+            {
+                Console.WriteLine("Это локальная версия");
+                stateFile = Path.Combine(repoRoot, "appState-local.json");
+            }
+
+  
+            // Загружаем состояние
+            var state = AppState.LoadState(stateFile);
+
+   
+            var schedule = IsSourceYasno
+            ? new FormerScheduleFromYasno().Get()
+            : new FormerScheduleFromDTEK().Get();
+
+            if (schedule == null)
+            {
+                new SenderTelegram() { SendOnlyTestGroup = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
+                Console.WriteLine("Не найден не один график на ДТЕК. ");
+                schedule = Schedule.FormScheduleByState(state);
+            }
+            if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate)
+            {
+                Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
+                schedule = Schedule.FormScheduleByState(state);
+            }
+
+
+            schedule.FillServiceProp();
+
+
+
 
 
 
@@ -161,7 +172,7 @@ namespace ScheduleDisconnectLight
             {
                 // Если аварийные отключения и формируем по ясно, графики не отправляем, т.к. на ясно графиков нет
 
-                return;
+                return null;
             }
 
 
@@ -329,7 +340,7 @@ namespace ScheduleDisconnectLight
             // Графики не действуют - оповещение не отправляем
             if (schedule.IsEmergencyShutdowns)
             {
-                return;
+                return schedule;
             }
 
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
@@ -477,6 +488,7 @@ namespace ScheduleDisconnectLight
                     }
                 }
             }
+            return schedule;
 
 
         }
