@@ -36,7 +36,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
-            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 10, 23, 35, 0);
+            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 23, 18, 30, 0);
 
             // Определяем путь к корню репозитория
             string repoRoot = Path.GetFullPath(

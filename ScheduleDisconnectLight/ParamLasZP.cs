@@ -431,14 +431,14 @@ namespace ScheduleDisconnectLight
         {
             private decimal _liter1Horse = (decimal)8;
 
-            public decimal TotalLiters = 115;
+            public decimal TotalLiters = 117;
 
             /// <summary>
             /// Остаток. Сколько литров
             /// </summary>
-            public int BalanceLiters
+            public decimal BalanceLiters
             {
-                get { return Math.Max(0, (int)Math.Round(TotalLiters - ExecLiters, 0)); }
+                get { return Math.Max(0, Math.Round(TotalLiters - ExecLiters, 1)); }
             }
 
             public int BalancePercent
@@ -472,11 +472,11 @@ namespace ScheduleDisconnectLight
             /// <summary>
             /// Использовано. Сколько литров
             /// </summary>
-            public int ExecLiters
+            public decimal ExecLiters
             {
                 get
                 {
-                    return (int)Math.Round(_liter1Horse * ExecHours, 0);
+                    return Math.Round(_liter1Horse * ExecHours, 1);
                 }
             }
 

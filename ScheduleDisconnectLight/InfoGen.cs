@@ -99,7 +99,7 @@ namespace ScheduleDisconnectLight
                 messageStatus =
                     $"<b>Паливо в генераторі:</b>\n" +
                     $"⏳ вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
-                    $"⛽️ залишилось ~ <b>{paramZP.BalanceLiters} л</b>\n" +
+                    $"⛽️ залишилось ~ <b>{Math.Round(paramZP.BalanceLiters,0)} л</b>\n" +
                     $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
                     "\n" +
                     (messageForecast.Length !=0 
@@ -109,7 +109,7 @@ namespace ScheduleDisconnectLight
                     $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime) }\n" +
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
                     $"⚙️ відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{paramZP.ExecLiters} л</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{Math.Round(paramZP.ExecLiters,0)} л</b>\n" +
                     $"🙏 заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
                     (paramZP.IsBalanceEmpty
@@ -270,6 +270,7 @@ namespace ScheduleDisconnectLight
 
         private static void getTimeForecast(Schedule schedule, decimal hours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay)
         {
+            var hoursCuurent = hours;
             dateStopGenStr = DateTime.MinValue;
             balanceTimeStr = string.Empty;
             isCurrentDay = false;
@@ -291,14 +292,14 @@ namespace ScheduleDisconnectLight
                         dateTimeFrom = Api.DateTimeUaCurrent;
                     }
                     var diff = (decimal)(dateTimeTo - dateTimeFrom).TotalHours;
-                    if (hours <= diff)
+                    if (hoursCuurent <= diff)
                     {
-                        dateTimeToResult = dateTimeFrom + TimeSpan.FromHours((double)hours);
+                        dateTimeToResult = dateTimeFrom + TimeSpan.FromHours((double)hoursCuurent);
                         break;
                     }
                     else
                     {
-                        hours = hours - diff;
+                        hoursCuurent = hoursCuurent - diff;
                     }
                 }
 
@@ -315,7 +316,9 @@ namespace ScheduleDisconnectLight
             }
             else
             {
-                balanceTimeStr = Api.GetTimeHours(hours, true);
+
+
+                balanceTimeStr = Api.GetTimeHours(hoursCuurent, true);
 
                 if (schedule.ScheduleNextDay.IsEmpty())
                 {
@@ -329,7 +332,6 @@ namespace ScheduleDisconnectLight
                     // З врахуванням графіку відключень, на кінець завтрашнього дня в залишку паливу в генераторі вистачить на balanceTimeStr
                 }
 
-                // З Врахуванням графіку відключень, на кінець для в генераторі буде залишок 
             }
 
         }
