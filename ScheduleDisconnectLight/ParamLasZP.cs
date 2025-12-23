@@ -429,7 +429,7 @@ namespace ScheduleDisconnectLight
 
         public class Param
         {
-            private decimal _liter1Horse = (decimal)8;
+            private static decimal _liter1Horse = 8;
 
             public decimal TotalLiters = 117;
 
@@ -445,6 +445,13 @@ namespace ScheduleDisconnectLight
             {
                 get { return (int)Math.Round(BalanceLiters/TotalLiters*(decimal)100.00,0); }
             }
+
+            /*
+            public static decimal ConvertHoursToLiters(decimal hours)
+            {
+                return Math.Round(_liter1Horse * hours, 1);
+            }
+            */
 
             /// <summary>
             /// Остаток. Сколько часов

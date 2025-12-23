@@ -29,13 +29,13 @@ namespace ScheduleDisconnectLight
 
             _schedule = schedule;
 
-           /*
-            new SenderTelegram()
-            {
-                SendOnlyTestGroup = _sendOnlyTestGroup,
-                ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroup)
-            }.Send("_");
-           */
+            /*
+             new SenderTelegram()
+             {
+                 SendOnlyTestGroup = _sendOnlyTestGroup,
+                 ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroup)
+             }.Send("_");
+            */
         }
 
 
@@ -58,7 +58,7 @@ namespace ScheduleDisconnectLight
                 {
 
                     getTimeForecast(_schedule, paramZP.BalanceHours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
-                   
+
                     if (dateStopGenStr != DateTime.MinValue)
                     {
                         messageForecast.Append(
@@ -66,8 +66,8 @@ namespace ScheduleDisconnectLight
                                "⛔️ паливо скінчиться:\n" +
                               $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n" +
                               $"🕒 ~ <b>{Api.TimeToStr(dateStopGenStr)}</b>\n");
-                               
-                           
+
+
 
                     }
                     else
@@ -99,16 +99,16 @@ namespace ScheduleDisconnectLight
                 messageStatus =
                     $"<b>Паливо в генераторі:</b>\n" +
                     $"⏳ вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
-                    $"⛽️ залишилось ~ <b>{Math.Round(paramZP.BalanceLiters, 0)} л</b>\n" +
+                    $"⛽️ залишилось ~ <b>{Math.Round(paramZP.BalanceLiters > 0 && paramZP.BalanceLiters<=1 ? 1 : paramZP.BalanceLiters, 0)} л</b>\n" +
                     $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
                     "\n" +
-                    messageForecast.ToString()+
+                    messageForecast.ToString() +
 
                     $"<b>Остання заправка:</b>\n" +
-                    $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime) }\n" +
+                    $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
                     $"⚙️ відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{Math.Round(paramZP.ExecLiters,0)} л</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{Math.Round(paramZP.ExecLiters>0 && paramZP.ExecLiters <= 1 ? 1 : paramZP.ExecLiters, 0 )} л</b>\n" +
                     $"🙏 заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
                     (paramZP.IsBalanceEmpty
@@ -132,17 +132,17 @@ namespace ScheduleDisconnectLight
             }
 
 
-    
+
 
             decimal balanceHoursOld = getOldHours();
-           
 
 
-            
-            if (paramZP.BalanceHours >= 3) 
+
+
+            if (paramZP.BalanceHours >= 3)
             {
-                Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours+ " Відправлений показник "+ balanceHoursOld);
-                if (balanceHoursOld !=999)
+                Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours + " Відправлений показник " + balanceHoursOld);
+                if (balanceHoursOld != 999)
                 {
                     saveHours(999);
                 }
@@ -150,7 +150,7 @@ namespace ScheduleDisconnectLight
             }
             else if (paramZP.BalanceHours >= (decimal)0.5)
             {
-                if (balanceHoursOld - paramZP.BalanceHours >= 1) 
+                if (balanceHoursOld - paramZP.BalanceHours >= 1)
                 {
                     Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + paramZP.BalanceHours);
                     // Отправить
@@ -171,7 +171,7 @@ namespace ScheduleDisconnectLight
                 else
                 {
                     // Уже было отправлено
-                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld+", поточний баланс - " + paramZP.BalanceHours);
+                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + paramZP.BalanceHours);
                 }
 
             }
@@ -185,7 +185,7 @@ namespace ScheduleDisconnectLight
 
         private void saveHours(decimal hourse)
         {
-            
+
             if (_isTest)
             {
                 SpreadSheet.SetValue(_service, "ЗаправкаСтатус", 2, 2, hourse.ToString());
