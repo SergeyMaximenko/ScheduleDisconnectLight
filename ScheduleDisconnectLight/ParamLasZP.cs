@@ -262,7 +262,7 @@ namespace ScheduleDisconnectLight
 
             for (int i = 0; i < valuesOnOff.Count; i++)
             {
-                // Пропускаем заголовок
+                    // Пропускаем заголовок
                 if (i == 0)
                 {
                     continue;

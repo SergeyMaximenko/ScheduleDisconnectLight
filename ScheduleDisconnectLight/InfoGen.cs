@@ -74,7 +74,7 @@ namespace ScheduleDisconnectLight
                     {
                         messageForecast.Append(
                             "<b>Прогноз відповідно до графіків відключень:</b>\n" +
-                           $"📅 <u>{(isCurrentDay ? "сьогодні" : "завтра")}</u>, наприкінці дня, запас палива дозволить працювати генератору ще:\n " +
+                           $"📅 <u>{(isCurrentDay ? "сьогодні" : "завтра")}</u>, в кінці дня, запас палива дозволить працювати генератору ще:\n " +
                            $"⏳ ~ <b>{balanceTimeStr}</b>\n");
 
                     }
@@ -291,8 +291,8 @@ namespace ScheduleDisconnectLight
                         dateTimeFrom = Api.DateTimeUaCurrent;
                     }
 
-                    dateTimeFrom = new[] { new DateTime(dateTimeFrom.Year, dateTimeFrom.Month, dateTimeFrom.Day, 6, 0, 0), dateTimeFrom }.Max();
-                    dateTimeTo = new[] { new DateTime(dateTimeTo.Year, dateTimeTo.Month, dateTimeTo.Day, 23, 0, 0), dateTimeTo }.Min();
+                    dateTimeFrom = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 6, 0, 0), dateTimeFrom }.Max();
+                    dateTimeTo = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 23, 0, 0), dateTimeTo }.Min();
 
 
                     var diff = (decimal)(dateTimeTo - dateTimeFrom).TotalHours;

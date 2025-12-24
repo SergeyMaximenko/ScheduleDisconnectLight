@@ -36,7 +36,7 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
             
-            // Api.DateTimeUaCurrent = new DateTime(2025, 12, 23, 20, 45, 0);
+            //Api.DateTimeUaCurrent = new DateTime(2025, 12, 24, 01, 00, 0);
 
 
             Schedule schedule = null;
