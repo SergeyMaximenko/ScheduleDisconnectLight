@@ -7,13 +7,24 @@ namespace Service
 {
     public class SenderTelegram
     {
-        public bool SendOnlyTestGroupParam { get; set; }
+
+        public SenderTelegram()
+        {
+            SendType = SendType.Auto;
+        }
+        public SendType SendType  { get; set; }
+
+        /// <summary>
+        /// Отправить сообщение в доп. ветку
+        /// </summary>
+        public bool SendInChatIdThreadAddition { get; set; }
+
 
         public string ReplyMarkupObj { get; set; }
 
         public void Send(string message)
         {
-            var connect = new ConnectParam(SendOnlyTestGroupParam);
+            var connect = new ConnectParam(SendType);
 
 
 
@@ -24,7 +35,7 @@ namespace Service
                 var data = new Dictionary<string, string>
                     {
                         { "chat_id", connect.ChatId },
-                        { "message_thread_id", connect.ChatIdThread },
+                        { "message_thread_id", SendInChatIdThreadAddition ? connect.ChatIdThreadAdditional : connect.ChatIdThread },
                         { "text", message },
                         { "parse_mode", "HTML"}
                     };

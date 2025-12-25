@@ -48,7 +48,7 @@ namespace ScheduleDisconnectLight
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("Помилка в scheduleFormer");
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в scheduleFormer");
             }
 
 
@@ -63,7 +63,7 @@ namespace ScheduleDisconnectLight
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("Помилка в GeneratorNotification");
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в GeneratorNotification");
 
             }
             
@@ -103,7 +103,7 @@ namespace ScheduleDisconnectLight
 
             if (schedule == null)
             {
-                new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
                 Console.WriteLine("Не найден не один график на ДТЕК. ");
                 schedule = Schedule.FormScheduleByState(state);
             }

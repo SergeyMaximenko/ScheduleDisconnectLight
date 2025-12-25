@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Sheets.v4;
 using Service;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -14,7 +15,7 @@ namespace ScheduleDisconnectLight
     {
 
 
-        private bool _sendOnlyTestGroupParam = false;
+        private SendType _sendType = SendType.Auto;
 
         private Schedule _schedule;
         private SheetsService _service;
@@ -22,17 +23,44 @@ namespace ScheduleDisconnectLight
         public GeneratorNotification(Schedule schedule)
         {
             _service = new SpreadSheet().GetService();
-            _sendTestGroup = Api.SendOnlyTestGroup(_sendOnlyTestGroupParam);
+            _sendTestGroup = Api.SendTestGroup(_sendType);
 
             _schedule = schedule;
 
-            /*
-             new SenderTelegram()
-             {
-                 SendOnlyTestGroup = _sendOnlyTestGroup,
-                 ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroup)
-             }.Send("_");
-            */
+            // На всякий випадок, щоб не заспамити
+           /* if (!Api.IsGitHub())
+            {
+                var sendTypeTmp = SendType.OnlyTest;
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowBonus })
+                }.Send(
+               "🔎 Натисніть кнопку нижче, щоб переглянути <b>нараховану винагороду</b> за заправку генератора\r\n\r\n" +
+               "📌 <i>Ці дані завжди актуальні</i> ⬇️");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowIndicators })
+                }.Send(
+                "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b> та <b>прогноз його закінчення</b> відповідно до графіків відключення\r\n\r\n" +
+                "📌 <i>Ці дані завжди актуальні</i> ⬇️");
+
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.SetIndicators })
+                }.Send(
+                "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
+
+            }
+           */
         }
 
 
@@ -40,7 +68,7 @@ namespace ScheduleDisconnectLight
         {
 
         
-            var statusGen = new GeneratorStatus(_sendOnlyTestGroupParam).GetParam();
+            var statusGen = new GeneratorStatus(_sendType).GetParam();
             string messageStatus = "";
             if (statusGen == null)
             {
@@ -154,8 +182,8 @@ namespace ScheduleDisconnectLight
 
                     new SenderTelegram()
                     {
-                        SendOnlyTestGroupParam = _sendOnlyTestGroupParam,
-                        ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroupParam)
+                        SendType = _sendType,
+                        ReplyMarkupObj = GetReplyMarkup(_sendType, new[] {ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators})
                     }.Send(messageTelegram);
 
                 }
@@ -193,37 +221,64 @@ namespace ScheduleDisconnectLight
         }
 
 
-        public static string GetReplyMarkup(bool sendOnlyTestGroupParam)
+        public static string GetReplyMarkup(SendType sendType, ReplyMarkup[] replyMarkups)
         {
 
-            var connect = new ConnectParam(sendOnlyTestGroupParam);
-
+            var connect = new ConnectParam(sendType);
             string payload = Uri.EscapeDataString("IsTest=" + (connect.SendInTestGroup ? "Yes" : "No"));
 
             string miniAppLink1 = $"https://t.me/{connect.BotUsername}//?startapp={payload}";
             string miniAppLink2 = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
+            string miniAppLink3 = $"https://t.me/{connect.BotUsername}/bonus/?startapp={payload}";
 
-            var replyMarkupObj = new
+
+            var inline_keyboard = new List<object>();
+
+            if (replyMarkups.Contains(ReplyMarkup.SetIndicators))
             {
-                inline_keyboard = new[]
-                {
-                            new[]
+                inline_keyboard.Add(
+                    new[]
                             {
                                 new
                                 {
                                     text = "✍️ Внести показники",
                                     url = miniAppLink1   // ✅ ВАЖНО: url, НЕ web_app
                                 }
-                            },
-                            new[]
+                            }
+                    );
+            }
+
+            if (replyMarkups.Contains(ReplyMarkup.ShowIndicators))
+            {
+                inline_keyboard.Add(
+                    new[]
                             {
                                 new
                                 {
                                     text = "📊 Online показники",
                                     url = miniAppLink2   // ✅ ВАЖНО: url, НЕ web_app
                                 }
-                            },
-                        }
+                            }
+                    );
+            }
+            if (replyMarkups.Contains(ReplyMarkup.ShowBonus))
+            {
+                inline_keyboard.Add(
+                    new[]
+                            {
+                                new
+                                {
+                                    text = "💰 Винагорода",
+                                    url = miniAppLink3   // ✅ ВАЖНО: url, НЕ web_app
+                                }
+                            }
+                    );
+            }
+
+
+            var replyMarkupObj = new
+            {
+                inline_keyboard
             };
 
             return JsonSerializer.Serialize(replyMarkupObj);
@@ -310,6 +365,12 @@ namespace ScheduleDisconnectLight
         }
 
 
+    }
+    public enum ReplyMarkup
+    {
+        SetIndicators,
+        ShowIndicators,
+        ShowBonus
     }
 
 }

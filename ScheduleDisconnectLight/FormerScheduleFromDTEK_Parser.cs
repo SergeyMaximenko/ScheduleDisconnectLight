@@ -295,7 +295,7 @@ namespace ScheduleDisconnectLight
                     {
                         if (string.IsNullOrEmpty(factJsonText))
                         {
-                            new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("НЕ подключено с " + i + " попытки");
+                            new SenderTelegram() { SendType = SendType.OnlyTest }.Send("НЕ подключено с " + i + " попытки");
                         }
                         else
                         {

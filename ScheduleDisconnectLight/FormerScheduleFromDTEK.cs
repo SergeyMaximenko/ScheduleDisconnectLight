@@ -23,7 +23,7 @@ namespace ScheduleDisconnectLight
 
             if (string.IsNullOrEmpty(jsonDtekTmp))
             {
-                new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("Ручний парсер сайту ДТЕК повернув пусте значення");
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Ручний парсер сайту ДТЕК повернув пусте значення");
 
 
 

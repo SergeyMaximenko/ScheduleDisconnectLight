@@ -8,6 +8,14 @@ using System.Threading.Tasks;
 
 namespace Service
 {
+
+    public enum SendType
+    {
+        Auto = 0,
+        OnlyProd = 1,
+        OnlyTest = 2
+    }
+
     public static class Api
     {
         public static string GetMonthName(int month)
@@ -86,9 +94,22 @@ namespace Service
 
         }
 
-        public static bool SendOnlyTestGroup(bool sendOnlyTestGroupParam)
+        public static bool SendTestGroup(SendType sendType = SendType.Auto)
         {
-            return !Api.IsGitHub() || sendOnlyTestGroupParam;
+            if (sendType == SendType.Auto)
+            {
+                return !Api.IsGitHub();
+            }
+            if (sendType == SendType.OnlyTest)
+            {
+                return true;
+            }
+            if (sendType == SendType.OnlyProd)
+            {
+                return false;
+            }
+            return true;
+            
         }
 
        
@@ -266,20 +287,23 @@ namespace Service
 
         public string ChatId { get; private set; }
         public string ChatIdThread { get; private set; }
+        
+        public string ChatIdThreadAdditional { get; private set; }
 
         public readonly string BotUsername = "Chavdar13_2bot";
 
         public bool SendInTestGroup { get; private set; }
 
 
-        public ConnectParam(bool sendOnlyTestGroupParam = false)
+        public ConnectParam(SendType sendType = SendType.Auto)
         {
 
-            if (Api.SendOnlyTestGroup(sendOnlyTestGroupParam))
+            if (Api.SendTestGroup(sendType))
             {
                 SendInTestGroup = true;
                 ChatId = "-1002275491172";
                 ChatIdThread = "";
+                ChatIdThreadAdditional = "";
 
                 //ChatId = "-1003462831682";
                 //ChatIdThread = "2";
@@ -291,6 +315,8 @@ namespace Service
                 SendInTestGroup = false;
                 ChatId = "-1001043114362";
                 ChatIdThread = "54031";
+                // Это дополнительная група, где собраны показатели
+                ChatIdThreadAdditional = "55539";
 
             }
 

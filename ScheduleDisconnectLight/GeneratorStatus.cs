@@ -15,7 +15,7 @@ namespace ScheduleDisconnectLight
         private int _countSendTgError = 0;
 
         /// Відправляти тільки в тестову групу 
-        private bool _sendOnlyTestGroupParam;
+        private SendType _sendType = SendType.Auto;
 
         /// Сервіс для роботи з Excel
         private SheetsService _sheetsService;
@@ -26,9 +26,9 @@ namespace ScheduleDisconnectLight
         public bool NotSendMessage { get; set; }
 
 
-        public GeneratorStatus(bool sendOnlyTestGroupParam)
+        public GeneratorStatus(SendType sendType)
         {
-            _sendOnlyTestGroupParam = sendOnlyTestGroupParam;
+            _sendType = sendType;
             _sheetsService = new SpreadSheet().GetService();
         }
 
@@ -77,7 +77,7 @@ namespace ScheduleDisconnectLight
                 Api.DateTimeUaCurrent = lastRefuel_DateTime.AddSeconds(-1);
                 try
                 {
-                    oldGenStatus = new GeneratorStatus(_sendOnlyTestGroupParam).GetParam();
+                    oldGenStatus = new GeneratorStatus(_sendType).GetParam();
                 }
                 finally
                 {
@@ -107,8 +107,8 @@ namespace ScheduleDisconnectLight
 
                 new SenderTelegram()
                 {
-                    SendOnlyTestGroupParam = _sendOnlyTestGroupParam,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendOnlyTestGroupParam)
+                    SendType = _sendType,
+                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
                 }.Send(message);
 
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, lastRefuel_RowID, 8, "так");
@@ -150,7 +150,7 @@ namespace ScheduleDisconnectLight
                 }
 
                 // 3. Проверяем строки: для теста берем только 
-                if (Api.SendOnlyTestGroup(_sendOnlyTestGroupParam))
+                if (Api.SendTestGroup(_sendType))
                 {
                     if (currentRefuel_RegTest != "так")
                     {
@@ -453,7 +453,7 @@ namespace ScheduleDisconnectLight
             // Иначе через спам может быть ошибка
             if (_countSendTgError <= 5)
             {
-                new SenderTelegram() { SendOnlyTestGroupParam = true }.Send(message);
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send(message);
             }
 
         }
