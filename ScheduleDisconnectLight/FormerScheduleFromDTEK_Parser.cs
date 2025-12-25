@@ -1,8 +1,7 @@
 ﻿//using Microsoft.Playwright;
 
+using Service;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -212,7 +211,7 @@ namespace ScheduleDisconnectLight
 
 
 
-    public class ParseDTEK
+    public class FormerScheduleFromDTEK_Parser
     {
         public string Get()
         {
@@ -296,7 +295,7 @@ namespace ScheduleDisconnectLight
                     {
                         if (string.IsNullOrEmpty(factJsonText))
                         {
-                            new SenderTelegram() { SendOnlyTestGroup = true }.Send("НЕ подключено с " + i + " попытки");
+                            new SenderTelegram() { SendOnlyTestGroupParam = true }.Send("НЕ подключено с " + i + " попытки");
                         }
                         else
                         {

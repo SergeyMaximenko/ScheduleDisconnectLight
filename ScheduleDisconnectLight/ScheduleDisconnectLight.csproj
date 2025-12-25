@@ -35,13 +35,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="InfoGen.cs" />
-    <Compile Include="ParamLasZP.cs" />
-    <Compile Include="Json.cs" />
-    <Compile Include="ParseDTEK.cs" />
+    <Compile Include="FormerScheduleFromDTEK.cs" />
+    <Compile Include="FormerScheduleFromYasno.cs" />
+    <Compile Include="Service\Api.cs" />
+    <Compile Include="GeneratorNotification.cs" />
+    <Compile Include="GeneratorStatus.cs" />
+    <Compile Include="Service\EnumAttributes.cs" />
+    <Compile Include="Service\Json.cs" />
+    <Compile Include="FormerScheduleFromDTEK_Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpreadSheet.cs" />
+    <Compile Include="Service\SenderTelegram.cs" />
+    <Compile Include="Service\SpreadSheet.cs" />
+    <Compile Include="Service\Text.cs" />
+    <Compile Include="Service\TypeTools.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

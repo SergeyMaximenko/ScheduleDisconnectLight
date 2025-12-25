@@ -1,31 +1,28 @@
 ﻿using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
+using Service;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using static ScheduleDisconnectLight.Api;
+
 
 namespace ScheduleDisconnectLight
 {
 
 
-    public class InfoGen
+    public class GeneratorNotification
     {
 
 
-        private bool _sendOnlyTestGroup = false;
+        private bool _sendOnlyTestGroupParam = false;
 
         private Schedule _schedule;
         private SheetsService _service;
-        private bool _isTest;
-        public InfoGen(Schedule schedule)
+        private bool _sendTestGroup;
+        public GeneratorNotification(Schedule schedule)
         {
-            _service = new SpreadSheet().Get();
-            _isTest = Api.SendOnlyTestGroup(_sendOnlyTestGroup);
+            _service = new SpreadSheet().GetService();
+            _sendTestGroup = Api.SendOnlyTestGroup(_sendOnlyTestGroupParam);
 
             _schedule = schedule;
 
@@ -39,13 +36,13 @@ namespace ScheduleDisconnectLight
         }
 
 
-        public void Check()
+        public void Form()
         {
 
-
-            var paramZP = new ParamLasZP(_sendOnlyTestGroup).GetParam();
+        
+            var statusGen = new GeneratorStatus(_sendOnlyTestGroupParam).GetParam();
             string messageStatus = "";
-            if (paramZP == null)
+            if (statusGen == null)
             {
                 Console.WriteLine("ParamLasZP вернул null. Последня заправка не заполнена");
                 saveNote("");
@@ -54,10 +51,10 @@ namespace ScheduleDisconnectLight
             else
             {
                 var messageForecast = new StringBuilder();
-                if (_schedule != null && paramZP.BalanceHours != 0) //
+                if (_schedule != null && statusGen.Balance_Hours != 0) //
                 {
 
-                    getTimeForecast(_schedule, paramZP.BalanceHours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
+                    getTimeForecast(_schedule, statusGen.Balance_Hours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
 
                     if (dateStopGenStr != DateTime.MinValue)
                     {
@@ -66,9 +63,6 @@ namespace ScheduleDisconnectLight
                                "⛔️ паливо скінчиться:\n" +
                               $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n" +
                               $"🕒 ~ <b>{Api.TimeToStr(dateStopGenStr)}</b>\n");
-
-
-
                     }
                     else
                     {
@@ -98,28 +92,28 @@ namespace ScheduleDisconnectLight
 
                 messageStatus =
                     $"<b>Паливо в генераторі:</b>\n" +
-                    $"⏳ вистачить на ~ <b>{paramZP.BalanceHours_Str}</b>\n" +
-                    $"⛽️ залишилось ~ <b>{paramZP.BalanceLitersStr} л</b>\n" +
-                    $"📉 і це складає <b>{paramZP.BalancePercent}%</b>\n" +
+                    $"⏳ вистачить на ~ <b>{statusGen.Balance_HoursStr}</b>\n" +
+                    $"⛽️ залишилось ~ <b>{statusGen.Balance_LitersStr} л</b>\n" +
+                    $"📉 і це складає <b>{statusGen.Balance_Percent}%</b>\n" +
                     "\n" +
                     messageForecast.ToString() +
 
                     $"<b>Остання заправка:</b>\n" +
-                    $"📅 {Api.GetCaptionDate(paramZP.LastZP_DateTime)}\n" +
-                    $"🕒 {Api.TimeToStr(paramZP.LastZP_DateTime)}\n" +
-                    $"⚙️ відпрацював <b>{paramZP.ExecHours_Str}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{paramZP.ExecLitersStr} л</b>\n" +
-                    $"🙏 заправляв <b>{paramZP.LastZP_UserName}</b>\n" +
-                    (!string.IsNullOrEmpty(paramZP.LastZP_UserCode) ? $"👤 <b>@{paramZP.LastZP_UserCode}</b>" : "") +
-                    (paramZP.IsBalanceEmpty
+                    $"📅 {Api.GetCaptionDate(statusGen.LastRefuel_DateTime)}\n" +
+                    $"🕒 {Api.TimeToStr(statusGen.LastRefuel_DateTime)}\n" +
+                    $"⚙️ відпрацював <b>{statusGen.AfterRefuel_HoursStr}</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{statusGen.AfterRefuel_LitersStr} л</b>\n" +
+                    $"🙏 заправляв <b>{statusGen.LastRefuel_UserName}</b>\n" +
+                    (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode) ? $"👤 <b>@{statusGen.LastRefuel_UserCode}</b>" : "") +
+                    (statusGen.IsBalanceEmpty
                     ? "\n\n🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i> "
                     : "");
 
                 var messageStatusToExcelTmp = messageStatus;
-                if (!string.IsNullOrEmpty(paramZP.LastZP_UserCode))
+                if (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode))
                 {
-                    var refHtml = $"<a href=\"https://t.me/{paramZP.LastZP_UserCode}\" target=\"_blank\">t.me/{paramZP.LastZP_UserCode}</a>";
-                    messageStatusToExcelTmp = messageStatus.Replace($"@{paramZP.LastZP_UserCode}", refHtml);
+                    var refHtml = $"<a href=\"https://t.me/{statusGen.LastRefuel_UserCode}\" target=\"_blank\">t.me/{statusGen.LastRefuel_UserCode}</a>";
+                    messageStatusToExcelTmp = messageStatus.Replace($"@{statusGen.LastRefuel_UserCode}", refHtml);
                 }
 
                 var messageToExcel =
@@ -131,30 +125,27 @@ namespace ScheduleDisconnectLight
                 saveNote(messageToExcel);
             }
 
-
-
-
             decimal balanceHoursOld = getOldHours();
 
 
 
 
-            if (paramZP.BalanceHours >= 3)
+            if (statusGen.Balance_Hours >= 3)
             {
-                Console.WriteLine("Баланс палива. В нормі і складає " + paramZP.BalanceHours + " Відправлений показник " + balanceHoursOld);
+                Console.WriteLine("Баланс палива. В нормі і складає " + statusGen.Balance_Hours + " Відправлений показник " + balanceHoursOld);
                 if (balanceHoursOld != 999)
                 {
                     saveHours(999);
                 }
                 // Сообщение не нужно отправлять
             }
-            else if (paramZP.BalanceHours >= (decimal)0.5)
+            else if (statusGen.Balance_Hours >= (decimal)0.5)
             {
-                if (balanceHoursOld - paramZP.BalanceHours >= 1)
+                if (balanceHoursOld - statusGen.Balance_Hours >= 1)
                 {
-                    Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + paramZP.BalanceHours);
+                    Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGen.Balance_Hours);
                     // Отправить
-                    saveHours(paramZP.BalanceHours);
+                    saveHours(statusGen.Balance_Hours);
 
 
                     var messageTelegram =
@@ -163,21 +154,21 @@ namespace ScheduleDisconnectLight
 
                     new SenderTelegram()
                     {
-                        SendOnlyTestGroup = _sendOnlyTestGroup,
-                        ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroup)
+                        SendOnlyTestGroupParam = _sendOnlyTestGroupParam,
+                        ReplyMarkupObj = GetReplyMarkup(_sendOnlyTestGroupParam)
                     }.Send(messageTelegram);
 
                 }
                 else
                 {
                     // Уже было отправлено
-                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + paramZP.BalanceHours);
+                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGen.Balance_Hours);
                 }
 
             }
             else
             {
-                Console.WriteLine("Баланс палива. Повідомлення не відправляємо - " + paramZP.BalanceHours);
+                Console.WriteLine("Баланс палива. Повідомлення НЕ відправляємо - " + statusGen.Balance_Hours);
             }
 
 
@@ -185,60 +176,32 @@ namespace ScheduleDisconnectLight
 
         private void saveHours(decimal hourse)
         {
-
-            if (_isTest)
-            {
-                SpreadSheet.SetValue(_service, "ЗаправкаСтатус", 2, 2, hourse.ToString());
-            }
-            else
-            {
-                SpreadSheet.SetValue(_service, "ЗаправкаСтатус", 2, 1, hourse.ToString());
-            }
+            SpreadSheet.SetValue(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
 
 
         private void saveNote(string note)
         {
-
-
-            if (_isTest)
-            {
-                SpreadSheet.AddNote(_service, "ЗаправкаСтатус", 1, 2, note);
-            }
-            else
-            {
-                SpreadSheet.AddNote(_service, "ЗаправкаСтатус", 1, 1, note);
-            }
+            SpreadSheet.AddNote(_service, SpreadSheet.SheetNameFuelStatus, 1, _sendTestGroup ? 2 : 1, note);
 
         }
 
         private decimal getOldHours()
         {
-
-            if (_isTest)
-            {
-                return ParamLasZP.ConverValue<decimal>(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 2));
-            }
-            else
-            {
-                return ParamLasZP.ConverValue<decimal>(SpreadSheet.GetValue(_service, "ЗаправкаСтатус", 2, 1));
-            }
-
-
+           return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
         }
 
 
-        public static string GetReplyMarkup(bool sendOnlyTestGroup)
+        public static string GetReplyMarkup(bool sendOnlyTestGroupParam)
         {
 
-            var connect = new ConnectParam(sendOnlyTestGroup);
+            var connect = new ConnectParam(sendOnlyTestGroupParam);
 
             string payload = Uri.EscapeDataString("IsTest=" + (connect.SendInTestGroup ? "Yes" : "No"));
 
             string miniAppLink1 = $"https://t.me/{connect.BotUsername}//?startapp={payload}";
             string miniAppLink2 = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
-
 
             var replyMarkupObj = new
             {
