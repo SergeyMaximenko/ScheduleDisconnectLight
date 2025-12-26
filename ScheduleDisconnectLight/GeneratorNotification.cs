@@ -218,7 +218,6 @@ namespace ScheduleDisconnectLight
                 messageToTg = concatMessage(
                     messageBalanceGen, 
                     hasForecast ? messageForecast.ToString() : string.Empty,
-                    hasForecast ? messageSchedule.ToString() : string.Empty,
                     messageLastRefuel);
             }
 
