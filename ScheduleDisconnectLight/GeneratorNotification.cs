@@ -28,7 +28,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-           /* if (!Api.IsGitHub())
+            if (!Api.IsGitHub() && false)
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
@@ -60,7 +60,7 @@ namespace ScheduleDisconnectLight
                 "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
 
             }
-           */
+          
         }
 
 
@@ -69,7 +69,7 @@ namespace ScheduleDisconnectLight
 
         
             var statusGen = new GeneratorStatus(_sendType).GetParam();
-            string messageStatus = "";
+            string messageToTg = "";
             if (statusGen == null)
             {
                 Console.WriteLine("ParamLasZP вернул null. Последня заправка не заполнена");
@@ -78,79 +78,148 @@ namespace ScheduleDisconnectLight
             }
             else
             {
+                var datePower = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 1, 1);
+                var dateGen = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 1);
+                var isPower = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
+                var isGen = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
+
+
                 var messageForecast = new StringBuilder();
+                var messageSchedule = new StringBuilder();
+                var messageBalanceGen = new StringBuilder();
+                var messageLastRefuel = new StringBuilder();
+                var messageStatusPower = new StringBuilder();
+                var messageStatusGen = new StringBuilder();
+                var messageStatusPowerGen = new StringBuilder();
+                var messagePS = new StringBuilder();
+                var messageDateIndicator = new StringBuilder();
+
+                bool hasForecast = false;
+
                 if (_schedule != null && statusGen.Balance_Hours != 0) //
                 {
 
-                    getTimeForecast(_schedule, statusGen.Balance_Hours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
+                    getTimeForecast(_schedule, statusGen.Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
 
+                    //-----
+                    // ПРОГНОЗ
+                    //-----
                     if (dateStopGenStr != DateTime.MinValue)
                     {
                         messageForecast.Append(
-                            "<b>Прогноз відповідно до графіків відключень:</b>\n" +
-                               "⛔️ паливо скінчиться:\n" +
-                              $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n" +
-                              $"🕒 ~ <b>{Api.TimeToStr(dateStopGenStr)}</b>\n");
+                               $"<b>Прогноз відповідно до графіків відключень:</b>\n" +
+                               $"⛔️ паливо скінчиться:\n" +
+                               $"🕒 ~ <b>{Api.TimeToStr(dateStopGenStr)}</b>\n" +
+                               $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n");
+
                     }
                     else
                     {
                         messageForecast.Append(
-                            "<b>Прогноз відповідно до графіків відключень:</b>\n" +
-                           $"📅 <u>{(isCurrentDay ? "сьогодні" : "завтра")}</u>, в кінці дня, запас палива дозволить працювати генератору ще:\n " +
+                           $"<b>Прогноз відповідно до графіків відключень:</b>\n" +
+                           $"📅 <u>{(isCurrentDay ? "сьогодні" : "завтра")}</u>, в кінці дня, запас палива дозволить працювати генератору ще:\n" +
                            $"⏳ ~ <b>{balanceTimeStr}</b>\n");
 
                     }
 
-                    messageForecast.Append("\n");
 
-                    // Отправить сообщение об изменении графика 
-                    messageForecast.Append("<b>Запланові відключення:</b>\n");
-                    messageForecast.Append($"🗓️ {_schedule.ScheduleCurrentDay.GetCaptionDate()}\n");
-                    messageForecast.Append(_schedule.ScheduleCurrentDay.GetPeriodStrForHtmlStatusGen() + "\n");
+                    //-----
+                    // ГРАФИКИ
+                    //-----
+                    messageSchedule.Append(
+                        "<b>Запланові відключення:</b>\n" +
+                        $"🗓️ {_schedule.ScheduleCurrentDay.GetCaptionDate()}\n" +
+                        _schedule.ScheduleCurrentDay.GetPeriodStrForHtmlStatusGen() + "\n");
+
                     if (!_schedule.ScheduleNextDay.IsEmpty())
                     {
-                        messageForecast.Append($"🗓️ {_schedule.ScheduleNextDay.GetCaptionDate()}\n");
-                        messageForecast.Append(_schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
+                        messageSchedule.Append(
+                            $"🗓️ {_schedule.ScheduleNextDay.GetCaptionDate()}\n" +
+                            _schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
                     }
-
-                    messageForecast.Append("\n");
 
 
                 }
 
-                messageStatus =
+                messageBalanceGen.Append(
                     $"<b>Паливо в генераторі:</b>\n" +
                     $"⏳ вистачить на ~ <b>{statusGen.Balance_HoursStr}</b>\n" +
                     $"⛽️ залишилось ~ <b>{statusGen.Balance_LitersStr} л</b>\n" +
-                    $"📉 і це складає <b>{statusGen.Balance_Percent}%</b>\n" +
-                    "\n" +
-                    messageForecast.ToString() +
+                    $"📉 і це складає <b>{statusGen.Balance_Percent}%</b>\n");
 
+
+
+                messageLastRefuel.Append(
                     $"<b>Остання заправка:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGen.LastRefuel_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGen.LastRefuel_DateTime)}\n" +
                     $"⚙️ відпрацював <b>{statusGen.AfterRefuel_HoursStr}</b>\n" +
                     $"🛢️ спожито палива ~ <b>{statusGen.AfterRefuel_LitersStr} л</b>\n" +
                     $"🙏 заправляв <b>{statusGen.LastRefuel_UserName}</b>\n" +
-                    (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode) ? $"👤 <b>@{statusGen.LastRefuel_UserCode}</b>" : "") +
-                    (statusGen.IsBalanceEmpty
-                    ? "\n\n🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i> "
-                    : "");
+                    (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode) ? $"👤 <b>@{statusGen.LastRefuel_UserCode}</b>\n" : ""));
 
-                var messageStatusToExcelTmp = messageStatus;
-                if (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode))
+
+
+                if (statusGen.IsBalanceEmpty)
                 {
-                    var refHtml = $"<a href=\"https://t.me/{statusGen.LastRefuel_UserCode}\" target=\"_blank\">t.me/{statusGen.LastRefuel_UserCode}</a>";
-                    messageStatusToExcelTmp = messageStatus.Replace($"@{statusGen.LastRefuel_UserCode}", refHtml);
+                    messagePS.Append("🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i>");
+
                 }
 
-                var messageToExcel =
-                    $"<b>Показники станом на:</b>\n" +
-                    $"📅 {Api.GetCaptionDate(Api.DateTimeUaCurrent)}\n " +
-                    $"🕒 {Api.TimeToStr(Api.DateTimeUaCurrent)}\n" +
-                    $"\n" +
-                    messageStatusToExcelTmp;
+                string replaceUserToHtml(StringBuilder message)
+                {
+                    if (string.IsNullOrEmpty(statusGen.LastRefuel_UserCode))
+                    {
+                        return message.ToString();
+                    }
+                    var refHtml = $"<a href=\"https://t.me/{statusGen.LastRefuel_UserCode}\" target=\"_blank\">t.me/{statusGen.LastRefuel_UserCode}</a>";
+                    return message.ToString().Replace($"@{statusGen.LastRefuel_UserCode}", refHtml);
+                }
+
+
+ 
+
+                messageStatusPower.AppendLine(
+                     (isPower
+                     ? "✅💡 <b>Світло є</b>\n"+
+                       "🕒 було включено в <b>" + Api.TimeToStr(datePower) + "</b>\n"
+                     : "❌💡 <b>Світло відсутнє</b>\n" +
+                       "🕒 було виключено в <b>" + Api.TimeToStr(datePower) + "</b>\n") +
+                    "📅 " + Api.GetCaptionDate(datePower)+ "\n");
+
+                messageStatusGen.AppendLine(
+                     (isGen
+                     ? "✅🔋 <b>Генератор працює</b>\n" +
+                       "🕒 запустився в <b>" + Api.TimeToStr(dateGen) + "</b>\n"
+                     : "❌🔋 <b>Генератор зупинений</b>\n" +
+                       "🕒 зупинився в <b>" + Api.TimeToStr(dateGen) + "</b>\n") +
+                    "📅 " + Api.GetCaptionDate(dateGen) + "\n");
+
+
+
+                messageDateIndicator.Append(
+                     $"<b>Показники станом на:</b>\n" +
+                     $"📅 {Api.GetCaptionDate(Api.DateTimeUaCurrent)}\n " +
+                     $"🕒 {Api.TimeToStr(Api.DateTimeUaCurrent)}\n");
+
+
+                var messageToExcel = concatMessage(
+                    messageDateIndicator, 
+                    messageBalanceGen, 
+                    messageForecast,
+                    messageStatusPower,
+                    messageStatusGen,
+                    messageSchedule,
+                    replaceUserToHtml(messageLastRefuel), 
+                    messagePS);
+
                 saveNote(messageToExcel);
+
+                messageToTg = concatMessage(
+                    messageBalanceGen, 
+                    hasForecast ? messageForecast.ToString() : string.Empty,
+                    hasForecast ? messageSchedule.ToString() : string.Empty,
+                    messageLastRefuel);
             }
 
             decimal balanceHoursOld = getOldHours();
@@ -178,7 +247,7 @@ namespace ScheduleDisconnectLight
 
                     var messageTelegram =
                         $"🆘 <b>Потрібна заправка генератора</b>\n\n" +
-                        messageStatus;
+                        messageToTg;
 
                     new SenderTelegram()
                     {
@@ -201,6 +270,12 @@ namespace ScheduleDisconnectLight
 
 
         }
+
+        private string concatMessage(params object[] message)
+        {
+            return string.Join("\n", message.Where(t => !string.IsNullOrEmpty(t.ToString())));
+        }
+
 
         private void saveHours(decimal hourse)
         {
@@ -285,8 +360,9 @@ namespace ScheduleDisconnectLight
 
         }
 
-        private static void getTimeForecast(Schedule schedule, decimal hours, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay)
+        private static void getTimeForecast(Schedule schedule, decimal hours, out bool hasForecast,  out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay)
         {
+            hasForecast = false;
             var hoursCuurent = hours;
             dateStopGenStr = DateTime.MinValue;
             balanceTimeStr = string.Empty;
@@ -322,11 +398,13 @@ namespace ScheduleDisconnectLight
 
                     if (hoursCuurent <= diff)
                     {
+                        hasForecast = true;
                         dateTimeToResult = dateTimeFrom + TimeSpan.FromHours((double)hoursCuurent);
                         break;
                     }
                     else
                     {
+                        hasForecast = true;
                         hoursCuurent = hoursCuurent - diff;
                     }
                 }

@@ -284,7 +284,6 @@ namespace Service
     public class ConnectParam
     {
         public string BotToken { get; private set; }
-
         public string ChatId { get; private set; }
         public string ChatIdThread { get; private set; }
         
@@ -316,7 +315,7 @@ namespace Service
                 ChatId = "-1001043114362";
                 ChatIdThread = "54031";
                 // Это дополнительная група, где собраны показатели
-                ChatIdThreadAdditional = "55539";
+                ChatIdThreadAdditional = "55551";
 
             }
 
