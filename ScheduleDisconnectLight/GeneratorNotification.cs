@@ -181,17 +181,17 @@ namespace ScheduleDisconnectLight
 
                 messageStatusPower.AppendLine(
                      (isPower
-                     ? "✅💡 <b>Світло є</b>\n"+
+                     ? "✅💡 <b>Світло є:</b>\n"+
                        "🕒 було включено в <b>" + Api.TimeToStr(datePower) + "</b>\n"
-                     : "❌💡 <b>Світло відсутнє</b>\n" +
+                     : "❌💡 <b>Світло відсутнє:</b>\n" +
                        "🕒 було виключено в <b>" + Api.TimeToStr(datePower) + "</b>\n") +
                     "📅 " + Api.GetCaptionDate(datePower)+ "\n");
 
                 messageStatusGen.AppendLine(
                      (isGen
-                     ? "✅🔋 <b>Генератор працює</b>\n" +
+                     ? "✅🔋 <b>Генератор працює:</b>\n" +
                        "🕒 запустився в <b>" + Api.TimeToStr(dateGen) + "</b>\n"
-                     : "❌🔋 <b>Генератор зупинений</b>\n" +
+                     : "❌🔋 <b>Генератор зупинений:</b>\n" +
                        "🕒 зупинився в <b>" + Api.TimeToStr(dateGen) + "</b>\n") +
                     "📅 " + Api.GetCaptionDate(dateGen) + "\n");
 
