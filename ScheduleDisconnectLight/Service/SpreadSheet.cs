@@ -20,8 +20,11 @@ namespace Service
 
         public const string SheetNameOnOffStatistic = "OnOffСтатистика";
         public const string SheetNameOnOffStatus = "OnOffСтатус";
+
+
+        public const string SheetNameTOStatistic = "ТОСтатистика";
         
-        
+
 
         public SheetsService GetService()
         {

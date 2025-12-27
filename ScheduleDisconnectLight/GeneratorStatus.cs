@@ -32,49 +32,89 @@ namespace ScheduleDisconnectLight
             _sheetsService = new SpreadSheet().GetService();
         }
 
-        public Param GetParam()
+        public ParamRefuel GetParam()
         {
-            var lastRefuelObject = getLastRefuelRow();
-            if (lastRefuelObject == null)
+            //-------------------
+            // ПОСЛЕДННЯ ЗАПРАВКА
+            // ------------------
+            var refuel_Last_Object = getRefuelLastRow();
+            if (refuel_Last_Object == null)
             {
                 Console.WriteLine("Не найден обьект последней заправки");
                 return null;
             }
-    
-            var lastRefuel_Row = lastRefuelObject.Item2;
-            var countRefuel_All = lastRefuelObject.Item3;
-            var countRefuel_Month = lastRefuelObject.Item4;
-            var lastRefuel_RowID = lastRefuelObject.Item1;
 
-            if (lastRefuel_Row == null)
+            var refuel_Last_RowID = refuel_Last_Object.Item1;
+            var refuel_Last_Row = refuel_Last_Object.Item2;
+            var refuel_Count_All = refuel_Last_Object.Item3;
+            var refuel_Count_Month = refuel_Last_Object.Item4;
+            
+
+            if (refuel_Last_Row == null)
             {
                 Console.WriteLine("Не найдена последння заправка");
                 return null;
             }
 
+            var refuel_Last_UserCode = fromRow<string>(refuel_Last_Row, 4);
+            var refuel_Last_UserName = fromRow<string>(refuel_Last_Row, 5);
+            var refuel_Last_Liters = fromRow<int>(refuel_Last_Row, 2);
+            var refuel_Last_IsSend = fromRow<string>(refuel_Last_Row, 8);
+            var refuel_Last_DateTime = fromRow<DateTime>(refuel_Last_Row, 1);
 
-            var lastRefuel_UserCode = fromRow<string>(lastRefuel_Row, 4);
-            var lastRefuel_UserName = fromRow<string>(lastRefuel_Row, 5);
-            var lastRefuel_Liters = fromRow<int>(lastRefuel_Row, 2);
-            var lastRefuel_IsSend = fromRow<string>(lastRefuel_Row, 8);
-            var lastRefuel_DateTime = fromRow<DateTime>(lastRefuel_Row, 1);
+            /*
+            //-------------------
+            // ПОСЛЕДНЕЕ ТО
+            // ------------------
 
-            var hoursAfterZP = getAfterRefuelHours(lastRefuel_DateTime);
-
-            var result = new Param()
+            var TO_Last_Object = getTOLastRow();
+            if (TO_Last_Object == null)
             {
-                LastRefuel_DateTime = lastRefuel_DateTime,
-                AfterRefuel_Hours = hoursAfterZP,
-                LastRefuel_UserCode = lastRefuel_UserCode,
-                LastRefuel_UserName = lastRefuel_UserName,
-                LastRefuel_Liters = lastRefuel_Liters
+                Console.WriteLine("Не найден обьект последней заправки");
+                return null;
+            }
+
+            var TO_Last_RowID = TO_Last_Object.Item1;
+            var TO_Last_Row = TO_Last_Object.Item2;
+            var TO_Count_All = TO_Last_Object.Item3;
+            var TO_Count_Month = TO_Last_Object.Item4;
+
+
+            if (TO_Last_Row == null)
+            {
+                Console.WriteLine("Не найдена последння заправка");
+                return null;
+            }
+
+            var TO_Last_UserCode = fromRow<string>(TO_Last_Row, 4);
+            var TO_Last_UserName = fromRow<string>(TO_Last_Row, 5);
+            var TO_Last_Liters = fromRow<int>(TO_Last_Row, 2);
+            var TO_Last_IsSend = fromRow<string>(TO_Last_Row, 8);
+            var TO_Last_DateTime = fromRow<DateTime>(TO_Last_Row, 1);
+            */
+
+            //-------------------
+            // СКОЛЬКО ВРЕМЕНИ ПРОШЛО С МОМЕНТА СОБЫТИЯ
+            // ------------------
+            var afterEventHours = getAfterEventHours(refuel_Last_DateTime);
+            var afterRefuel_Hours = afterEventHours;
+            //var afterTO_Hours = afterEventHours.Item2;
+
+
+            var result = new ParamRefuel()
+            {
+                Refuel_Last_DateTime = refuel_Last_DateTime,
+                Refuel_ExecAfter_Hours = afterRefuel_Hours,
+                Refuel_Last_UserCode = refuel_Last_UserCode,
+                Refuel_Last_UserName = refuel_Last_UserName,
+                Refuel_Last_Liters = refuel_Last_Liters
             };
 
-            if (lastRefuel_IsSend != "так" && !NotSendMessage)
+            if (refuel_Last_IsSend != "так" && !NotSendMessage)
             {
-                Param oldGenStatus = null;
+                ParamRefuel oldGenStatus = null;
                 var oldDateTimeUaCurrent = Api.DateTimeUaCurrent;
-                Api.DateTimeUaCurrent = lastRefuel_DateTime.AddSeconds(-1);
+                Api.DateTimeUaCurrent = refuel_Last_DateTime.AddSeconds(-1);
                 try
                 {
                     oldGenStatus = new GeneratorStatus(_sendType).GetParam();
@@ -89,20 +129,20 @@ namespace ScheduleDisconnectLight
 
                   $"✅ <b>Генератор заправлено</b>\n" +
                   $"\n" +
-                  $"🙏 <b>Дякуємо {lastRefuel_UserName}</b>\n" +
-                   (!string.IsNullOrEmpty(lastRefuel_UserCode) ? $"👤 <b>@{lastRefuel_UserCode}</b>\n" : "") +
-                   (lastRefuel_Liters != 0                     ? $"⛽️ дозаправлено - <b>{lastRefuel_Liters} л</b>\n" : "") +
-                   (oldGenStatus != null                       ? $"⚙️ використано ~ <b>{oldGenStatus.AfterRefuel_LitersStr} л</b>\n" : "") +
+                  $"🙏 <b>Дякуємо {refuel_Last_UserName}</b>\n" +
+                   (!string.IsNullOrEmpty(refuel_Last_UserCode) ? $"👤 <b>@{refuel_Last_UserCode}</b>\n" : "") +
+                   (refuel_Last_Liters != 0                     ? $"⛽️ дозаправлено - <b>{refuel_Last_Liters} л</b>\n" : "") +
+                   (oldGenStatus != null                       ? $"⚙️ використано ~ <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" : "") +
                   "\n" +
                   "<b>Дата заправки</b>:\n" +
-                  $"📅 {Api.GetCaptionDate(lastRefuel_DateTime)}\n" +
-                  $"🕒 {Api.TimeToStr(lastRefuel_DateTime)}\n" +
+                  $"📅 {Api.GetCaptionDate(refuel_Last_DateTime)}\n" +
+                  $"🕒 {Api.TimeToStr(refuel_Last_DateTime)}\n" +
                   $"\n" +
                   $"<b>Ваша винагорода:</b>\n" +
-                  $"📅 за <b>{Api.GetMonthName(lastRefuel_DateTime.Month)}</b>\n" +
-                  $"💪 заправок: <b>{countRefuel_Month}</b>\n" +
-                  $"💰 <b>винагорода:</b> {countRefuel_Month}*200=<b>{countRefuel_Month * 200} грн</b>\n" +
-                  $"📈 всього Ваших заправок: <b>{countRefuel_All}</b>";
+                  $"📅 за <b>{Api.GetMonthName(refuel_Last_DateTime.Month)}</b>\n" +
+                  $"💪 заправок: <b>{refuel_Count_Month}</b>\n" +
+                  $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
+                  $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>";
 
 
                 new SenderTelegram()
@@ -111,28 +151,30 @@ namespace ScheduleDisconnectLight
                     ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
                 }.Send(message);
 
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, lastRefuel_RowID, 8, "так");
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, lastRefuel_RowID, 9, Math.Round(oldGenStatus?.AfterRefuel_Liters ?? (decimal)0, 3));
+                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
             }
 
             return result;
         }
 
+
+
         /// <summary>
         /// Отримати рядок останньої заправки 
         /// </summary>
-        private Tuple<int, IList<object>, int, int> getLastRefuelRow()
+        private Tuple<int, IList<object>, int, int> getRefuelLastRow()
         {
-            var valuesRefuel = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameFuelStatistic}!A:I").Execute().Values;
+            var refuel_Values = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameFuelStatistic}!A:I").Execute().Values;
 
-            if (valuesRefuel == null || valuesRefuel.Count == 0)
+            if (refuel_Values == null || refuel_Values.Count == 0)
             {
                 Console.WriteLine($"Закладка {SpreadSheet.SheetNameFuelStatistic} пуста");
                 return null;
             }
 
             // Пропустити рядок заправки по умовам 
-            bool skipRowRefuel(IList<object> row, int rowID)
+            bool refuel_SkipRow(IList<object> row, int rowID)
             {
                 // 1. Пропускаем заголовок
                 if (rowID == 0)
@@ -140,11 +182,11 @@ namespace ScheduleDisconnectLight
                     return true;
                 }
 
-                var currentRefuel_Date = fromRow<DateTime>(row, 1);
-                var currentRefuel_RegTest = fromRow<string>(row, 7);
+                var refuel_Current_Date = fromRow<DateTime>(row, 1);
+                var refuel_Current_RegTest = fromRow<string>(row, 7);
 
                 // 2. Пропускаем, если дата больше чем текущая 
-                if (currentRefuel_Date > Api.DateTimeUaCurrent)
+                if (refuel_Current_Date > Api.DateTimeUaCurrent)
                 {
                     return true;
                 }
@@ -152,14 +194,14 @@ namespace ScheduleDisconnectLight
                 // 3. Проверяем строки: для теста берем только 
                 if (Api.SendTestGroup(_sendType))
                 {
-                    if (currentRefuel_RegTest != "так")
+                    if (refuel_Current_RegTest != "так")
                     {
                         return true;
                     }
                 }
                 else
                 {
-                    if (currentRefuel_RegTest == "так")
+                    if (refuel_Current_RegTest == "так")
                     {
                         return true;
                     }
@@ -168,26 +210,26 @@ namespace ScheduleDisconnectLight
             }
 
 
-            IList<object> lastRefuel_Row = null;
-            var lastRefuel_RowID = 0;
-            var lastRefuel_Date = DateTime.MinValue;
+            IList<object> refuel_Last_Row = null;
+            var refuel_Last_RowID = 0;
+            var refuel_Last_Date = DateTime.MinValue;
 
             //1. Знайти строку з максимальною датою заправки 
-            for (int i = 0; i < valuesRefuel.Count; i++)
+            for (int i = 0; i < refuel_Values.Count; i++)
             {
-                var row = valuesRefuel[i];
+                var row = refuel_Values[i];
 
-                if (skipRowRefuel(row, i))
+                if (refuel_SkipRow(row, i))
                 {
                     continue;
                 }
 
                 var currentRefuel_Date = fromRow<DateTime>(row, 1);
-                if (currentRefuel_Date > lastRefuel_Date)
+                if (currentRefuel_Date > refuel_Last_Date)
                 {
-                    lastRefuel_Date = currentRefuel_Date;
-                    lastRefuel_RowID = i;
-                    lastRefuel_Row = row;
+                    refuel_Last_Date = currentRefuel_Date;
+                    refuel_Last_RowID = i;
+                    refuel_Last_Row = row;
                 }
             }
 
@@ -195,16 +237,16 @@ namespace ScheduleDisconnectLight
             var countRefuel_All = 0;
             var countRefuel_Month = 0;
 
-            if (lastRefuel_Row != null)
+            if (refuel_Last_Row != null)
             {
-                var userId = fromRow<string>(lastRefuel_Row, 3);
+                var userId = fromRow<string>(refuel_Last_Row, 3);
 
 
-                for (int i = 0; i < valuesRefuel.Count; i++)
+                for (int i = 0; i < refuel_Values.Count; i++)
                 {
-                    var row = valuesRefuel[i];
+                    var row = refuel_Values[i];
 
-                    if (skipRowRefuel(row, i))
+                    if (refuel_SkipRow(row, i))
                     {
                         continue;
                     }
@@ -216,14 +258,97 @@ namespace ScheduleDisconnectLight
 
                         var dateRow = fromRow<DateTime>(row, 1);
 
-                        if (lastRefuel_Date.Year == dateRow.Year && lastRefuel_Date.Month == dateRow.Month)
+                        if (refuel_Last_Date.Year == dateRow.Year && refuel_Last_Date.Month == dateRow.Month)
                         {
                             countRefuel_Month = countRefuel_Month + 1;
                         }
                     }
                 }
             }
-            return Tuple.Create(lastRefuel_RowID, lastRefuel_Row, countRefuel_All, countRefuel_Month);
+            return Tuple.Create(refuel_Last_RowID, refuel_Last_Row, countRefuel_All, countRefuel_Month);
+
+        }
+
+
+
+        /// <summary>
+        /// Отримати рядок останного ТО
+        /// </summary>
+        public Tuple<int, IList<object>, int> getLastTORow()
+        {
+            var valuesTO = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameTOStatistic}!A:H").Execute().Values;
+
+            if (valuesTO == null || valuesTO.Count == 0)
+            {
+                Console.WriteLine($"Закладка {SpreadSheet.SheetNameTOStatistic} пуста");
+                return null;
+            }
+
+            // Пропустити рядок заправки по умовам 
+            bool skipRowTO(IList<object> row, int rowID)
+            {
+                // 1. Пропускаем заголовок
+                if (rowID == 0)
+                {
+                    return true;
+                }
+
+                var currentTO_Date = fromRow<DateTime>(row, 1);
+                var currentTO_RegTest = fromRow<string>(row, 7);
+
+                // 2. Пропускаем, если дата больше чем текущая 
+                if (currentTO_Date > Api.DateTimeUaCurrent)
+                {
+                    return true;
+                }
+
+                // 3. Проверяем строки: для теста берем только 
+                if (Api.SendTestGroup(_sendType))
+                {
+                    if (currentTO_RegTest != "так")
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (currentTO_RegTest == "так")
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
+            IList<object> lastTO_Row = null;
+            var lastTO_RowID = 0;
+            var lastTO_Date = DateTime.MinValue;
+
+            //1. Знайти строку з максимальною датою заправки 
+            var countTO_All = 0;
+            for (int i = 0; i < valuesTO.Count; i++)
+            {
+                var row = valuesTO[i];
+
+                if (skipRowTO(row, i))
+                {
+                    continue;
+                }
+                
+                countTO_All++;
+
+                var currentTO_Date = fromRow<DateTime>(row, 1);
+                if (currentTO_Date > lastTO_Date)
+                {
+                    lastTO_Date = currentTO_Date;
+                    lastTO_RowID = i;
+                    lastTO_Row = row;
+                }
+            }
+
+           
+            return Tuple.Create(lastTO_RowID, lastTO_Row, countTO_All);
 
         }
 
@@ -231,8 +356,7 @@ namespace ScheduleDisconnectLight
 
 
 
-
-        private decimal getAfterRefuelHours(DateTime lastRefuel_DateTime)
+        private decimal getAfterEventHours(DateTime lastRefuel_DateTime)
         {
 
 
@@ -241,7 +365,7 @@ namespace ScheduleDisconnectLight
             if (valuesOnOff == null || valuesOnOff.Count == 0)
             {
                 Console.WriteLine($"Закладка {SpreadSheet.SheetNameOnOffStatistic} пуста");
-                return 0;
+                return 0;//Tuple.Create((decimal)0, (decimal)0);
             }
 
             var rangesPower = new List<Range>();
@@ -286,7 +410,8 @@ namespace ScheduleDisconnectLight
 
 
 
-            decimal timeGenZP = 0;
+            decimal afterRefuel_Hours = 0;
+            decimal afterTO_Hours = 0;
 
             var listRangeRources = new[] { new RangeSource(Source.Power, rangesPower), new RangeSource(Source.Gen, rangesGen) };
 
@@ -298,6 +423,7 @@ namespace ScheduleDisconnectLight
                     var item = rangeRource.Ranges[i];
 
                     var isLastRow = i == rangeRource.Ranges.Count - 1;
+
 
                     // дата с должна быть заполнена 
                     if (!item.IsSetFrom)
@@ -324,26 +450,44 @@ namespace ScheduleDisconnectLight
                         continue;
                     }
 
-                    if (item.DateFrom >= lastRefuel_DateTime)
+
+                    var dateFrom = item.DateFrom;
+                    var dateTo = item.DateTo == DateTime.MinValue ? Api.DateTimeUaCurrent : item.DateTo; 
+
+
+                    // С МОМЕНТА ПОСЛЕДНЕЙ ЗАПРАВКИ
+                    if (dateFrom >= lastRefuel_DateTime)
+                    {
+                       afterRefuel_Hours = afterRefuel_Hours + (decimal)(dateTo - dateFrom).TotalHours;
+                    }
+                    else if (dateTo >= lastRefuel_DateTime)
+                    {
+                        afterRefuel_Hours = afterRefuel_Hours + (decimal)(dateTo - lastRefuel_DateTime).TotalHours;
+                    }
+                   
+                    /*
+                    // С МОМЕНТА ПОСЛЕДНЕГО ТО
+                    if (item.DateFrom >= lastTO_DateTime)
                     {
                         if (item.IsSetTo)
                         {
-                            timeGenZP = timeGenZP + (decimal)(item.DateTo - item.DateFrom).TotalHours;
+                            afterTO_Hours = afterTO_Hours + (decimal)(item.DateTo - item.DateFrom).TotalHours;
                         }
                         else
                         {
-                            timeGenZP = timeGenZP + (decimal)(Api.DateTimeUaCurrent - item.DateFrom).TotalHours;
+                            afterTO_Hours = afterTO_Hours + (decimal)(Api.DateTimeUaCurrent - item.DateFrom).TotalHours;
                         }
 
                     }
-                    else if (item.DateTo >= lastRefuel_DateTime)
+                    else if (item.DateTo >= lastTO_DateTime)
                     {
-                        timeGenZP = timeGenZP + (decimal)(item.DateTo - lastRefuel_DateTime).TotalHours;
+                        afterTO_Hours = afterTO_Hours + (decimal)(item.DateTo - lastTO_DateTime).TotalHours;
                     }
+                    */
 
                 }
             }
-            return timeGenZP;
+            return afterRefuel_Hours;
         }
 
 
@@ -459,69 +603,69 @@ namespace ScheduleDisconnectLight
         }
 
         /// <summary>
-        /// Класс параметров состояние генератора
+        /// Класс параметров состояние заправки
         /// </summary>
-        public class Param
+        public class ParamRefuel
         {
             private static decimal _liter1Horse = 8;
 
             private static decimal _totalLitersInGenerator = 117;
 
             /// <summary>
-            /// Остаток. Сколько литров
+            /// Заправка. Остаток. Сколько литров
             /// </summary>
-            public decimal Balance_Liters
+            public decimal Refuel_Balance_Liters
             {
-                get { return Math.Max(0, _totalLitersInGenerator - AfterRefuel_Liters); }
+                get { return Math.Max(0, _totalLitersInGenerator - Refuel_ExecAfter_Liters); }
             }
 
             /// <summary>
-            /// Остаток. Сколько литров для протокола
+            /// Заправка. Остаток. Сколько литров для протокола
             /// </summary>
-            public string Balance_LitersStr
+            public string Refuel_Balance_LitersStr
             {
                 get
                 {
-                    return Balance_Liters > 0 && Balance_Liters < 1 ? "1" : ((int)Math.Round(Balance_Liters, 0)).ToString();
+                    return Refuel_Balance_Liters > 0 && Refuel_Balance_Liters < 1 ? "1" : ((int)Math.Round(Refuel_Balance_Liters, 0)).ToString();
                 }
             }
 
             /// <summary>
-            /// Остаток. % 
+            /// Заправка. Остаток. ПРоцент 
             /// </summary>
-            public int Balance_Percent
+            public int Refuel_Balance_Percent
             {
-                get { return (int)Math.Round(Balance_Liters / _totalLitersInGenerator * (decimal)100.00, 0); }
+                get { return (int)Math.Round(Refuel_Balance_Liters / _totalLitersInGenerator * (decimal)100.00, 0); }
             }
 
  
             /// <summary>
-            /// Остаток. Сколько часов
+            /// Заправка. Остаток. Сколько часов
             /// </summary>
-            public decimal Balance_Hours
+            public decimal Refuel_Balance_Hours
             {
-                get { return Math.Round(Balance_Liters / _liter1Horse, 2); }
+                get { return Math.Round(Refuel_Balance_Liters / _liter1Horse, 2); }
 
             }
 
 
             /// <summary>
-            /// Остаток. Сколько часов для протокола
+            /// Заправка. Остаток. Сколько часов для протокола
             /// </summary>
-            public string Balance_HoursStr
+            public string Refuel_Balance_HoursStr
             {
                 get
                 {
-                    return Api.GetTimeHours(Balance_Hours, true);
+                    return Api.GetTimeHours(Refuel_Balance_Hours, true);
                 }
             }
 
             /// <summary>
-            /// Время не осталось
+            /// Заправка. Остаток. Осталось ли время
             /// </summary>
-            public bool IsBalanceEmpty
+            public bool Refuel_Balance_IsEmptyHours
             {
-                get { return Balance_Hours == 0; }
+                get { return Refuel_Balance_Hours == 0; }
 
             }
 
@@ -530,60 +674,60 @@ namespace ScheduleDisconnectLight
             /// <summary>
             /// Использовано. Сколько литров
             /// </summary>
-            public decimal AfterRefuel_Liters 
+            public decimal Refuel_ExecAfter_Liters 
             {
                 get
                 {
-                    return _liter1Horse * AfterRefuel_Hours;
+                    return _liter1Horse * Refuel_ExecAfter_Hours;
                 }
             }
 
             /// <summary>
             /// Использовано. Сколько литров
             /// </summary>
-            public string AfterRefuel_LitersStr
+            public string Refuel_ExecAfter_LitersStr
             {
                 get
                 {
-                    return AfterRefuel_Liters > 0 && AfterRefuel_Liters < 1 ? "1" : ((int)Math.Round(AfterRefuel_Liters, 0)).ToString();
+                    return Refuel_ExecAfter_Liters > 0 && Refuel_ExecAfter_Liters < 1 ? "1" : ((int)Math.Round(Refuel_ExecAfter_Liters, 0)).ToString();
                 }
             }
 
             /// <summary>
-            /// Использовано. Сколько часов
+            /// Использовано. Сколько часов после поледней заправки
             /// </summary>
-            public decimal AfterRefuel_Hours;
+            public decimal Refuel_ExecAfter_Hours;
 
             /// <summary>
-            /// Использовано. Сколько часов для протокола
+            /// Использовано. Сколько часов после поледней заправки ( для протокола)
             /// </summary>
-            public string AfterRefuel_HoursStr
+            public string Refuel_ExecAfter_HoursStr
             {
                 get
                 {
-                    return Api.GetTimeHours(AfterRefuel_Hours, true);
+                    return Api.GetTimeHours(Refuel_ExecAfter_Hours, true);
                 }
             }
 
             /// <summary>
             /// Последння заправка. Время 
             /// </summary>
-            public DateTime LastRefuel_DateTime;
+            public DateTime Refuel_Last_DateTime;
 
             /// <summary>
             /// Последння заправка. Кто заправил
             /// </summary>
-            public string LastRefuel_UserCode;
+            public string Refuel_Last_UserCode;
 
             /// <summary>
             /// Последння заправка. Кто заправил
             /// </summary>
-            public string LastRefuel_UserName;
+            public string Refuel_Last_UserName;
 
             /// <summary>
             /// Последння заправка. Литры
             /// </summary>
-            public int LastRefuel_Liters;
+            public int Refuel_Last_Liters;
 
 
         }

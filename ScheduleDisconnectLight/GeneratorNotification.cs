@@ -96,10 +96,10 @@ namespace ScheduleDisconnectLight
 
                 bool hasForecast = false;
 
-                if (_schedule != null && statusGen.Balance_Hours != 0) //
+                if (_schedule != null && statusGen.Refuel_Balance_Hours != 0) //
                 {
 
-                    getTimeForecast(_schedule, statusGen.Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
+                    getTimeForecast(_schedule, statusGen.Refuel_Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
 
                     //-----
                     // ПРОГНОЗ
@@ -143,24 +143,24 @@ namespace ScheduleDisconnectLight
 
                 messageBalanceGen.Append(
                     $"<b>Паливо в генераторі:</b>\n" +
-                    $"⏳ вистачить на ~ <b>{statusGen.Balance_HoursStr}</b>\n" +
-                    $"⛽️ залишилось ~ <b>{statusGen.Balance_LitersStr} л</b>\n" +
-                    $"📉 і це складає <b>{statusGen.Balance_Percent}%</b>\n");
+                    $"⏳ вистачить на ~ <b>{statusGen.Refuel_Balance_HoursStr}</b>\n" +
+                    $"⛽️ залишилось ~ <b>{statusGen.Refuel_Balance_LitersStr} л</b>\n" +
+                    $"📉 і це складає <b>{statusGen.Refuel_Balance_Percent}%</b>\n");
 
 
 
                 messageLastRefuel.Append(
                     $"<b>Остання заправка:</b>\n" +
-                    $"📅 {Api.GetCaptionDate(statusGen.LastRefuel_DateTime)}\n" +
-                    $"🕒 {Api.TimeToStr(statusGen.LastRefuel_DateTime)}\n" +
-                    $"⚙️ відпрацював <b>{statusGen.AfterRefuel_HoursStr}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{statusGen.AfterRefuel_LitersStr} л</b>\n" +
-                    $"🙏 заправляв <b>{statusGen.LastRefuel_UserName}</b>\n" +
-                    (!string.IsNullOrEmpty(statusGen.LastRefuel_UserCode) ? $"👤 <b>@{statusGen.LastRefuel_UserCode}</b>\n" : ""));
+                    $"📅 {Api.GetCaptionDate(statusGen.Refuel_Last_DateTime)}\n" +
+                    $"🕒 {Api.TimeToStr(statusGen.Refuel_Last_DateTime)}\n" +
+                    $"⚙️ відпрацював <b>{statusGen.Refuel_ExecAfter_HoursStr}</b>\n" +
+                    $"🛢️ спожито палива ~ <b>{statusGen.Refuel_ExecAfter_LitersStr} л</b>\n" +
+                    $"🙏 заправляв <b>{statusGen.Refuel_Last_UserName}</b>\n" +
+                    (!string.IsNullOrEmpty(statusGen.Refuel_Last_UserCode) ? $"👤 <b>@{statusGen.Refuel_Last_UserCode}</b>\n" : ""));
 
 
 
-                if (statusGen.IsBalanceEmpty)
+                if (statusGen.Refuel_Balance_IsEmptyHours)
                 {
                     messagePS.Append("🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i>");
 
@@ -168,12 +168,12 @@ namespace ScheduleDisconnectLight
 
                 string replaceUserToHtml(StringBuilder message)
                 {
-                    if (string.IsNullOrEmpty(statusGen.LastRefuel_UserCode))
+                    if (string.IsNullOrEmpty(statusGen.Refuel_Last_UserCode))
                     {
                         return message.ToString();
                     }
-                    var refHtml = $"<a href=\"https://t.me/{statusGen.LastRefuel_UserCode}\" target=\"_blank\">t.me/{statusGen.LastRefuel_UserCode}</a>";
-                    return message.ToString().Replace($"@{statusGen.LastRefuel_UserCode}", refHtml);
+                    var refHtml = $"<a href=\"https://t.me/{statusGen.Refuel_Last_UserCode}\" target=\"_blank\">t.me/{statusGen.Refuel_Last_UserCode}</a>";
+                    return message.ToString().Replace($"@{statusGen.Refuel_Last_UserCode}", refHtml);
                 }
 
 
@@ -226,22 +226,22 @@ namespace ScheduleDisconnectLight
 
 
 
-            if (statusGen.Balance_Hours >= 3)
+            if (statusGen.Refuel_Balance_Hours >= 3)
             {
-                Console.WriteLine("Баланс палива. В нормі і складає " + statusGen.Balance_Hours + " Відправлений показник " + balanceHoursOld);
+                Console.WriteLine("Баланс палива. В нормі і складає " + statusGen.Refuel_Balance_Hours + " Відправлений показник " + balanceHoursOld);
                 if (balanceHoursOld != 999)
                 {
                     saveHours(999);
                 }
                 // Сообщение не нужно отправлять
             }
-            else if (statusGen.Balance_Hours >= (decimal)0.5)
+            else if (statusGen.Refuel_Balance_Hours >= (decimal)0.5)
             {
-                if (balanceHoursOld - statusGen.Balance_Hours >= 1)
+                if (balanceHoursOld - statusGen.Refuel_Balance_Hours >= 1)
                 {
-                    Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGen.Balance_Hours);
+                    Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGen.Refuel_Balance_Hours);
                     // Отправить
-                    saveHours(statusGen.Balance_Hours);
+                    saveHours(statusGen.Refuel_Balance_Hours);
 
 
                     var messageTelegram =
@@ -258,13 +258,13 @@ namespace ScheduleDisconnectLight
                 else
                 {
                     // Уже было отправлено
-                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGen.Balance_Hours);
+                    Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGen.Refuel_Balance_Hours);
                 }
 
             }
             else
             {
-                Console.WriteLine("Баланс палива. Повідомлення НЕ відправляємо - " + statusGen.Balance_Hours);
+                Console.WriteLine("Баланс палива. Повідомлення НЕ відправляємо - " + statusGen.Refuel_Balance_Hours);
             }
 
 
