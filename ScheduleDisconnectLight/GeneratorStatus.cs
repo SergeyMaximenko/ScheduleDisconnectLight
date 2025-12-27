@@ -607,9 +607,9 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public class ParamRefuel
         {
-            private static decimal _liter1Horse = 8;
+            private static decimal _liter1Horse = (decimal)7.5;
 
-            private static decimal _totalLitersInGenerator = 117;
+            private static decimal _totalLitersInGenerator = 118;
 
             /// <summary>
             /// Заправка. Остаток. Сколько литров
