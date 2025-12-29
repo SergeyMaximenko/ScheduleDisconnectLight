@@ -169,15 +169,18 @@ namespace Service
             return GetTimeHours(TimeSpan.FromHours((double)hours), notAddBrackets);
         }
 
+       
         /// <summary>
         /// Получить наименования количества часов
         /// </summary>
         public static string GetTimeHours(TimeSpan timeSpan, bool notAddBrackets = false)
         {
+            var totalHours = (long)timeSpan.TotalHours;
+
             var result = "";
-            if (timeSpan.Hours > 0)
+            if (totalHours > 0)
             {
-                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{timeSpan.Hours} год";
+                result = result + (!string.IsNullOrEmpty(result) ? " " : "") + $"{totalHours} год";
             }
             if (timeSpan.Minutes > 0)
             {
@@ -197,6 +200,28 @@ namespace Service
             return !string.IsNullOrEmpty(result) ? "(" + result + ")" : "";
 
         }
+     
+
+        /*
+        /// <summary>
+        /// Получить наименование времени: всего часов + остаток минут
+        /// </summary>
+        public static string GetTimeHours(TimeSpan timeSpan, bool notAddBrackets = false)
+        {
+            // Всего часов (без дробной части)
+            long totalHours = (long)timeSpan.TotalHours;
+
+            // Остаток минут
+            int minutes = timeSpan.Minutes;
+
+            string result = $"{totalHours} год {minutes} хв";
+
+            if (notAddBrackets)
+                return result;
+
+            return $"({result})";
+        }
+        */
         /*
         public static T ConverValue<T>(object value)
         {

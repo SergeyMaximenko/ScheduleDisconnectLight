@@ -34,8 +34,6 @@ namespace ScheduleDisconnectLight
             Schedule schedule = null;
 
 
-
-
             //--------------------------------
             //   СФОРМИРОВАТЬ ГРАФИК
             //--------------------------------
