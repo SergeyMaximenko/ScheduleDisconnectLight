@@ -4,7 +4,7 @@
       "Date": "2026-01-02T00:00:00",
       "Times": [
         {
-          "From": "07:00",
+          "From": "08:00",
           "To": "10:30"
         },
         {
@@ -15,8 +15,8 @@
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-01-02T04:00:00",
-  "ScheduleHashDateSet": "2026-01-02T04:06:24.0302779",
+  "ScheduleDateLastUpdate": "2026-01-02T06:39:00",
+  "ScheduleHashDateSet": "2026-01-02T06:42:28.5346254",
   "DateTimePowerOffLastMessage": "2026-01-02T07:00:00",
   "DateTimePowerOnLastMessage": "2026-01-01T13:30:00"
 }
