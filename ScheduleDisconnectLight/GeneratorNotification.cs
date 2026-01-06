@@ -84,6 +84,7 @@ namespace ScheduleDisconnectLight
                 var isGen = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
 
 
+
                 var messageForecast = new StringBuilder();
                 var messageSchedule = new StringBuilder();
                 var messageBalanceGen = new StringBuilder();
