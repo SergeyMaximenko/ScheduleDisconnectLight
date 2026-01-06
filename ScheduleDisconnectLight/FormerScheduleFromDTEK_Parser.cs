@@ -280,7 +280,10 @@ namespace ScheduleDisconnectLight
                     for (i = 1; i <= 10; i++)
                     {
                         var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
-                        var html = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        var htmlContent = resp.Content;
+                        var htmlStringAsync = htmlContent.ReadAsStringAsync();
+                        var htmlAwaiter = htmlStringAsync.GetAwaiter();
+                        var html = htmlAwaiter.GetResult();
 
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
@@ -357,6 +360,7 @@ namespace ScheduleDisconnectLight
             catch (Exception ex)
             {
                 Console.WriteLine("ParseDTEK, ошибка: " + ex.Message);
+                Console.WriteLine("Стек: " + ex.StackTrace);
                 return string.Empty;
             }
         }

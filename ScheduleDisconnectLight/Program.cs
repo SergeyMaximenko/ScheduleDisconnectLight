@@ -45,7 +45,9 @@ namespace ScheduleDisconnectLight
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Помилка в scheduleFormer:" + ex.Message);
+                Console.WriteLine("Стек помилки:" + ex.StackTrace);
+
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в scheduleFormer");
             }
 
