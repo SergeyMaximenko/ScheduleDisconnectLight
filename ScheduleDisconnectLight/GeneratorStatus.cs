@@ -646,7 +646,7 @@ namespace ScheduleDisconnectLight
         {
             private static decimal _liter1Horse = (decimal)7.5;
 
-            private static decimal _totalLitersInGenerator = 118;
+            private static decimal _totalLitersInGenerator = 120;
 
             /// <summary>
             /// Заправка. Остаток. Сколько литров
