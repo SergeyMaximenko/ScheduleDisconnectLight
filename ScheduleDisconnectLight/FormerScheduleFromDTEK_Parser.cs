@@ -279,25 +279,17 @@ namespace ScheduleDisconnectLight
                     int i = 0;
                     for (i = 1; i <= 10; i++)
                     {
-                        Console.WriteLine("1");
                         var respAsync = httpClient.GetAsync(url);
-                        Console.WriteLine("2");
                         var respAwaiter = respAsync.GetAwaiter();
-                        Console.WriteLine("3");
                         var resp = respAwaiter.GetResult();
-                        Console.WriteLine("4");
 
                         //var resp = httpClient.GetAsync(url).GetAwaiter().GetResult();
 
 
                         var htmlContent = resp.Content;
-                        Console.WriteLine("5");
                         var htmlStringAsync = htmlContent.ReadAsStringAsync();
-                        Console.WriteLine("6");
                         var htmlAwaiter = htmlStringAsync.GetAwaiter();
-                        Console.WriteLine("7");
                         var html = htmlAwaiter.GetResult();
-                        Console.WriteLine("8");
 
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
                         if (!string.IsNullOrEmpty(factJsonText))
@@ -373,8 +365,8 @@ namespace ScheduleDisconnectLight
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ParseDTEK, ошибка: " + ex.Message);
-                Console.WriteLine("Стек: " + ex.StackTrace);
+                Console.WriteLine("❌ ParseDTEK, ошибка: " + ex.Message);
+                Console.WriteLine("❌ Стек: " + ex.StackTrace);
                 return string.Empty;
             }
         }

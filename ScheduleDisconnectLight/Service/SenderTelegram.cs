@@ -45,9 +45,9 @@ namespace Service
                     data.Add("reply_markup", ReplyMarkupObj);
                 }
 
-                Console.WriteLine("START SEND TELEGRAM:");
+                Console.WriteLine("### TELEGRAM.START: ### ");
                 Console.WriteLine(message);
-                Console.WriteLine("END SEND TELEGRAM:");
+                Console.WriteLine("### TELEGRAM.END ### ");
 
 
 

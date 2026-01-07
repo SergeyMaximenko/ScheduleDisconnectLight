@@ -262,6 +262,29 @@ namespace Service
 
         public void Exec()
         {
+
+
+            void logError(int attempt,GoogleApiException ex)
+            {
+                Console.WriteLine("Попытка подключения " + attempt);
+
+                Console.WriteLine("--------------");
+                Console.WriteLine($"G.Sheets ERROR CODE => {(int)ex.HttpStatusCode} {ex.HttpStatusCode}");
+                Console.WriteLine($"G.Sheets INFO => {Info}");
+                Console.WriteLine($"G.Sheets MESSAGE => {ex.Error?.Message}");
+
+                if (ex.Error?.Errors != null)
+                {
+                    foreach (var e in ex.Error.Errors)
+                    {
+                        Console.WriteLine($"G.Sheets => {e.Reason}: {e.Message}");
+                    }
+
+                }
+                Console.WriteLine($"G.Sheets STACK => {ex.StackTrace}");
+                Console.WriteLine("--------------");
+            }
+
             var rnd = new Random();
             for (int attempt = 1; attempt <= 5; attempt++)
             {
@@ -280,11 +303,11 @@ namespace Service
                     ex.HttpStatusCode == HttpStatusCode.ServiceUnavailable ||    // 503
                     (int)ex.HttpStatusCode == 429)                               // 429
                 {
-                    Console.WriteLine("Попытка подключения " + attempt);
+                    logError(attempt, ex);
 
                     if (attempt == 5)
                     {
-                        
+                        // Вче попытки исчерпаны. Выдать ошибку 
                         throw;
                     }
                     
@@ -296,23 +319,8 @@ namespace Service
                 }
                 catch (GoogleApiException ex) // ← ВСІ ІНШІ Google API помилки
                 {
-                    Console.WriteLine("Попытка подключения " + attempt);
+                    logError(attempt, ex);
 
-                    Console.WriteLine("--------------");
-                    Console.WriteLine($"G.Sheets ERROR CODE => {(int)ex.HttpStatusCode} {ex.HttpStatusCode}");
-                    Console.WriteLine($"G.Sheets INFO => {Info}");
-                    Console.WriteLine($"G.Sheets MESSAGE => {ex.Error?.Message}");
-
-                    if (ex.Error?.Errors != null)
-                    {
-                        foreach (var e in ex.Error.Errors)
-                        {
-                            Console.WriteLine($"G.Sheets => {e.Reason}: {e.Message}");
-                        }
-
-                    }
-                    Console.WriteLine($"G.Sheets STACK => {ex.StackTrace}");
-                    Console.WriteLine("--------------");
                     throw;
                 }
 

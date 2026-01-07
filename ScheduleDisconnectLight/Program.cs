@@ -40,13 +40,13 @@ namespace ScheduleDisconnectLight
 
             try
             {
-                Console.WriteLine("Запуск scheduleFormer");
+                Console.WriteLine("✅ Запуск scheduleFormer");
                 schedule = scheduleFormer();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Помилка в scheduleFormer:" + ex.Message);
-                Console.WriteLine("Стек помилки:" + ex.StackTrace);
+                Console.WriteLine("❌ Помилка в scheduleFormer:" + ex.Message);
+                Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
 
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в scheduleFormer");
             }
@@ -57,13 +57,13 @@ namespace ScheduleDisconnectLight
             //--------------------------------
             try
             {
-                Console.WriteLine("Запуск GeneratorNotification");
+                Console.WriteLine("✅ Запуск GeneratorNotification");
                 new GeneratorNotification(schedule).Form();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Помилка в GeneratorNotification:"+ex.Message);
-                Console.WriteLine("Стек помилки:" + ex.StackTrace);
+                Console.WriteLine("❌ Помилка в GeneratorNotification:" + ex.Message);
+                Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в GeneratorNotification");
 
             }
@@ -104,13 +104,13 @@ namespace ScheduleDisconnectLight
 
             if (schedule == null)
             {
-                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Графік на сайті ДТЕК пустий. Schedule  = null");
-                Console.WriteLine("Не найден не один график на ДТЕК. ");
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send("❌ Графік на сайті ДТЕК пустий. Schedule  = null");
+                Console.WriteLine("❌ Не найден не один график на ДТЕК. ");
                 schedule = Schedule.FormScheduleByState(state);
             }
             if (schedule.DateLastUpdate < state.ScheduleDateLastUpdate)
             {
-                Console.WriteLine("Дата в графике меньше, чем дата в статусе. График взят из статуса");
+                Console.WriteLine("❌ Дата в графике меньше, чем дата в статусе. График взят из статуса");
                 schedule = Schedule.FormScheduleByState(state);
             }
 
