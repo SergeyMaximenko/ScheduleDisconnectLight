@@ -292,7 +292,7 @@ namespace ScheduleDisconnectLight
 
         private decimal getOldHours()
         {
-           return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
+            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
         }
 
 

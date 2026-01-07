@@ -1,4 +1,5 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿using Google;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -6,8 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using System.Threading;
+using static Google.Apis.Sheets.v4.SpreadsheetsResource.ValuesResource;
+
+
+
 
 namespace Service
 {
@@ -108,13 +113,19 @@ namespace Service
                 }
             };
 
-            service.Spreadsheets
-                .BatchUpdate(request, SpreadsheetId)
-                .Execute();
+            
+
+
+            GoogleExecuteRetry.Exec("SetNote: " + pageExcel ,
+             () =>
+             {
+                 service.Spreadsheets.BatchUpdate(request, SpreadsheetId).Execute();
+             });
+
 
         }
 
-
+        /*
         public static string GetNote(SheetsService service, string spreadsheetId, string pageExcel, int rowIndex, int columnIndex)
         {
             var request = service.Spreadsheets.Get(spreadsheetId);
@@ -146,6 +157,8 @@ namespace Service
 
             return cell.Note;
         }
+        */
+
 
         private static string columnIndexToLetter(int columnIndex)
         {
@@ -187,7 +200,13 @@ namespace Service
             updateRequest.ValueInputOption =
                 SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
 
-            updateRequest.Execute();
+
+            GoogleExecuteRetry.Exec("SetValue: "+pageExcel + " " + updateRange,
+                () =>
+                {
+                    updateRequest.Execute();
+                });
+
 
         }
 
@@ -201,17 +220,114 @@ namespace Service
                 range
             );
 
-            var response = request.Execute();
+            //TResponse response;
+            ValueRange response = null;
 
-            if (response.Values == null || response.Values.Count == 0)
+            GoogleExecuteRetry.Exec("GetValue: " + pageExcel + " " + range,
+                () =>
+                {
+                    response = request.Execute();
+                });
+
+            
+         
+
+            if (response == null || response.Values == null || response.Values.Count == 0)
+            {
                 return default(T);
+            }
+                
 
             if (response.Values[0].Count == 0)
-                return default(T); 
+            {
+                return default(T);
+            }
+                
 
             return TypeTools.Convert<T>(response.Values[0][0]);
         }
 
+    }
+
+    public class GoogleExecuteRetry
+    {
+        public string Info;
+        public Action Action;
+
+        public GoogleExecuteRetry(string info, Action action)
+        {
+            Info = info;
+            Action = action;
+        }
+
+        public void Exec()
+        {
+            var rnd = new Random();
+            for (int attempt = 1; attempt <= 5; attempt++)
+            {
+                try
+                {
+                    Action();
+                    if (attempt > 1)
+                    {
+                        new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Подключено к G.Sheets  ("+ Info + ") с " + attempt+" попытки");
+                    }
+
+                    break; // успіх
+                }
+                catch (GoogleApiException ex) when (
+                    ex.HttpStatusCode == HttpStatusCode.InternalServerError ||   // 500
+                    ex.HttpStatusCode == HttpStatusCode.ServiceUnavailable ||    // 503
+                    (int)ex.HttpStatusCode == 429)                               // 429
+                {
+                    Console.WriteLine("Попытка подключения " + attempt);
+
+                    if (attempt == 5)
+                    {
+                        
+                        throw;
+                    }
+                    
+
+                    // експоненційне зростання по требованиям Google
+                    int delayMs = (int)(400 * Math.Pow(2, attempt - 1));
+                    delayMs += rnd.Next(0, 250); // jitter
+                    Thread.Sleep(delayMs);
+                }
+                catch (GoogleApiException ex) // ← ВСІ ІНШІ Google API помилки
+                {
+                    Console.WriteLine("Попытка подключения " + attempt);
+
+                    Console.WriteLine("--------------");
+                    Console.WriteLine($"G.Sheets ERROR CODE => {(int)ex.HttpStatusCode} {ex.HttpStatusCode}");
+                    Console.WriteLine($"G.Sheets INFO => {Info}");
+                    Console.WriteLine($"G.Sheets MESSAGE => {ex.Error?.Message}");
+
+                    if (ex.Error?.Errors != null)
+                    {
+                        foreach (var e in ex.Error.Errors)
+                        {
+                            Console.WriteLine($"G.Sheets => {e.Reason}: {e.Message}");
+                        }
+
+                    }
+                    Console.WriteLine($"G.Sheets STACK => {ex.StackTrace}");
+                    Console.WriteLine("--------------");
+                    throw;
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"G.Sheets INFO (ошибка типу Exception ) => {Info}");
+                    throw;
+                }
+            }
+        }
+
+        public static void Exec(string info, Action action)
+        {
+            new GoogleExecuteRetry(info, action).Exec();
+        }
     }
 
 }
