@@ -145,16 +145,17 @@ namespace ScheduleDisconnectLight
                   $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
                   $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n" +
                   "\n" +
-                  $"<b>Додаткова аналітика</b>\n" +
-                  $"🔹 <b>фактичні показники:</b>\n" +
-                  $"⛽️  - дозаправлено: <b>{refuel_Last_Liters} л</b>\n" +
-                  $"📈  - середній розхід: <b>{factAvgRefuel.ToString("0.##")} л/год</b>\n" +
-                  $"🕒  - бака вистачить на: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / factAvgRefuel, true)}</b>\n" +
+                  $"<b>Показники з моменту останньої заправки:</b>\n" +
+                  $"🔹 <b>Фактичні:</b>\n" +
+                  $"🕔 відпрацював: <b>{oldGenStatus.Refuel_ExecAfter_HoursStr}</b>\n" +
+                  $"⛽️ дозаправлено: <b>{refuel_Last_Liters} л</b>\n" +
+                  $"📈 середній розхід: <b>{factAvgRefuel.ToString("0.##")} л/год</b>\n" +
+                  $"🕒 бака вистачить: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / factAvgRefuel, true)}</b>\n" +
                   "\n" +
-                  $"🔹 <b>прогнозні показники:</b>\n" +
-                  $"⛽️  - використано: <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" +
-                  $"📈  - середній розхід: <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
-                  $"🕒  - бака вистачить на: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n";
+                  $"🔹 <b>Прогнозні:</b>\n" +
+                  $"⛽️ використано: <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" +
+                  $"📈 середній розхід: <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
+                  $"🕒 бака вистачить: <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n";
 
 
            

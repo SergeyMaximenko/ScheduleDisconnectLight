@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using static ScheduleDisconnectLight.GeneratorStatus;
 
 
 namespace ScheduleDisconnectLight
@@ -28,7 +29,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() && false)
+            if (!Api.IsGitHub() && 1==0)
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
@@ -95,6 +96,8 @@ namespace ScheduleDisconnectLight
                 var messagePS = new StringBuilder();
                 var messageDateIndicator = new StringBuilder();
 
+                var messageSetParam = new StringBuilder();
+
                 bool hasForecast = false;
 
                 if (_schedule != null && statusGen.Refuel_Balance_Hours != 0) //
@@ -139,8 +142,14 @@ namespace ScheduleDisconnectLight
                             _schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
                     }
 
-
                 }
+
+                messageSetParam.Append(
+                    $"<b>Прогноз розрахований з наступними параметрами:</b>\n" +
+                    $"📈 середній розхід ~ <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
+                    $"⛽️ об'єм банка ~ <b>{ParamRefuel._totalLitersInGenerator.ToString("0.##")} л</b>\n" +
+                    $"⏳ на цих параметрах при повному банку генератор буде працювати ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
+
 
                 messageBalanceGen.Append(
                     $"<b>Паливо в генераторі:</b>\n" +
@@ -205,7 +214,8 @@ namespace ScheduleDisconnectLight
 
 
                 var messageToExcel = concatMessage(
-                    messageDateIndicator, 
+                    messageDateIndicator,
+                    messageSetParam,
                     messageBalanceGen, 
                     messageForecast,
                     messageStatusPower,
