@@ -126,6 +126,7 @@ namespace ScheduleDisconnectLight
                     Api.DateTimeUaCurrent = oldDateTimeUaCurrent;
                 }
 
+                var factAvgRefuel = oldGenStatus.Refuel_ExecAfter_Hours == 0 ? 0 : Math.Round(refuel_Last_Liters / oldGenStatus.Refuel_ExecAfter_Hours, 2);
 
                 var message =
 
@@ -133,8 +134,6 @@ namespace ScheduleDisconnectLight
                   $"\n" +
                   $"🙏 <b>Дякуємо {refuel_Last_UserName}</b>\n" +
                    (!string.IsNullOrEmpty(refuel_Last_UserCode) ? $"👤 <b>@{refuel_Last_UserCode}</b>\n" : "") +
-                   (refuel_Last_Liters != 0                     ? $"⛽️ дозаправлено - <b>{refuel_Last_Liters} л</b>\n" : "") +
-                   (oldGenStatus != null                       ? $"⚙️ використано ~ <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" : "") +
                   "\n" +
                   "<b>Дата заправки</b>:\n" +
                   $"📅 {Api.GetCaptionDate(refuel_Last_DateTime)}\n" +
@@ -144,7 +143,22 @@ namespace ScheduleDisconnectLight
                   $"📅 за <b>{Api.GetMonthName(refuel_Last_DateTime.Month)}</b>\n" +
                   $"💪 заправок: <b>{refuel_Count_Month}</b>\n" +
                   $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
-                  $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>";
+                  $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n" +
+                  "\n" +
+                  $"<b>Додаткова аналітика</b>\n" +
+                  $"🔹 <b>фактичні показники:</b>\n" +
+                  $"⛽️  - дозаправлено: <b>{refuel_Last_Liters} л</b>\n" +
+                  $"📈  - середній розхід: <b>{factAvgRefuel.ToString("0.##")} л/год</b>\n" +
+                  $"🕒  - бака вистачить на: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / factAvgRefuel, true)}</b>\n" +
+                  "\n" +
+                  $"🔹 <b>прогнозні показники:</b>\n" +
+                  $"⛽️  - використано: <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" +
+                  $"📈  - середній розхід: <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
+                  $"🕒  - бака вистачить на: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n";
+
+
+           
+
 
 
                 new SenderTelegram()
@@ -155,6 +169,7 @@ namespace ScheduleDisconnectLight
 
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
+                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
             }
 
             /*
@@ -644,9 +659,9 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public class ParamRefuel
         {
-            private static decimal _liter1Horse = (decimal)7.5;
+            public static decimal _liter1Horse = (decimal)7.5;
 
-            private static decimal _totalLitersInGenerator = 120;
+            public static decimal _totalLitersInGenerator = 120;
 
             /// <summary>
             /// Заправка. Остаток. Сколько литров
