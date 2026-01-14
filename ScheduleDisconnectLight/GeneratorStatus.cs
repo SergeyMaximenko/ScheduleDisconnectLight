@@ -660,7 +660,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public class ParamRefuel
         {
-            public static decimal _liter1Horse = (decimal)7.5;
+            public static decimal _liter1Horse = (decimal)11;
 
             public static decimal _totalLitersInGenerator = 120;
 
