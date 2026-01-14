@@ -100,7 +100,7 @@ namespace ScheduleDisconnectLight
 
                 bool hasForecast = false;
 
-                if (_schedule != null && statusGen.Refuel_Balance_Hours != 0) //
+                if (_schedule != null && statusGen.Refuel_Balance_Hours != 0 && !_schedule.IsEmergencyShutdowns) //
                 {
 
                     getTimeForecast(_schedule, statusGen.Refuel_Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
