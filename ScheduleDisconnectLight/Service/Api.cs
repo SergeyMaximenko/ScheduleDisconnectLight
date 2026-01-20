@@ -63,6 +63,12 @@ namespace Service
         }
 
 
+
+
+
+        /// <summary>
+        ///  Вернуть дату в формате 12.12.2025 Вт (сьогодні)
+        /// </summary>
         public static string GetCaptionDate(DateTime datePar)
         {
             var date = datePar.Date;
@@ -71,23 +77,35 @@ namespace Service
             // День недели
             result = result + " " + date.ToString("ddd", new CultureInfo("uk-UA"));
 
-            if (date == Api.DateUaCurrent)
+            var nameDay = getNameDay(date);
+
+            if (!string.IsNullOrEmpty(nameDay))
             {
-                result = result + " " + "(сьогодні)";
-            }
-            else if (date == Api.DateUaNext.Date)
-            {
-                result = result + " " + "(завтра)";
-            }
-            else if (date == Api.DateUaCurrent.AddDays(-1).Date)
-            {
-                result = result + " " + "(вчора)";
-            }
-            else if (date == Api.DateUaCurrent.AddDays(-2).Date)
-            {
-                result = result + " " + "(позавчора)";
+                result = result + " ("+nameDay+")";
             }
             return result;
+        }
+
+
+        private static string getNameDay(DateTime date)
+        {
+            if (date.Date == Api.DateUaCurrent)
+            {
+                return "сьогодні";
+            }
+            else if (date.Date == Api.DateUaNext.Date)
+            {
+                return "завтра";
+            }
+            else if (date.Date == Api.DateUaCurrent.AddDays(-1).Date)
+            {
+                return "вчора";
+            }
+            else if (date.Date == Api.DateUaCurrent.AddDays(-2).Date)
+            {
+                return "позавчора";
+            }
+            return string.Empty;
         }
 
         public static string GetCaptionDateTime(DateTime dateTimePar)
@@ -95,6 +113,25 @@ namespace Service
             return GetCaptionDate(dateTimePar) + " " + TimeToStr(dateTimePar);
 
         }
+
+        public static string GetCaptionDateTimeShort(DateTime dateTime)
+        {
+            var nameDate = getNameDay(dateTime.Date);
+
+            string captionDateTime = "";
+            if (!string.IsNullOrEmpty(nameDate))
+            {
+                captionDateTime = nameDate;
+            }
+            else
+            {
+                captionDateTime = Api.DateToStr(dateTime.Date);
+            }
+
+            return captionDateTime + " в " + Api.TimeToStr(dateTime);
+
+        }
+
 
         public static bool SendTestGroup(SendType sendType = SendType.Auto)
         {

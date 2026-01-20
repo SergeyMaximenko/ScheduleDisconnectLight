@@ -2,6 +2,7 @@
 using Service;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -144,6 +145,7 @@ namespace ScheduleDisconnectLight
 
                 }
 
+
                 messageSetParam.Append(
                     $"<b>Прогноз розрахований з наступними параметрами:</b>\n" +
                     $"📈 середній розхід ~ <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
@@ -151,9 +153,18 @@ namespace ScheduleDisconnectLight
                     $"⏳ на цих параметрах при повному банку генератор буде працювати ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
 
 
+                string captionStopGen = "";
+                if (isGen && statusGen.Refuel_Balance_Hours>=1)
+                {
+                    var dateTimeStopGen = Api.DateTimeUaCurrent.AddHours((double)Math.Round(statusGen.Refuel_Balance_Hours, 3));
+                    captionStopGen = $"🕒 якщо генератор весь час буде працювати, то паливо скінчиться в <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
+                }
+
+
                 messageBalanceGen.Append(
                     $"<b>Паливо в генераторі:</b>\n" +
                     $"⏳ вистачить на ~ <b>{statusGen.Refuel_Balance_HoursStr}</b>\n" +
+                    captionStopGen +
                     $"⛽️ залишилось ~ <b>{statusGen.Refuel_Balance_LitersStr} л</b>\n" +
                     $"📉 і це складає <b>{statusGen.Refuel_Balance_Percent}%</b>\n");
 
