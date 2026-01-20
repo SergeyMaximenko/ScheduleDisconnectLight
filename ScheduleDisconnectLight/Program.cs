@@ -40,11 +40,10 @@ namespace ScheduleDisconnectLight
 
             try
             {
-                if (Api.SheduleIsCorrected)
-                {
+
                     Console.WriteLine("✅ Запуск scheduleFormer");
                     schedule = scheduleFormer();
-                }
+             
                 
             }
             catch (Exception ex)
@@ -168,17 +167,25 @@ namespace ScheduleDisconnectLight
             if (IsSourceYasno && schedule.IsEmergencyShutdowns)
             {
                 // Если аварийные отключения и формируем по ясно, графики не отправляем, т.к. на ясно графиков нет
-
+                Console.WriteLine("Сейчас действуют аварийные отключения. Графики не отправляем");
                 return null;
             }
 
+
+            // ВОЗМОЖНО ВРЕМЕННО.
+            // Для аварийных отключений графики не отправляем, т.к. они неадекватніе
+            if (schedule.IsEmergencyShutdowns)
+            {
+                Console.WriteLine("Сейчас действуют аварийные отключения. Графики не отправляем");
+                return null;
+            }
 
 
             //--------------------------------
             //   С М Е Н А    Г Р А Ф И К А -
             //--------------------------------
 
-   
+
             Console.WriteLine("График старий:" + state.GetHashStr());
 
             Console.WriteLine("График новий:" + schedule.GetHashStr());
