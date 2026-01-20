@@ -687,7 +687,7 @@ namespace ScheduleDisconnectLight
             var periods = Times.Where(t => t.Start > timeStartNext);
             if (periods.Count() == 0)
             {
-                return "На сьогодні відключення більше не заплановані 😊";
+                return "🟡 На сьогодні інформація про відключення відсутня";
             }
 
             return "Планові відключення до кінця дня:\n" +
@@ -705,7 +705,7 @@ namespace ScheduleDisconnectLight
                 var periods = Times.Where(t => t.End >= Api.DateTimeUaCurrent.TimeOfDay);
                 if (periods.Count() == 0)
                 {
-                    return "🟢 На сьогодні відключень більше немає";
+                    return "🟡 На сьогодні інформація про відключення відсутня";
                 }
                 return string.Join("\n", periods.Select(t => "🔴 " + t.GetPeriodStrForHtmlSchedule(null)));
             }
@@ -721,7 +721,7 @@ namespace ScheduleDisconnectLight
         {
             if (Times.Count == 0)
             {
-                return "🟢 Відключення не заплановані";
+                return "🟡 Інформація про відключення відсутня";
             }
 
             return string.Join("\n", Times.Select(t => "🔴 " + t.GetPeriodStrForHtmlSchedule(oldTimes)));
