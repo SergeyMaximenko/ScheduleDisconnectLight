@@ -157,7 +157,7 @@ namespace ScheduleDisconnectLight
                 if (isGen && statusGen.Refuel_Balance_Hours>=1)
                 {
                     var dateTimeStopGen = Api.DateTimeUaCurrent.AddHours((double)Math.Round(statusGen.Refuel_Balance_Hours, 3));
-                    captionStopGen = $"🕒 якщо генератор весь час буде працювати, то паливо скінчиться в <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
+                    captionStopGen = $"🕒 якщо генератор весь час буде працювати, то паливо скінчиться <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
 
 
