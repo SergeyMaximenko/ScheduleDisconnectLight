@@ -18,6 +18,9 @@ namespace Service
 
     public static class Api
     {
+
+        public static bool SheduleIsCorrected = false;
+
         public static string GetMonthName(int month)
         {
             if (month < 1 || month > 12)

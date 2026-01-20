@@ -40,8 +40,12 @@ namespace ScheduleDisconnectLight
 
             try
             {
-                Console.WriteLine("✅ Запуск scheduleFormer");
-                schedule = scheduleFormer();
+                if (Api.SheduleIsCorrected)
+                {
+                    Console.WriteLine("✅ Запуск scheduleFormer");
+                    schedule = scheduleFormer();
+                }
+                
             }
             catch (Exception ex)
             {
