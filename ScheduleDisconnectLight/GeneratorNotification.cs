@@ -30,37 +30,23 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() /*&& 1 == 0*/)
+            if (!Api.IsGitHub() && 1 == 0)
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
-                new SenderTelegram()
-                {
-                    SendInChatIdThreadAddition = true,
-                    SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowBonus })
-                }.Send(
-               "🔎 Натисніть кнопку нижче, щоб переглянути <b>нараховану винагороду</b> за заправку генератора\r\n\r\n" +
-               "📌 <i>Ці дані завжди актуальні</i> ⬇️");
 
-                new SenderTelegram()
-                {
-                    SendInChatIdThreadAddition = true,
-                    SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowIndicators })
-                }.Send(
-                "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b> та <b>прогноз його закінчення</b> відповідно до графіків відключення\r\n\r\n" +
-                "📌 <i>Ці дані завжди актуальні</i> ⬇️");
+
+
+
 
 
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
                     SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.SetIndicators })
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.Moto })
                 }.Send(
-                "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
-
+                "🔎 Натисніть кнопку нижче, щоб <b>актуалізувати мотогодини</b> генератора⬇️");
 
                 new SenderTelegram()
                 {
@@ -70,14 +56,33 @@ namespace ScheduleDisconnectLight
                 }.Send(
                 "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>ТО</b>⬇️");
 
+             
 
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
                     SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.Moto })
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowBonus })
                 }.Send(
-                "🔎 Натисніть кнопку нижче, щоб <b>актуалізувати мотогодини генератора</b>⬇️");
+                "🔎 Натисніть кнопку нижче, щоб переглянути <b>нараховану винагороду</b> за заправку генератора\r\n\r\n" +
+                "📌 <i>Ці дані завжди актуальні</i> ⬇️");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.SetIndicators })
+                }.Send(
+                "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.ShowIndicators })
+                }.Send(
+                 "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b>, <b>прогноз його закінчення</b> та <b>показники ТО</b>\r\n\r\n" +
+                 "📌 <i>Ці дані завжди актуальні</i> ⬇️");
 
             }
 
@@ -390,7 +395,7 @@ namespace ScheduleDisconnectLight
                             {
                                 new
                                 {
-                                    text = "✍️ Внести показники",
+                                    text = "⛽️ Заправка генератора",
                                     url = miniAppLink1   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
