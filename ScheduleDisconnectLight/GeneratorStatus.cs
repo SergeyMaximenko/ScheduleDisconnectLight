@@ -32,7 +32,7 @@ namespace ScheduleDisconnectLight
             _sheetsService = new SpreadSheet().GetService();
         }
 
-        public ParamRefuel GetParam()
+        public ParamRefuel GetParamRefuel()
         {
             //-------------------
             // ПОСЛЕДННЯ ЗАПРАВКА
@@ -62,44 +62,16 @@ namespace ScheduleDisconnectLight
             var refuel_Last_IsSend = fromRow<string>(refuel_Last_Row, 8);
             var refuel_Last_DateTime = fromRow<DateTime>(refuel_Last_Row, 1);
 
-       
-            /*
-            //-------------------
-            // ПОСЛЕДНЕЕ ТО
-            // ------------------
-
-            var tehService_Last_Object = getLastTehServiceRow();
-            if (tehService_Last_Object == null)
-            {
-                Console.WriteLine("Не найден обьект последнего ТО");
-                return null;
-            }
-
-            var tehService_Last_RowID = tehService_Last_Object.Item1;
-            var tehService_Last_Row = tehService_Last_Object.Item2;
-            var tehService_Count_All = tehService_Last_Object.Item3;
 
 
 
-            if (tehService_Last_Row == null)
-            {
-                Console.WriteLine("Не найдена последння заправка");
-                return null;
-            }
-
-            var tehService_Last_UserCode = fromRow<string>(tehService_Last_Row, 3);
-            var tehService_Last_UserName = fromRow<string>(tehService_Last_Row, 4);
-            var tehService_Last_IsSend = fromRow<string>(tehService_Last_Row, 7);
-            var tehService_Last_DateTime = fromRow<DateTime>(tehService_Last_Row, 1);
-            var tehService_Last_Hours = fromRow<decimal>(tehService_Last_Row, 8);
-            */
 
             //-------------------
             // СКОЛЬКО ВРЕМЕНИ ПРОШЛО С МОМЕНТА СОБЫТИЯ
             // ------------------
-            var afterEventHours = getAfterEventHours(refuel_Last_DateTime);
-            var refuel_ExecAfter_Hours = afterEventHours;
-            
+            var refuel_ExecAfter_Hours = getAfterEventHours(refuel_Last_DateTime);
+  
+
 
 
             var paramRefuel = new ParamRefuel()
@@ -119,7 +91,7 @@ namespace ScheduleDisconnectLight
                 Api.DateTimeUaCurrent = refuel_Last_DateTime.AddSeconds(-1);
                 try
                 {
-                    oldGenStatus = new GeneratorStatus(_sendType).GetParam();
+                    oldGenStatus = new GeneratorStatus(_sendType).GetParamRefuel();
                 }
                 finally
                 {
@@ -173,6 +145,138 @@ namespace ScheduleDisconnectLight
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
             }
 
+
+
+
+            return paramRefuel;
+        }
+
+
+
+        public ParamTehService GetParamTehService()
+        {
+            
+
+            //-------------------
+            // ПОСЛЕДНЕЕ ТО
+            // ------------------
+            var tehService_Last_Object = getTehServiceLastRow(true);
+            if (tehService_Last_Object == null)
+            {
+                Console.WriteLine("Не найден обьект последнего ТО");
+                return null;
+            }
+
+            var tehService_Last_RowID = tehService_Last_Object.Item1;
+            var tehService_Last_Row = tehService_Last_Object.Item2;
+
+
+
+            if (tehService_Last_Row == null)
+            {
+                Console.WriteLine("Не найдена последнее ТО");
+                return null;
+            }
+
+            var tehService_Last_UserCode = fromRow<string>(tehService_Last_Row, 4);
+            var tehService_Last_UserName = fromRow<string>(tehService_Last_Row, 5);
+            var tehService_Last_Hours = fromRow<decimal>(tehService_Last_Row, 2);
+            var tehService_Last_IsSend = fromRow<string>(tehService_Last_Row, 8);
+            var tehService_Last_DateTime = fromRow<DateTime>(tehService_Last_Row, 1);
+
+
+            //-------------------
+            // МОТОЧАСИ
+            // ------------------
+            var moto_Last_Object = getTehServiceLastRow(false);
+
+            DateTime moto_Last_DateTime = DateTime.MinValue;
+            decimal moto_Last_Hours = 0;
+
+            if (moto_Last_Object != null)
+            {
+                var moto_Last_RowID = moto_Last_Object.Item1;
+                var moto_Last_Row = moto_Last_Object.Item2;
+                if (moto_Last_Row != null)
+                {
+                    moto_Last_DateTime = fromRow<DateTime>(moto_Last_Row, 1);
+                    moto_Last_Hours = fromRow<decimal>(moto_Last_Row, 2);
+                }
+            }
+            if (tehService_Last_DateTime > moto_Last_DateTime)
+            {
+                moto_Last_DateTime = tehService_Last_DateTime;
+                moto_Last_Hours = tehService_Last_Hours;
+            }
+
+
+            //-------------------
+            // СКОЛЬКО ВРЕМЕНИ ПРОШЛО С МОМЕНТА СОБЫТИЯ
+            // ------------------
+
+            // Количество часов после последнего измерения моточасов
+            var moto_ExecAfter_Hours = Math.Round(getAfterEventHours(moto_Last_DateTime),2);
+
+
+            var execAll = moto_ExecAfter_Hours + moto_Last_Hours;
+
+            var paramTehService = new ParamTehService()
+            {
+                TehService_Last_DateTime = tehService_Last_DateTime,
+                TehService_ExecAfter_Hours = (int)Math.Round(execAll - tehService_Last_Hours,0),
+                TehService_ExecAll_Hours = (int)Math.Round(execAll,0),
+                TehService_Last_UserCode = tehService_Last_UserCode,
+                TehService_Last_UserName = tehService_Last_UserName,
+                TehService_Last_Hours = tehService_Last_Hours
+            };
+
+
+
+            if (tehService_Last_IsSend != "так" && !NotSendMessage)
+            {
+                ParamTehService oldGenStatus = null;
+                var oldDateTimeUaCurrent = Api.DateTimeUaCurrent;
+                Api.DateTimeUaCurrent = tehService_Last_DateTime.AddSeconds(-1);
+                try
+                {
+                    oldGenStatus = new GeneratorStatus(_sendType).GetParamTehService();
+                }
+                finally
+                {
+                    Api.DateTimeUaCurrent = oldDateTimeUaCurrent;
+                }
+
+
+
+                var message =
+
+                  $"✅ <b>Виконано ТО для генератора</b>\n" +
+                  $"\n" +
+                  $"🙏 <b>Дякуємо {tehService_Last_UserName}</b>\n" +
+                   (!string.IsNullOrEmpty(tehService_Last_UserCode) ? $"👤 <b>@{tehService_Last_UserCode}</b>\n" : "") +
+                  "\n" +
+                  "<b>ТО проведено:</b>\n" +
+                  $"📅 {Api.GetCaptionDate(tehService_Last_DateTime)}\n" +
+                  $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n" +
+                  $"⏳ всього мотогодин <b>{paramTehService.TehService_ExecAll_HoursStr}</b>\n" +
+                  $"⏳ з моменту останнього ТО <b>{oldGenStatus.TehService_ExecAfter_HoursStr}</b>\n";
+                  
+
+
+
+
+
+
+                new SenderTelegram()
+                {
+                    SendType = _sendType,
+                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
+                }.Send(message);
+
+                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
+
+            }
+
             /*
             if (tehService_Last_IsSend != "так" && !NotSendMessage)
             {
@@ -215,8 +319,9 @@ namespace ScheduleDisconnectLight
             }
             */
 
-            return paramRefuel;
+            return paramTehService;
         }
+
 
 
 
@@ -330,19 +435,17 @@ namespace ScheduleDisconnectLight
         }
 
 
-        /*
+
         /// <summary>
-        /// Отримати рядок останного ТО
+        /// Отримати рядок останньої заправки 
         /// </summary>
-        public Tuple<int, IList<object>, int> getLastTehServiceRow()
+        public Tuple<int, IList<object>> getTehServiceLastRow(bool isTehService)
         {
-
-
-            var tehService_Values = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"'{SpreadSheet.SheetNameTOStatistic}'!A:I").Execute().Values;
+            var tehService_Values = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameTehService}!A:J").Execute().Values;
 
             if (tehService_Values == null || tehService_Values.Count == 0)
             {
-                Console.WriteLine($"Закладка {SpreadSheet.SheetNameTOStatistic} пуста");
+                Console.WriteLine($"Закладка {SpreadSheet.SheetNameTehService} пуста");
                 return null;
             }
 
@@ -356,7 +459,7 @@ namespace ScheduleDisconnectLight
                 }
 
                 var tehService_Current_Date = fromRow<DateTime>(row, 1);
-                var tehService_Current_RegTest = fromRow<string>(row, 6);
+                var tehService_Current_RegTest = fromRow<string>(row, 7);
 
                 // 2. Пропускаем, если дата больше чем текущая 
                 if (tehService_Current_Date > Api.DateTimeUaCurrent)
@@ -379,6 +482,22 @@ namespace ScheduleDisconnectLight
                         return true;
                     }
                 }
+
+                if (isTehService)
+                {
+                    if (fromRow<string>(row, 9) != "так")
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (fromRow<string>(row, 9) == "так")
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
 
@@ -388,7 +507,6 @@ namespace ScheduleDisconnectLight
             var tehService_Last_Date = DateTime.MinValue;
 
             //1. Знайти строку з максимальною датою заправки 
-            var tehService_Count_All = 0;
             for (int i = 0; i < tehService_Values.Count; i++)
             {
                 var row = tehService_Values[i];
@@ -397,36 +515,40 @@ namespace ScheduleDisconnectLight
                 {
                     continue;
                 }
-                
-                tehService_Count_All++;
 
-                var tehService_Current_Date = fromRow<DateTime>(row, 1);
-                if (tehService_Current_Date > tehService_Last_Date)
+                var currentTehService_Date = fromRow<DateTime>(row, 1);
+                if (currentTehService_Date > tehService_Last_Date)
                 {
-                    tehService_Last_Date = tehService_Current_Date;
+                    tehService_Last_Date = currentTehService_Date;
                     tehService_Last_RowID = i;
                     tehService_Last_Row = row;
                 }
             }
+
            
-            return Tuple.Create(tehService_Last_RowID, tehService_Last_Row, tehService_Count_All);
+            return Tuple.Create(tehService_Last_RowID, tehService_Last_Row);
 
         }
 
-        */
 
 
 
-        private decimal getAfterEventHours(DateTime refuel_Last_DateTime)
+
+        private List<Range> _rangeGen;
+
+        private List<Range> getRangeGen()
         {
-
+            if (_rangeGen != null)
+            {
+                return _rangeGen;
+            }
 
             var requestOnOff = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameOnOffStatistic}!A:F");
             var valuesOnOff = requestOnOff.Execute().Values;
             if (valuesOnOff == null || valuesOnOff.Count == 0)
             {
                 Console.WriteLine($"Закладка {SpreadSheet.SheetNameOnOffStatistic} пуста");
-                return 0; // Tuple.Create((decimal)0, (decimal)0);
+                return new List<Range>(); // Tuple.Create((decimal)0, (decimal)0);
             }
 
             var rangesPower = new List<Range>();
@@ -468,11 +590,11 @@ namespace ScheduleDisconnectLight
                 rangesGen.Add(rangeGen);
             }
 
-
+            _rangeGen = new List<Range>();
 
 
             decimal refuel_ExecAfter_Hours = 0;
-            //decimal tehService_ExecAfter_Hours = 0;
+            decimal moto_ExecAfter_Hours = 0;
 
             var listRangeRources = new[] { new RangeSource(Source.Power, rangesPower), new RangeSource(Source.Gen, rangesGen) };
 
@@ -513,34 +635,43 @@ namespace ScheduleDisconnectLight
 
 
                     var dateFrom = item.DateFrom;
+                    var dateTo = item.DateTo == DateTime.MinValue ? Api.DateTimeUaCurrent : item.DateTo;
+
+
+                    _rangeGen.Add(item);
+
+
+                }
+            }
+            return _rangeGen;
+        }
+
+
+
+        private decimal getAfterEventHours(DateTime last_DateTime)
+        {
+
+            decimal execAfter_Hours = 0;
+            foreach (var item in getRangeGen())
+            {
+
+                
+
+                    var dateFrom = item.DateFrom;
                     var dateTo = item.DateTo == DateTime.MinValue ? Api.DateTimeUaCurrent : item.DateTo; 
 
 
                     // С МОМЕНТА ПОСЛЕДНЕЙ ЗАПРАВКИ
-                    if (dateFrom >= refuel_Last_DateTime)
+                    if (dateFrom >= last_DateTime)
                     {
-                        refuel_ExecAfter_Hours = refuel_ExecAfter_Hours + (decimal)(dateTo - dateFrom).TotalHours;
+                        execAfter_Hours = execAfter_Hours + (decimal)(dateTo - dateFrom).TotalHours;
                     }
-                    else if (dateTo >= refuel_Last_DateTime)
+                    else if (dateTo >= last_DateTime)
                     {
-                        refuel_ExecAfter_Hours = refuel_ExecAfter_Hours + (decimal)(dateTo - refuel_Last_DateTime).TotalHours;
+                        execAfter_Hours = execAfter_Hours + (decimal)(dateTo - last_DateTime).TotalHours;
                     }
-                    /*
-          
-                    // С МОМЕНТА ПОСЛЕДНЕГО ТО
-                    if (dateFrom >= to_Last_DateTime)
-                    {
-                        tehService_ExecAfter_Hours = tehService_ExecAfter_Hours + (decimal)(dateTo - dateFrom).TotalHours;
-                    }
-                    else if (dateTo >= to_Last_DateTime)
-                    {
-                        tehService_ExecAfter_Hours = tehService_ExecAfter_Hours + (decimal)(dateTo - refuel_Last_DateTime).TotalHours;
-                    }
-            
-                    */
-                }
             }
-            return refuel_ExecAfter_Hours;
+            return execAfter_Hours;
         }
 
 
@@ -786,7 +917,7 @@ namespace ScheduleDisconnectLight
         }
 
 
-        /*
+     
         /// <summary>
         /// Класс параметров состояния ТО
         /// </summary>
@@ -800,16 +931,16 @@ namespace ScheduleDisconnectLight
             /// </summary>
             public int TehService_Balance_Percent
             {
-                get { return (int)Math.Round(TehService_Balance_Hours / _totalHoursTehService * (decimal)100.00, 0); }
+                get  { return (int)Math.Round((decimal)TehService_Balance_Hours / (decimal)_totalHoursTehService * 100, 0); }
             }
 
 
             /// <summary>
             /// ТО. Остаток. Сколько часов
             /// </summary>
-            public decimal TehService_Balance_Hours
+            public int TehService_Balance_Hours
             {
-                get { return Math.Max((decimal)0, (decimal)(_totalHoursTehService- TehService_ExecAfter_Hours)); }
+                get { return Math.Max(0, (_totalHoursTehService- TehService_ExecAfter_Hours)); }
 
             }
 
@@ -836,10 +967,29 @@ namespace ScheduleDisconnectLight
 
 
 
+
+            /// <summary>
+            /// Использовано. Сколько всего часов 
+            /// </summary>
+            public int TehService_ExecAll_Hours;
+
+            /// <summary>
+            /// Использовано. Сколько всего часов  ( для протокола)
+            /// </summary>
+            public string TehService_ExecAll_HoursStr
+            {
+                get
+                {
+                    return Api.GetTimeHours(TehService_ExecAll_Hours, true);
+                }
+            }
+
+
             /// <summary>
             /// Использовано. Сколько часов после поледнего ТО
             /// </summary>
-            public decimal TehService_ExecAfter_Hours;
+            public int TehService_ExecAfter_Hours;
+
 
             /// <summary>
             /// Использовано. Сколько часов после поледнего ТО ( для протокола)
@@ -874,7 +1024,7 @@ namespace ScheduleDisconnectLight
 
         }
 
-        */
+      
 
         private T fromRow<T>(IList<object> row, int columnID)
         {
