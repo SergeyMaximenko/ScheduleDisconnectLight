@@ -227,7 +227,7 @@ namespace ScheduleDisconnectLight
                     $"<b>Останнє ТО:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenTehService.TehService_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenTehService.TehService_Last_DateTime)}\n" +
-                    $"⚙️ відпрацював <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
+                    $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
                     $"🙏 контролював <b>{statusGenTehService.TehService_Last_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(statusGenTehService.TehService_Last_UserCode) ? $"👤 <b>@{statusGenTehService.TehService_Last_UserCode}</b>\n" : ""));
             }
