@@ -924,7 +924,7 @@ namespace ScheduleDisconnectLight
         public class ParamTehService
         {
 
-            private int _totalHoursTehService = 250;
+            public int _totalHoursTehService = 250;
 
             /// <summary>
             /// ТО. Остаток. ПРоцент 

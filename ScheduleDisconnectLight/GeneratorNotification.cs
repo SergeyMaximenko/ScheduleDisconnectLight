@@ -189,7 +189,9 @@ namespace ScheduleDisconnectLight
                     $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
                     captionStopGen +
                     $"⛽️ залишилось ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л</b>\n" +
-                    $"📉 і це складає <b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n");
+                    $"📉 і це складає <b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n"+
+                    $"⚙️ працював після заправки <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
+                    $"⛽️ спожито палива після заправки ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n" );
 
 
 
@@ -197,8 +199,6 @@ namespace ScheduleDisconnectLight
                     $"<b>Остання заправка:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenRefuel.Refuel_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenRefuel.Refuel_Last_DateTime)}\n" +
-                    $"⚙️ відпрацював <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
-                    $"🛢️ спожито палива ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n" +
                     $"🙏 заправляв <b>{statusGenRefuel.Refuel_Last_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(statusGenRefuel.Refuel_Last_UserCode) ? $"👤 <b>@{statusGenRefuel.Refuel_Last_UserCode}</b>\n" : ""));
 
@@ -218,7 +218,9 @@ namespace ScheduleDisconnectLight
                 messageLastTehService.Append(
                     $"<b>Показники по ТО:</b>\n" +
                     $"⏳ всього мотогодин <b>{statusGenTehService.TehService_ExecAll_HoursStr}</b>\n" +
-                    $"⏳ до наступного ТО <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n" +
+                    $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
+                    $"⚖️ норма для ТО <b>{Api.GetTimeHours(statusGenTehService._totalHoursTehService,true)}</b>\n" +
+                    $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n" +
                     $"📉 і це складає <b>{statusGenTehService.TehService_Balance_Percent}%</b>\n");
 
                 messageLastTehService.Append("\n");
@@ -227,7 +229,6 @@ namespace ScheduleDisconnectLight
                     $"<b>Останнє ТО:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenTehService.TehService_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenTehService.TehService_Last_DateTime)}\n" +
-                    $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
                     $"🙏 контролював <b>{statusGenTehService.TehService_Last_UserName}</b>\n" +
                     (!string.IsNullOrEmpty(statusGenTehService.TehService_Last_UserCode) ? $"👤 <b>@{statusGenTehService.TehService_Last_UserCode}</b>\n" : ""));
             }
