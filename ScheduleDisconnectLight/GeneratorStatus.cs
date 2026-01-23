@@ -91,7 +91,7 @@ namespace ScheduleDisconnectLight
                 Api.DateTimeUaCurrent = refuel_Last_DateTime.AddSeconds(-1);
                 try
                 {
-                    oldGenStatus = new GeneratorStatus(_sendType).GetParamRefuel();
+                    oldGenStatus = new GeneratorStatus(_sendType) { NotSendMessage = true }.GetParamRefuel();
                 }
                 finally
                 {
@@ -239,14 +239,14 @@ namespace ScheduleDisconnectLight
                 Api.DateTimeUaCurrent = tehService_Last_DateTime.AddSeconds(-1);
                 try
                 {
-                    oldGenStatus = new GeneratorStatus(_sendType).GetParamTehService();
+                    oldGenStatus = new GeneratorStatus(_sendType) { NotSendMessage = true}.GetParamTehService();
                 }
                 finally
                 {
                     Api.DateTimeUaCurrent = oldDateTimeUaCurrent;
                 }
 
-
+                var hoursLastTo = oldGenStatus != null ? paramTehService.TehService_Last_Hours - oldGenStatus.TehService_Last_Hours : 0;
 
                 var message =
 
@@ -258,22 +258,20 @@ namespace ScheduleDisconnectLight
                   "<b>ТО проведено:</b>\n" +
                   $"📅 {Api.GetCaptionDate(tehService_Last_DateTime)}\n" +
                   $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n" +
-                  $"⏳ всього мотогодин <b>{paramTehService.TehService_ExecAll_HoursStr}</b>\n" +
-                  $"⏳ з моменту останнього ТО <b>{oldGenStatus.TehService_ExecAfter_HoursStr}</b>\n";
+                  $"⏳ всього мотогодин <b>{Api.GetTimeHours(paramTehService.TehService_Last_Hours, true)}</b>\n" +
+                  (hoursLastTo != 0 ? $"⏳ з моменту останнього ТО <b>{Api.GetTimeHours(hoursLastTo, true)}</b>\n" : "");
                   
-
-
-
 
 
 
                 new SenderTelegram()
                 {
                     SendType = _sendType,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
+                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.ShowIndicators })
                 }.Send(message);
 
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 10, hoursLastTo);
 
             }
 
