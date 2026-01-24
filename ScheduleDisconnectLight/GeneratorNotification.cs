@@ -71,7 +71,7 @@ namespace ScheduleDisconnectLight
                 {
                     SendInChatIdThreadAddition = true,
                     SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.SetIndicators })
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.Refuel })
                 }.Send(
                 "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
 
@@ -97,7 +97,8 @@ namespace ScheduleDisconnectLight
             var statusGenTehService = generatorStatus.GetParamTehService();
 
 
-            string messageToTg = "";
+            string messageToTgRefuel = "";
+            string messageToTgTehService = "";
 
             var datePower = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 1, 1);
             var dateGen = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 1);
@@ -109,7 +110,7 @@ namespace ScheduleDisconnectLight
             var messageForecast = new StringBuilder();
             var messageSchedule = new StringBuilder();
             var messageBalanceGen = new StringBuilder();
-            var messageLastTehService = new StringBuilder();
+            var messageTehService = new StringBuilder();
             var messageLastRefuel = new StringBuilder();
             var messageStatusPower = new StringBuilder();
             var messageStatusGen = new StringBuilder();
@@ -215,7 +216,7 @@ namespace ScheduleDisconnectLight
             if (statusGenTehService != null)
             {
 
-                messageLastTehService.Append(
+                messageTehService.Append(
                     $"<b>Показники по ТО:</b>\n" +
                     $"⏳ всього мотогодин <b>{statusGenTehService.TehService_ExecAll_HoursStr}</b>\n" +
                     $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
@@ -223,9 +224,9 @@ namespace ScheduleDisconnectLight
                     $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n" +
                     $"📉 і це складає <b>{statusGenTehService.TehService_Balance_Percent}%</b>\n");
 
-                messageLastTehService.Append("\n");
+                messageTehService.Append("\n");
 
-                messageLastTehService.Append(
+                messageTehService.Append(
                     $"<b>Останнє ТО:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenTehService.TehService_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenTehService.TehService_Last_DateTime)}\n" +
@@ -280,7 +281,7 @@ namespace ScheduleDisconnectLight
                  $"🕒 {Api.TimeToStr(Api.DateTimeUaCurrent)}\n");
 
 
-            var messageToExcel = concatMessage(
+            var messageSaveIndicatorsToExcel = concatMessage(
                 messageDateIndicator.ToString(),
                 messageSetParam.ToString(),
                 messageBalanceGen.ToString(),
@@ -289,29 +290,32 @@ namespace ScheduleDisconnectLight
                 messageStatusGen.ToString(),
                 messageSchedule.ToString(),
                 replaceUserToHtml(messageLastRefuel).ToString(),
-                replaceUserToHtml(messageLastTehService).ToString(),
+                replaceUserToHtml(messageTehService).ToString(),
                 messagePS.ToString());
 
-            saveNote(messageToExcel);
+            saveNote(messageSaveIndicatorsToExcel);
 
-            messageToTg = concatMessage(
+            messageToTgRefuel = concatMessage(
                 messageBalanceGen.ToString(),
                 hasForecast ? messageForecast.ToString() : string.Empty,
                 messageLastRefuel.ToString());
 
+            messageToTgTehService = concatMessage(
+                messageTehService.ToString()); 
 
-            decimal balanceHoursOld = getOldHours();
+
 
 
             if (statusGenRefuel != null)
             {
+                decimal balanceHoursOld = getHoursRefuel();
 
                 if (statusGenRefuel.Refuel_Balance_Hours >= 3)
                 {
-                    Console.WriteLine("Баланс палива. В нормі і складає " + statusGenRefuel.Refuel_Balance_Hours + " Відправлений показник " + balanceHoursOld);
+                    Console.WriteLine("Баланс палива на заправку. В нормі і складає " + statusGenRefuel.Refuel_Balance_Hours + " Відправлений показник " + balanceHoursOld);
                     if (balanceHoursOld != 999)
                     {
-                        saveHours(999);
+                        saveHoursRefuel(999);
                     }
                     // Сообщение не нужно отправлять
                 }
@@ -319,34 +323,81 @@ namespace ScheduleDisconnectLight
                 {
                     if (balanceHoursOld - statusGenRefuel.Refuel_Balance_Hours >= 1)
                     {
-                        Console.WriteLine("Баланс палива. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGenRefuel.Refuel_Balance_Hours);
+                        Console.WriteLine("Баланс палива на заправку. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGenRefuel.Refuel_Balance_Hours);
                         // Отправить
-                        saveHours(statusGenRefuel.Refuel_Balance_Hours);
+                        saveHoursRefuel(statusGenRefuel.Refuel_Balance_Hours);
 
 
                         var messageTelegram =
                             $"🆘 <b>Потрібна заправка генератора</b>\n\n" +
-                            messageToTg;
+                            messageToTgRefuel;
 
                         new SenderTelegram()
                         {
                             SendType = _sendType,
-                            ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
+                            ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
                         }.Send(messageTelegram);
 
                     }
                     else
                     {
                         // Уже было отправлено
-                        Console.WriteLine("Баланс палива. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGenRefuel.Refuel_Balance_Hours);
+                        Console.WriteLine("Баланс палива на заправку. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGenRefuel.Refuel_Balance_Hours);
                     }
 
                 }
                 else
                 {
-                    Console.WriteLine("Баланс палива. Повідомлення НЕ відправляємо - " + statusGenRefuel.Refuel_Balance_Hours);
+                    Console.WriteLine("Баланс палива на заправку. Повідомлення НЕ відправляємо. Залишок палива " + statusGenRefuel.Refuel_Balance_Hours);
                 }
             }
+
+            if (statusGenTehService != null)
+            {
+                decimal balanceHoursOld = getHoursTehService();
+
+                if (statusGenTehService.TehService_Balance_Hours >= 75)
+                {
+                    Console.WriteLine("Баланс годин на ТО. В нормі і складає " + statusGenTehService.TehService_Balance_Hours + " Відправлений показник " + balanceHoursOld);
+                    if (balanceHoursOld != 999)
+                    {
+                        saveHoursTehService(999);
+                    }
+                    // Сообщение не нужно отправлять
+                }
+                else if (statusGenTehService.TehService_Balance_Hours >= 1)
+                {
+                    if (balanceHoursOld - statusGenTehService.TehService_Balance_Hours >= 25)
+                    {
+                        Console.WriteLine("Баланс палива на ТО. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGenTehService.TehService_Balance_Hours);
+                        // Отправить
+                        saveHoursTehService(statusGenTehService.TehService_Balance_Hours);
+
+
+                        var messageTelegram =
+                            $"⚠️ <b>Потрібно планувати тех.обслуговування генератора</b>\n\n" +
+                            messageToTgTehService;
+
+                        new SenderTelegram()
+                        {
+                            SendType = _sendType,
+                            ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService, ReplyMarkup.ShowIndicators })
+                        }.Send(messageTelegram);
+
+                    }
+                    else
+                    {
+                        // Уже было отправлено
+                        Console.WriteLine("Баланс палива на ТО. Повідомлення БУЛО відправлено раніше при балансі " + balanceHoursOld + ", поточний баланс - " + statusGenTehService.TehService_Balance_Hours);
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Баланс палива на ТО. Повідомлення НЕ відправляємо - " + statusGenTehService.TehService_Balance_Hours);
+                }
+            }
+
 
         }
 
@@ -356,10 +407,25 @@ namespace ScheduleDisconnectLight
         }
 
 
-        private void saveHours(decimal hourse)
+        private void saveHoursRefuel(decimal hourse)
         {
             SpreadSheet.SetValue(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
 
+        }
+        private decimal getHoursRefuel()
+        {
+            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
+        }
+
+
+        private void saveHoursTehService(decimal hourse)
+        {
+            SpreadSheet.SetValue(_service, SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1, hourse.ToString());
+
+        }
+        private decimal getHoursTehService()
+        {
+            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1);
         }
 
 
@@ -369,10 +435,7 @@ namespace ScheduleDisconnectLight
 
         }
 
-        private decimal getOldHours()
-        {
-            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
-        }
+
 
 
         public static string GetReplyMarkup(SendType sendType, ReplyMarkup[] replyMarkups)
@@ -389,7 +452,7 @@ namespace ScheduleDisconnectLight
 
             var inline_keyboard = new List<object>();
 
-            if (replyMarkups.Contains(ReplyMarkup.SetIndicators))
+            if (replyMarkups.Contains(ReplyMarkup.Refuel))
             {
                 inline_keyboard.Add(
                     new[]
@@ -551,7 +614,7 @@ namespace ScheduleDisconnectLight
     }
     public enum ReplyMarkup
     {
-        SetIndicators,
+        Refuel,
         ShowIndicators,
         ShowBonus,
         TehService,

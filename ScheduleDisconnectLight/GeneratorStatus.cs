@@ -137,7 +137,7 @@ namespace ScheduleDisconnectLight
                 new SenderTelegram()
                 {
                     SendType = _sendType,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
+                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
                 }.Send(message);
 
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
@@ -938,7 +938,7 @@ namespace ScheduleDisconnectLight
             /// </summary>
             public int TehService_Balance_Hours
             {
-                get { return Math.Max(0, (_totalHoursTehService- TehService_ExecAfter_Hours)); }
+                get { return  Math.Max(0, (_totalHoursTehService- TehService_ExecAfter_Hours)); }
 
             }
 
