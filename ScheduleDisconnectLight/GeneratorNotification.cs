@@ -218,11 +218,13 @@ namespace ScheduleDisconnectLight
 
                 messageTehService.Append(
                     $"<b>Показники по ТО:</b>\n" +
+                    (statusGenTehService.TehService_Balance_Hours < 10 ? "🆘 УВАГА! Критичний рівень залишку годин для ТО\n" : "") +
                     $"⏳ всього мотогодин <b>{statusGenTehService.TehService_ExecAll_HoursStr}</b>\n" +
                     $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
-                    $"⚖️ норма для ТО <b>{Api.GetTimeHours(statusGenTehService._totalHoursTehService,true)}</b>\n" +
+                    $"⚖️ норма для ТО <b>{Api.GetTimeHours(statusGenTehService._totalHoursTehService, true)}</b>\n" +
                     $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n" +
                     $"📉 і це складає <b>{statusGenTehService.TehService_Balance_Percent}%</b>\n");
+                    
 
                 messageTehService.Append("\n");
 
