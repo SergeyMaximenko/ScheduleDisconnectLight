@@ -801,7 +801,7 @@ namespace ScheduleDisconnectLight
                         var service = new SpreadSheet().GetService();
                         _liter1HorseCache = Api.SendTestGroup()
                             ? SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 2, 1)
-                            : SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 3, 1);
+                            : SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 1, 1);
                     }
                     return (decimal)_liter1HorseCache;
                 }

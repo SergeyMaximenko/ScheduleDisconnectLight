@@ -453,7 +453,7 @@ namespace ScheduleDisconnectLight
         {
 
             var connect = new ConnectParam(sendType);
-            string payload = Uri.EscapeDataString("IsTest=" + (connect.SendInTestGroup ? "Yes" : "No"));
+            string payload = Uri.EscapeDataString("IsTest=" + (connect.SendInTestGroup  ? "Yes" : "No"));
 
             string miniAppLink1 = $"https://t.me/{connect.BotUsername}//?startapp={payload}";
             string miniAppLink2 = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
