@@ -107,7 +107,7 @@ namespace ScheduleDisconnectLight
                 var listTimeRange = new List<Tuple<TimeSpanUser, TimeSpanUser>>();
 
                 // Идем по часам
-                foreach (var itemStatus in itemDates.Value["GPV1.1"].GetDictionary())
+                foreach (var itemStatus in itemDates.Value["GPV37.1"].GetDictionary())
                 {
 
                     var numberTime = Convert.ToInt32(itemStatus.Key);
@@ -211,7 +211,7 @@ namespace ScheduleDisconnectLight
   ""fact"": {
     ""data"": {
       ""1765324800"": {
-        ""GPV1.1"": {
+        ""GPV37.1"": {
           ""1"": ""no"",
           ""2"": ""no"",
           ""3"": ""yes"",
@@ -239,7 +239,7 @@ namespace ScheduleDisconnectLight
         }
       },
       ""1765411200"": {
-        ""GPV1.1"": {
+        ""GPV37.1"": {
           ""1"": ""no"",
           ""2"": ""no"",
           ""3"": ""first"",

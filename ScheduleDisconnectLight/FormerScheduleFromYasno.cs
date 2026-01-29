@@ -47,7 +47,7 @@ namespace ScheduleDisconnectLight
             // jsonYasnoTmp = jsonTmp();
 
 
-            var jsonYasno = new Json(jsonYasnoTmp)["1.1"];
+            var jsonYasno = new Json(jsonYasnoTmp)["37.1"];
             var schedule = new Schedule();
             schedule.DateLastUpdate = getDateUa(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
 
@@ -139,7 +139,7 @@ namespace ScheduleDisconnectLight
         {
             return @"
             {
-              ""1.1"": {
+              ""37.1"": {
                 ""today"": {
                   ""slots"": [
                     {
