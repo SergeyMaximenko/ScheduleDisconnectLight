@@ -23,6 +23,8 @@ namespace Service
         public const string SheetNameFuelStatistic = "ЗаправкаСтатистика";
         public const string SheetNameFuelStatus = "ЗаправкаСтатус";
 
+        public const string SheetAvgRefuel = "СередніВитрати";
+
         public const string SheetNameTehService = "ТОСтатистика";
 
 

@@ -789,7 +789,23 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public class ParamRefuel
         {
-            public static decimal _liter1Horse = (decimal)8.5;
+
+            private static decimal? _liter1HorseCache = null;
+
+            public static decimal _liter1Horse
+            {
+                get
+                {
+                    if (_liter1HorseCache == null)
+                    {
+                        var service = new SpreadSheet().GetService();
+                        _liter1HorseCache = Api.SendTestGroup()
+                            ? SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 2, 1)
+                            : SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 3, 1);
+                    }
+                    return (decimal)_liter1HorseCache;
+                }
+            }
 
             public static decimal _totalLitersInGenerator = 120;
 

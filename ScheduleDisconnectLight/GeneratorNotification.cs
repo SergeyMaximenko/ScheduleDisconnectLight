@@ -30,7 +30,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() && 1 == 0)
+            if (!Api.IsGitHub()) //&& 1 == 0
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
@@ -83,6 +83,15 @@ namespace ScheduleDisconnectLight
                 }.Send(
                  "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b>, <b>прогноз його закінчення</b> та <b>показники ТО</b>\r\n\r\n" +
                  "📌 <i>Ці дані завжди актуальні</i> ⬇️");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.AvgRefuel })
+                }.Send(
+ "🔎 Натисніть кнопку нижче, щоб встановити <b>середній прогнозний</b> показник <b>витрат палива</b> ⬇️");
+
 
             }
 
@@ -451,6 +460,7 @@ namespace ScheduleDisconnectLight
             string miniAppLink3 = $"https://t.me/{connect.BotUsername}/bonus/?startapp={payload}";
             string miniAppLink4 = $"https://t.me/{connect.BotUsername}/tehservice/?startapp={payload}_IsTO=Yes";
             string miniAppLink5 = $"https://t.me/{connect.BotUsername}/setmoto/?startapp={payload}";
+            string miniAppLink6 = $"https://t.me/{connect.BotUsername}/avgrefuel/?startapp={payload}";
 
             var inline_keyboard = new List<object>();
 
@@ -516,6 +526,19 @@ namespace ScheduleDisconnectLight
                                 {
                                     text = "🔄 Актуалізація мотогодин",
                                     url = miniAppLink5   // ✅ ВАЖНО: url, НЕ web_app
+                                }
+                            }
+                    );
+            }
+            if (replyMarkups.Contains(ReplyMarkup.AvgRefuel))
+            {
+                inline_keyboard.Add(
+                    new[]
+                            {
+                                new
+                                {
+                                    text = "📈 Встановити прогноз витрат на паливо",
+                                    url = miniAppLink6   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
@@ -620,7 +643,8 @@ namespace ScheduleDisconnectLight
         ShowIndicators,
         ShowBonus,
         TehService,
-        Moto
+        Moto,
+        AvgRefuel
     }
 
 }
