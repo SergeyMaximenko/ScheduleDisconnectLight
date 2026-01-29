@@ -107,7 +107,7 @@ namespace ScheduleDisconnectLight
                 var listTimeRange = new List<Tuple<TimeSpanUser, TimeSpanUser>>();
 
                 // Идем по часам
-                foreach (var itemStatus in itemDates.Value["GPV37.1"].GetDictionary())
+                foreach (var itemStatus in itemDates.Value[$"GPV{Api.CodeGroup}"].GetDictionary())
                 {
 
                     var numberTime = Convert.ToInt32(itemStatus.Key);
@@ -204,14 +204,14 @@ namespace ScheduleDisconnectLight
 
         private string jsonTmp()
         {
-            return @"
-{
+            return $@"
+{{
   ""regionId"": ""kyiv"",
   ""lastUpdated"": ""2025-12-09T12:32:56.288Z"",
-  ""fact"": {
-    ""data"": {
-      ""1765324800"": {
-        ""GPV37.1"": {
+  ""fact"": {{
+    ""data"": {{
+      ""1765324800"": {{
+        ""GPV{{{Api.CodeGroup}}}"": {{
           ""1"": ""no"",
           ""2"": ""no"",
           ""3"": ""yes"",
@@ -236,10 +236,10 @@ namespace ScheduleDisconnectLight
           ""22"": ""yes"",
           ""23"": ""yes"",
           ""24"": ""yes""
-        }
-      },
-      ""1765411200"": {
-        ""GPV37.1"": {
+        }}
+      }},
+      ""1765411200"": {{
+        ""GPV{Api.CodeGroup}"": {{
           ""1"": ""no"",
           ""2"": ""no"",
           ""3"": ""first"",
@@ -264,14 +264,15 @@ namespace ScheduleDisconnectLight
           ""22"": ""yes"",
           ""23"": ""no"",
           ""24"": ""no""
-        }
-      }
-    },
+        }}
+      }}
+    }},
     ""update"": ""09.12.2025 12:09"",
     ""today"": 1765231200
-  }
-}
+  }}
+}}
 ";
         }
+
     }
 }

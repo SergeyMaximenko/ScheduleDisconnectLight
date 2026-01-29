@@ -47,7 +47,7 @@ namespace ScheduleDisconnectLight
             // jsonYasnoTmp = jsonTmp();
 
 
-            var jsonYasno = new Json(jsonYasnoTmp)["37.1"];
+            var jsonYasno = new Json(jsonYasnoTmp)[Api.CodeGroup];
             var schedule = new Schedule();
             schedule.DateLastUpdate = getDateUa(jsonYasno["updatedOn"].GetValue<DateTimeOffset>());
 
@@ -137,51 +137,32 @@ namespace ScheduleDisconnectLight
 
         private string jsonTmp()
         {
-            return @"
-            {
-              ""37.1"": {
-                ""today"": {
-                  ""slots"": [
-                    {
-                      ""start"": 480,
-                      ""end"": 575,
-                      ""type"": ""Definite""
-                    },
-                    {
-                      ""start"": 810,
-                      ""end"": 1134,
-                      ""type"": ""Definite""
-                    },
-                    {
-                      ""start"": 1150,
-                      ""end"": 1440,
-                      ""type"": ""Definite""
-                    }
-                  ],
-                  ""date"": ""2025-12-09T00:00:00+02:00"",
-                  ""status"": ""ScheduleApplies""
-                },
-                ""tomorrow"": {
-                  ""slots"": [
-                    {
-                      ""start"": 0,
-                      ""end"": 30,
-                      ""type"": ""Definite""
-                    },
-                    {
-                      ""start"": 520,
-                      ""end"": 750,
-                      ""type"": ""Definite""
-                    }
-                  ],
-                  ""date"": ""2025-12-10T00:00:00+02:00"",
-                  ""status"": ""ScheduleApplies""
-                },
-                ""updatedOn"": ""2025-11-18T04:31:02+00:00""
-              }
-            }
-            ";
+            return $@"
+{{
+  ""{Api.CodeGroup}"": {{
+    ""today"": {{
+      ""slots"": [
+        {{ ""start"": 480, ""end"": 575, ""type"": ""Definite"" }},
+        {{ ""start"": 810, ""end"": 1134, ""type"": ""Definite"" }},
+        {{ ""start"": 1150, ""end"": 1440, ""type"": ""Definite"" }}
+      ],
+      ""date"": ""2025-12-09T00:00:00+02:00"",
+      ""status"": ""ScheduleApplies""
+    }},
+    ""tomorrow"": {{
+      ""slots"": [
+        {{ ""start"": 0, ""end"": 30, ""type"": ""Definite"" }},
+        {{ ""start"": 520, ""end"": 750, ""type"": ""Definite"" }}
+      ],
+      ""date"": ""2025-12-10T00:00:00+02:00"",
+      ""status"": ""ScheduleApplies""
+    }},
+    ""updatedOn"": ""2025-11-18T04:31:02+00:00""
+  }}
+}}
+";
         }
+
 
     }
 }

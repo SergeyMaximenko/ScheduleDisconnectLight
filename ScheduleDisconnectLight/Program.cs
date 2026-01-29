@@ -213,7 +213,7 @@ namespace ScheduleDisconnectLight
             {
                 var message = new StringBuilder();
                 // Отправить сообщение об изменении графика 
-                message.Append("⚡️<b>Оновлено графік відключення світла</b>\n");
+                message.Append($"⚡️<b>Оновлено графік відключення світла (гр.{Api.CodeGroup})</b>\n");
                 message.Append("\n");
 
                 var scheduleHashNew = new List<ScheduleOneDay>();

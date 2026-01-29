@@ -292,6 +292,7 @@ namespace ScheduleDisconnectLight
                         var html = htmlAwaiter.GetResult();
 
                         factJsonText = extractJsAssignmentObject(html, "DisconSchedule.fact");
+                        
                         if (!string.IsNullOrEmpty(factJsonText))
                         {
                             break;
