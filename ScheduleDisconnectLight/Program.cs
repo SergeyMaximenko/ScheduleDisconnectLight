@@ -174,11 +174,11 @@ namespace ScheduleDisconnectLight
 
             // ВОЗМОЖНО ВРЕМЕННО.
             // Для аварийных отключений графики не отправляем, т.к. они неадекватніе
-            if (schedule.IsEmergencyShutdowns)
-            {
-                Console.WriteLine("Сейчас действуют аварийные отключения. Графики не отправляем");
-                return null;
-            }
+            //if (schedule.IsEmergencyShutdowns)
+            //{
+                //Console.WriteLine("Сейчас действуют аварийные отключения. Графики не отправляем");
+                //return null;
+            //}
 
 
             //--------------------------------
@@ -317,7 +317,16 @@ namespace ScheduleDisconnectLight
                     message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateNextDay.IsDefine ? stateNextDay.ScheduleOneDay.Times : null) + "\n");
                     message.Append("\n");
                 }
-                message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + Api.DateTimeToStr(schedule.DateLastUpdate) + "</i>");
+                message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + Api.DateTimeToStr(schedule.DateLastUpdate) + "</i>\n");
+
+
+                if (schedule.IsEmergencyShutdowns)
+                {
+                    message.Append("\n");
+                    message.Append("⚠️ <b>Зверніть увагу:</b> наразі в Києві діють екстрені відключення, тому <b>графіки не діють</b>. При поверненні до графіків, буде надіслано окреме оповіщення");
+                }
+
+                
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
