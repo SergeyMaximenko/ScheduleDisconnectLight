@@ -72,7 +72,7 @@ namespace ScheduleDisconnectLight
             var scheduleFromYasno = new FormerScheduleFromYasno().Get();
             if (scheduleFromYasno!=null)
             {
-                schedule.IsEmergencyShutdowns = scheduleFromYasno.IsEmergencyShutdowns;
+               schedule.IsEmergencyShutdowns = scheduleFromYasno.IsEmergencyShutdowns;
             }
             
 

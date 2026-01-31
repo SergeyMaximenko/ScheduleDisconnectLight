@@ -30,7 +30,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub()) //&& 1 == 0
+            if (!Api.IsGitHub() && 1 == 0) 
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
@@ -39,7 +39,7 @@ namespace ScheduleDisconnectLight
 
 
 
-
+                
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
@@ -83,7 +83,7 @@ namespace ScheduleDisconnectLight
                 }.Send(
                  "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b>, <b>прогноз його закінчення</b> та <b>показники ТО</b>\r\n\r\n" +
                  "📌 <i>Ці дані завжди актуальні</i> ⬇️");
-
+                
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
@@ -116,9 +116,10 @@ namespace ScheduleDisconnectLight
 
 
 
-            var messageForecast = new StringBuilder();
+            var messageForecastTmp = "";
             var messageSchedule = new StringBuilder();
             var messageBalanceGen = new StringBuilder();
+            var messageLastRefuelExec = new StringBuilder();
             var messageTehService = new StringBuilder();
             var messageLastRefuel = new StringBuilder();
             var messageStatusPower = new StringBuilder();
@@ -141,19 +142,13 @@ namespace ScheduleDisconnectLight
                 //-----
                 if (dateStopGenStr != DateTime.MinValue)
                 {
-                    messageForecast.Append(
-                           $"<b>Прогноз відповідно до графіків відключень:</b>\n" +
-                           $"⛔️ паливо скінчиться:\n" +
-                           $"🕒 ~ <b>{Api.TimeToStr(dateStopGenStr)}</b>\n" +
-                           $"📅 {Api.GetCaptionDate(dateStopGenStr)}\n");
-
+                    //
+                    messageForecastTmp = $"⛔️ якщо враховувати наявні графіки відключення, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateStopGenStr)}</b>\n";
                 }
                 else
                 {
-                    messageForecast.Append(
-                       $"<b>Прогноз відповідно до графіків відключень:</b>\n" +
-                       $"📅 <u>{(isCurrentDay ? "сьогодні" : "завтра")}</u>, в кінці дня, запас палива дозволить працювати генератору ще:\n" +
-                       $"⏳ ~ <b>{balanceTimeStr}</b>\n");
+                    //
+                    messageForecastTmp = $"⏳ якщо враховувати наявні графіки відключення, {(isCurrentDay ? "сьогодні" : "завтра")}, в кінці дня, запасу палива вистачить ще на ~ <b>{balanceTimeStr}</b>\n";
 
                 }
 
@@ -163,13 +158,13 @@ namespace ScheduleDisconnectLight
                 //-----
                 messageSchedule.Append(
                     "<b>Запланові відключення:</b>\n" +
-                    $"🗓️ {_schedule.ScheduleCurrentDay.GetCaptionDate()}\n" +
+                    $"🗓️ <b>{_schedule.ScheduleCurrentDay.GetCaptionDate()}</b>\n" +
                     _schedule.ScheduleCurrentDay.GetPeriodStrForHtmlStatusGen() + "\n");
 
                 if (!_schedule.ScheduleNextDay.IsEmpty())
                 {
                     messageSchedule.Append(
-                        $"🗓️ {_schedule.ScheduleNextDay.GetCaptionDate()}\n" +
+                        $"🗓️ <b>{_schedule.ScheduleNextDay.GetCaptionDate()}</b>\n" +
                         _schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
                 }
 
@@ -180,29 +175,35 @@ namespace ScheduleDisconnectLight
             if (statusGenRefuel != null)
             {
                 messageSetParam.Append(
-                    $"<b>Прогноз розрахований з наступними параметрами:</b>\n" +
-                    $"📈 середній розхід ~ <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
-                    $"⛽️ об'єм банка ~ <b>{ParamRefuel._totalLitersInGenerator.ToString("0.##")} л</b>\n" +
-                    $"⏳ на цих параметрах при повному банку генератор буде працювати ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
+                    $"<b>Параметри прогнозу:</b>\n" +
+                    $"📈 середній розхід - <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
+                    $"⛽️ об'єм банка - <b>{ParamRefuel._totalLitersInGenerator.ToString("0.##")} л</b>\n" +
+                    $"⏳ повного баку вистачить на ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
 
 
-                string captionStopGen = "";
+                string messageNonStopTmp= "";
                 if (isGen && statusGenRefuel != null && statusGenRefuel.Refuel_Balance_Hours >= 1)
                 {
                     var dateTimeStopGen = Api.DateTimeUaCurrent.AddHours((double)Math.Round(statusGenRefuel.Refuel_Balance_Hours, 3));
-                    captionStopGen = $"🕒 якщо генератор буде працювати без зупинок, - паливо скінчиться <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
+                    
+                    messageNonStopTmp = $"⛔️ якщо Гена буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
 
-
+                
                 messageBalanceGen.Append(
-                    $"<b>Паливо в генераторі:</b>\n" +
+                    $"<b>Коли скінчиться паливо:</b>\n" +
                     $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
-                    captionStopGen +
-                    $"⛽️ залишилось ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л</b>\n" +
-                    $"📉 і це складає <b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n"+
-                    $"⚙️ працював після заправки <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
-                    $"⛽️ спожито палива після заправки ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n" );
+                    messageNonStopTmp +
+                    messageForecastTmp +
+                    $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л (≈ {statusGenRefuel.Refuel_Balance_Percent}%)</b>\n");
+                
 
+
+                messageLastRefuelExec.Append(
+                    $"<b>Після останньої заправки:</b>\n" +
+                    $"⛽️ спожито палива ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n"+
+                    $"⚙️ відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n");
+                    
 
 
                 messageLastRefuel.Append(
@@ -231,8 +232,8 @@ namespace ScheduleDisconnectLight
                     $"⏳ всього мотогодин <b>{statusGenTehService.TehService_ExecAll_HoursStr}</b>\n" +
                     $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
                     $"⚖️ норма для ТО <b>{Api.GetTimeHours(statusGenTehService._totalHoursTehService, true)}</b>\n" +
-                    $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n" +
-                    $"📉 і це складає <b>{statusGenTehService.TehService_Balance_Percent}%</b>\n");
+                    $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b> (≈ {statusGenTehService.TehService_Balance_Percent}%)\n");
+                    
                     
 
                 messageTehService.Append("\n");
@@ -278,16 +279,16 @@ namespace ScheduleDisconnectLight
 
             messageStatusGen.Append(
                  (isGen
-                 ? "✅🔋 <b>Генератор працює</b>\n" +
+                 ? "✅🔋 <b>Гена працює</b>\n" +
                    "🕒 запустився в <b>" + Api.TimeToStr(dateGen) + "</b>\n"
-                 : "❌🔋 <b>Генератор зупинений</b>\n" +
+                 : "❌🔋 <b>Гена відпочиває</b>\n" +
                    "🕒 зупинився в <b>" + Api.TimeToStr(dateGen) + "</b>\n") +
                 "📅 " + Api.GetCaptionDate(dateGen) + "\n");
 
 
 
             messageDateIndicator.Append(
-                 $"<b>Показники станом на:</b>\n" +
+                 $"<b>Стан генератора:</b>\n" +
                  $"📅 {Api.GetCaptionDate(Api.DateTimeUaCurrent)}\n " +
                  $"🕒 {Api.TimeToStr(Api.DateTimeUaCurrent)}\n");
 
@@ -296,11 +297,11 @@ namespace ScheduleDisconnectLight
                 messageDateIndicator.ToString(),
                 messageSetParam.ToString(),
                 messageBalanceGen.ToString(),
-                messageForecast.ToString(),
+                messageSchedule.ToString(),
+                messageLastRefuelExec.ToString(),
+                replaceUserToHtml(messageLastRefuel).ToString(),
                 messageStatusPower.ToString(),
                 messageStatusGen.ToString(),
-                messageSchedule.ToString(),
-                replaceUserToHtml(messageLastRefuel).ToString(),
                 replaceUserToHtml(messageTehService).ToString(),
                 messagePS.ToString());
 
@@ -308,7 +309,6 @@ namespace ScheduleDisconnectLight
 
             messageToTgRefuel = concatMessage(
                 messageBalanceGen.ToString(),
-                hasForecast ? messageForecast.ToString() : string.Empty,
                 messageLastRefuel.ToString());
 
             messageToTgTehService = concatMessage(
@@ -578,8 +578,10 @@ namespace ScheduleDisconnectLight
                         dateTimeFrom = Api.DateTimeUaCurrent;
                     }
 
-                    dateTimeFrom = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 6, 0, 0), dateTimeFrom }.Max();
-                    dateTimeTo = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 23, 0, 0), dateTimeTo }.Min();
+
+                     /// Ось це відкрити, якщо будуть працювати графіки з 6 до 23-00
+                    //dateTimeFrom = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 6, 0, 0), dateTimeFrom }.Max();
+                    //dateTimeTo = new[] { new DateTime(scheduleDay.Date.Year, scheduleDay.Date.Month, scheduleDay.Date.Day, 23, 0, 0), dateTimeTo }.Min();
 
 
                     var diff = (decimal)(dateTimeTo - dateTimeFrom).TotalHours;
