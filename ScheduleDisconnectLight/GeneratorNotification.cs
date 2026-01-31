@@ -288,7 +288,7 @@ namespace ScheduleDisconnectLight
 
 
             messageDateIndicator.Append(
-                 $"<b>Стан генератора:</b>\n" +
+                 $"<b>Показники станом на:</b>\n" +
                  $"📅 {Api.GetCaptionDate(Api.DateTimeUaCurrent)}\n " +
                  $"🕒 {Api.TimeToStr(Api.DateTimeUaCurrent)}\n");
 
