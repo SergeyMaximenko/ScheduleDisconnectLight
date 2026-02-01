@@ -186,7 +186,7 @@ namespace ScheduleDisconnectLight
                 {
                     var dateTimeStopGen = Api.DateTimeUaCurrent.AddHours((double)Math.Round(statusGenRefuel.Refuel_Balance_Hours, 3));
                     
-                    messageNonStopTmp = $"⛔️ якщо Гена буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
+                    messageNonStopTmp = $"⛔️ якщо генератор буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
 
                 
@@ -280,9 +280,9 @@ namespace ScheduleDisconnectLight
 
             messageStatusGen.Append(
                  (isGen
-                 ? "✅🔋 <b>Гена працює</b>\n" +
+                 ? "✅🔋 <b>Генератор працює</b>\n" +
                    "🕒 запустився в <b>" + Api.TimeToStr(dateGen) + "</b>\n"
-                 : "❌🔋 <b>Гена відпочиває</b>\n" +
+                 : "❌🔋 <b>Генератор відпочиває</b>\n" +
                    "🕒 зупинився в <b>" + Api.TimeToStr(dateGen) + "</b>\n") +
                 "📅 " + Api.GetCaptionDate(dateGen) + "\n");
 
