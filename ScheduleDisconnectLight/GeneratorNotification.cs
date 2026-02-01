@@ -196,13 +196,14 @@ namespace ScheduleDisconnectLight
                     messageNonStopTmp +
                     messageForecastTmp +
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л (≈ {statusGenRefuel.Refuel_Balance_Percent}%)</b>\n");
-                
+
 
 
                 messageLastRefuelExec.Append(
                     $"<b>Після останньої заправки:</b>\n" +
-                    $"⛽️ спожито палива ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n"+
-                    $"⚙️ відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n");
+                    $"⚙️ відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
+                    $"⛽️ спожито палива ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n");
+                    
                     
 
 
