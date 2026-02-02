@@ -171,7 +171,7 @@ namespace ScheduleDisconnectLight
                 if (_schedule.IsEmergencyShutdowns)
                 {
                     // messageSchedule.Append("\n");
-                    messageSchedule.Append("⚠️ <b>Зверніть увагу:</b> наразі в Києві діють екстрені відключення, тому <b>графіки не діють</b>\n");
+                    messageSchedule.Append("⚠️ <b>Зверніть увагу:</b> наразі в Києві діють екстрені відключення, тому <u>графіки не діють</u>\n");
                 }
 
             }
