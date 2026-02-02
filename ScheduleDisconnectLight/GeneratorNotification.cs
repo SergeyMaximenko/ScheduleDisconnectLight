@@ -132,7 +132,7 @@ namespace ScheduleDisconnectLight
 
             bool hasForecast = false;
 
-            if (_schedule != null && statusGenRefuel != null && statusGenRefuel.Refuel_Balance_Hours != 0 && !_schedule.IsEmergencyShutdowns) //
+            if (_schedule != null && statusGenRefuel != null && statusGenRefuel.Refuel_Balance_Hours != 0) //
             {
 
                 getTimeForecast(_schedule, statusGenRefuel.Refuel_Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
@@ -166,6 +166,12 @@ namespace ScheduleDisconnectLight
                     messageSchedule.Append(
                         $"🗓️ <b>{_schedule.ScheduleNextDay.GetCaptionDate()}</b>\n" +
                         _schedule.ScheduleNextDay.GetPeriodStrForHtmlStatusGen() + "\n");
+                }
+
+                if (_schedule.IsEmergencyShutdowns)
+                {
+                    // messageSchedule.Append("\n");
+                    messageSchedule.Append("⚠️ <b>Зверніть увагу:</b> наразі в Києві діють екстрені відключення, тому <b>графіки не діють</b>");
                 }
 
             }
