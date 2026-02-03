@@ -19,7 +19,7 @@ namespace Service
     public static class Api
     {
 
-        public static string CodeGroup => "37.1";
+        public static string CodeGroup => "39.1";
         public static string GetMonthName(int month)
         {
             if (month < 1 || month > 12)
