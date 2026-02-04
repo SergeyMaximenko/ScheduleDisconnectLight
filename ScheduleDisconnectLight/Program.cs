@@ -38,13 +38,11 @@ namespace ScheduleDisconnectLight
             //   СФОРМИРОВАТЬ ГРАФИК
             //--------------------------------
 
+
             try
             {
-
-                    Console.WriteLine("✅ Запуск scheduleFormer");
-                    schedule = scheduleFormer();
-             
-                
+                Console.WriteLine("✅ Запуск scheduleFormer");
+                schedule = scheduleFormer();
             }
             catch (Exception ex)
             {
@@ -53,7 +51,7 @@ namespace ScheduleDisconnectLight
 
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в scheduleFormer");
             }
-
+        
 
             //--------------------------------
             //   ЗАПРАВКА ТОПЛИВА НА ГЕНЕРАТОР
@@ -68,7 +66,6 @@ namespace ScheduleDisconnectLight
                 Console.WriteLine("❌ Помилка в GeneratorNotification:" + ex.Message);
                 Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в GeneratorNotification");
-
             }
             
 
@@ -100,8 +97,17 @@ namespace ScheduleDisconnectLight
             // Загружаем состояние
             var state = AppState.LoadState(stateFile);
 
-   
-            var schedule = IsSourceYasno
+            Schedule schedule;
+
+            if (string.IsNullOrEmpty(Api.CodeGroup))
+            {
+                schedule = Schedule.FormScheduleByState(state);
+                schedule.FillServiceProp();
+                return schedule;
+            }
+
+
+            schedule = IsSourceYasno
             ? new FormerScheduleFromYasno().Get()
             : new FormerScheduleFromDTEK().Get();
 

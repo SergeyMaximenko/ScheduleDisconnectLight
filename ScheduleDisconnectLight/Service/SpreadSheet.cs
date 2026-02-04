@@ -24,6 +24,8 @@ namespace Service
         public const string SheetNameFuelStatus = "ЗаправкаСтатус";
 
         public const string SheetAvgRefuel = "СередніВитрати";
+        
+        public const string SheetParam = "Параметри";
 
         public const string SheetNameTehService = "ТОСтатистика";
 

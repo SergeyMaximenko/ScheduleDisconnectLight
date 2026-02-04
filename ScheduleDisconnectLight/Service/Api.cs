@@ -18,8 +18,24 @@ namespace Service
 
     public static class Api
     {
+        private static string _codeGroup = null;
 
-        public static string CodeGroup => "39.1";
+        public static string CodeGroup
+        {
+            get
+            {
+                if (_codeGroup == null)
+                {
+                    var service = new SpreadSheet().GetService();
+                    _codeGroup = SpreadSheet.GetValue<string>(service, SpreadSheet.SheetParam, 0, 1);
+                        
+                }
+                return _codeGroup;
+            }
+        }
+
+
+        //public static string CodeGroup => "39.1";
         public static string GetMonthName(int month)
         {
             if (month < 1 || month > 12)
