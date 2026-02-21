@@ -25,7 +25,7 @@ namespace ScheduleDisconnectLight
         public GeneratorNotification(Schedule schedule)
         {
             _service = new SpreadSheet().GetService();
-            _sendTestGroup = Api.SendTestGroup(_sendType);
+            _sendTestGroup = Api.IsRegTest(_sendType);
 
             _schedule = schedule;
 
@@ -125,8 +125,9 @@ namespace ScheduleDisconnectLight
             var messageStatusPower = new StringBuilder();
             var messageStatusGen = new StringBuilder();
             var messageStatusPowerGen = new StringBuilder();
-            var messagePS = new StringBuilder();
+         
             var messageDateIndicator = new StringBuilder();
+            var messageModem = new StringBuilder();
 
             var messageSetParam = new StringBuilder();
 
@@ -204,6 +205,12 @@ namespace ScheduleDisconnectLight
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л (≈ {statusGenRefuel.Refuel_Balance_Percent}%)</b>\n");
 
 
+                if (statusGenRefuel.Refuel_Balance_IsEmptyHours)
+                {
+                    messageBalanceGen.Append("🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i>\n");
+
+                }
+
 
                 messageLastRefuelExec.Append(
                     $"<b>Після останньої заправки:</b>\n" +
@@ -222,11 +229,7 @@ namespace ScheduleDisconnectLight
 
 
 
-                if (statusGenRefuel.Refuel_Balance_IsEmptyHours)
-                {
-                    messagePS.Append("🚫 <i>P.S. Залишки палива по нулям. Можливо ще не внесли інформацію про заправку генератора</i>");
-
-                }
+   
             }
 
 
@@ -273,8 +276,55 @@ namespace ScheduleDisconnectLight
 
             }
 
+            var modemPercent =  (int)Math.Round(SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameOnOffStatus, 5, 1),0);
+            var modemStatus = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 6, 1);
+            var modemDateTime = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 7, 1);
 
 
+            string getPercentStr(int percent)
+            {
+                if (percent >= 80) return "🟢🔋";
+                if (percent >= 50) return "🟡🔋";
+                if (percent >= 20) return "🟠🔋";
+                return "🔴🪫";
+            }
+
+            
+            var modemStatusEnum = EnumAttributes.ValueToEnum<StatusModemBattery>(modemStatus);
+            if (modemPercent == 100)
+            {
+                modemStatusEnum = StatusModemBattery.Full;
+            }
+            var modemStatusCaption = EnumAttributes.GetEnumAttribute(modemStatusEnum).GetCaption();
+
+
+            var modemTimeDiff = Api.DateTimeUaCurrent - modemDateTime;
+            var timeUpdModem = Api.GetTimeHours(modemTimeDiff, true);
+
+            var modemWarningMessage = "";
+            if (modemTimeDiff.TotalMinutes > 30) 
+            {
+                // Модем не обновлялся больше 30 мин
+                modemWarningMessage = "🆘 Модем не в мережі, потрібно перезавантажити\n";
+            }
+            else if (modemPercent <= 20)
+            {
+                modemWarningMessage = "🆘 Низький рівень заряду модема\n";
+            }
+
+           messageModem.Append(
+                     $"<b>Модем:</b>\n" +
+                     $"{modemWarningMessage}" +
+                     $"📅 оновлено <b>{timeUpdModem}</b> назад\n" +
+                     $"{getPercentStr(modemPercent)} {modemPercent}% заряду\n" +
+                     $"{modemStatusCaption}\n");
+
+
+            if (!string.IsNullOrEmpty(modemWarningMessage))
+            {
+                new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(
+                     messageModem.ToString());
+            }
 
             messageStatusPower.Append(
                  (isPower
@@ -307,10 +357,10 @@ namespace ScheduleDisconnectLight
                 messageSchedule.ToString(),
                 messageLastRefuelExec.ToString(),
                 replaceUserToHtml(messageLastRefuel).ToString(),
+                messageModem.ToString(),
                 messageStatusPower.ToString(),
                 messageStatusGen.ToString(),
-                replaceUserToHtml(messageTehService).ToString(),
-                messagePS.ToString());
+                replaceUserToHtml(messageTehService).ToString());
 
             saveNote(messageSaveIndicatorsToExcel);
 
@@ -654,6 +704,22 @@ namespace ScheduleDisconnectLight
         TehService,
         Moto,
         AvgRefuel
+    }
+
+    public enum StatusModemBattery
+    {
+        [MapValue(0, Caption = "🔴⬇️ Батарея розряджається")]
+        NoCharging,
+        [MapValue(1, Caption = "🟢⬆️ Батарея заряджається")]
+        Charging,
+        [MapValue(2, Caption = "🔴⬇️ Батарея розряджається")]
+        NoChargingAdditional,
+        [MapValue(3, Caption = "🟢 Батарея повністю заряджена")]
+        Full,
+        [MapValue(4, Caption = "🔴⬇️ Низький заряд батареї")]
+        Low,
+        [MapValue(5, Caption = "❌ Помилка батареї")]
+        Error
     }
 
 }

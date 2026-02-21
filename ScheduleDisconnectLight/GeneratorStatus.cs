@@ -355,7 +355,7 @@ namespace ScheduleDisconnectLight
                 }
 
                 // 3. Проверяем строки: для теста берем только 
-                if (Api.SendTestGroup(_sendType))
+                if (Api.IsRegTest(_sendType))
                 {
                     if (refuel_Current_RegTest != "так")
                     {
@@ -466,7 +466,7 @@ namespace ScheduleDisconnectLight
                 }
 
                 // 3. Проверяем строки: для теста берем только 
-                if (Api.SendTestGroup(_sendType))
+                if (Api.IsRegTest(_sendType))
                 {
                     if (tehService_Current_RegTest != "так")
                     {
@@ -779,7 +779,7 @@ namespace ScheduleDisconnectLight
             // Иначе через спам может быть ошибка
             if (_countSendTgError <= 5)
             {
-                new SenderTelegram() { SendType = SendType.OnlyTest }.Send(message);
+                new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(message);
             }
 
         }
@@ -799,7 +799,7 @@ namespace ScheduleDisconnectLight
                     if (_liter1HorseCache == null)
                     {
                         var service = new SpreadSheet().GetService();
-                        _liter1HorseCache = Api.SendTestGroup()
+                        _liter1HorseCache = Api.IsRegTest()
                             ? SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 2, 1)
                             : SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 1, 1);
                     }

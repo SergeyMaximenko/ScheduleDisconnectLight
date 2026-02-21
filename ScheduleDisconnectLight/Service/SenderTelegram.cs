@@ -20,6 +20,8 @@ namespace Service
         public bool SendInChatIdThreadAddition { get; set; }
 
 
+        
+
         public string ReplyMarkupObj { get; set; }
 
         public void Send(string message)
@@ -32,10 +34,25 @@ namespace Service
             {
                 string url = $"https://api.telegram.org/bot{connect.BotToken}/sendMessage";
 
+                var chat_id = "";
+                var message_thread_id = "";
+                if (SendType == SendType.ServiceGroup)
+                {
+                    chat_id = connect.ChatIdServiceGroup;
+                    message_thread_id = "";
+                }
+                else
+                {
+                    chat_id = connect.ChatId;
+                    message_thread_id = SendInChatIdThreadAddition ? connect.ChatIdThreadAdditional : connect.ChatIdThread;
+                }
+
+
+
                 var data = new Dictionary<string, string>
                     {
-                        { "chat_id", connect.ChatId },
-                        { "message_thread_id", SendInChatIdThreadAddition ? connect.ChatIdThreadAdditional : connect.ChatIdThread },
+                        { "chat_id", chat_id },
+                        { "message_thread_id", message_thread_id },
                         { "text", message },
                         { "parse_mode", "HTML"}
                     };

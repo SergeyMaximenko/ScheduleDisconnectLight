@@ -13,7 +13,8 @@ namespace Service
     {
         Auto = 0,
         OnlyProd = 1,
-        OnlyTest = 2
+        OnlyTest = 2,
+        ServiceGroup = 4
     }
 
     public static class Api
@@ -149,7 +150,7 @@ namespace Service
         }
 
 
-        public static bool SendTestGroup(SendType sendType = SendType.Auto)
+        public static bool IsRegTest(SendType sendType = SendType.Auto)
         {
             if (sendType == SendType.Auto)
             {
@@ -160,6 +161,10 @@ namespace Service
                 return true;
             }
             if (sendType == SendType.OnlyProd)
+            {
+                return false;
+            }
+            if (sendType == SendType.ServiceGroup)
             {
                 return false;
             }
@@ -365,11 +370,16 @@ namespace Service
     {
         public string BotToken { get; private set; }
         public string ChatId { get; private set; }
+
+        public string ChatIdServiceGroup { get; private set; }
+
+
         public string ChatIdThread { get; private set; }
         
         public string ChatIdThreadAdditional { get; private set; }
 
         public readonly string BotUsername = "Chavdar13_2bot";
+
 
         public bool SendInTestGroup { get; private set; }
 
@@ -377,7 +387,9 @@ namespace Service
         public ConnectParam(SendType sendType = SendType.Auto)
         {
 
-            if (Api.SendTestGroup(sendType))
+            ChatIdServiceGroup = "-5288461755";
+
+            if (Api.IsRegTest(sendType))
             {
                 SendInTestGroup = true;
                 ChatId = "-1002275491172";
