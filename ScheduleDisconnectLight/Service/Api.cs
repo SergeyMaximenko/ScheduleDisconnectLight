@@ -248,7 +248,7 @@ namespace Service
             }
             if (string.IsNullOrEmpty(result))
             {
-                result = "0 год";
+                result = "0 хв";
             }
 
 

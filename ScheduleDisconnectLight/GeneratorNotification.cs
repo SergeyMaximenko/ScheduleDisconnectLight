@@ -299,7 +299,17 @@ namespace ScheduleDisconnectLight
 
 
             var modemTimeDiff = Api.DateTimeUaCurrent - modemDateTime;
-            var timeUpdModem = Api.GetTimeHours(modemTimeDiff, true);
+
+            var modemTimeUpd = "";
+            if (modemTimeDiff.TotalMinutes<1)
+            {
+                modemTimeUpd = "<b>щойно</b>";
+            }
+            else
+            {
+                modemTimeUpd = $"<b>{Api.GetTimeHours(modemTimeDiff, true)}</b> назад";
+
+            }
 
             var modemWarningMessage = "";
             if (modemTimeDiff.TotalMinutes > 30) 
@@ -315,7 +325,7 @@ namespace ScheduleDisconnectLight
            messageModem.Append(
                      $"<b>Модем:</b>\n" +
                      $"{modemWarningMessage}" +
-                     $"📅 оновлено <b>{timeUpdModem}</b> назад\n" +
+                     $"📅 оновлено {modemTimeUpd}\n" +
                      $"{getPercentStr(modemPercent)} {modemPercent}% заряду\n" +
                      $"{modemStatusCaption}\n");
 
