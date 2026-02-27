@@ -12,11 +12,20 @@
           "To": "20:30"
         }
       ]
+    },
+    {
+      "Date": "2026-02-28T00:00:00",
+      "Times": [
+        {
+          "From": "13:00",
+          "To": "17:00"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-02-27T00:04:00",
-  "ScheduleHashDateSet": "2026-02-27T00:08:40.304929",
+  "ScheduleDateLastUpdate": "2026-02-27T22:19:00",
+  "ScheduleHashDateSet": "2026-02-27T22:22:25.7829158",
   "DateTimePowerOffLastMessage": "2026-02-27T14:30:00",
   "DateTimePowerOnLastMessage": "2026-02-26T23:00:00"
 }
