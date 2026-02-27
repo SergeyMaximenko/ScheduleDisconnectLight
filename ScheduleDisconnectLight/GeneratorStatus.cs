@@ -263,13 +263,13 @@ namespace ScheduleDisconnectLight
                   
 
 
-                /*
+             
                 new SenderTelegram()
                 {
                     SendType = _sendType,
                     ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.ShowIndicators })
                 }.Send(message);
-                */
+           
 
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
                 SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 10, hoursLastTo);
