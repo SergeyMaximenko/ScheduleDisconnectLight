@@ -413,7 +413,7 @@ namespace ScheduleDisconnectLight
                             if (diff <= notifyBefore)
                             {
 
-                                if (isPowerOn())
+                                if (Api.IsPowerOn())
                                 {
                                     
                                     isSendMessageOff = true;
@@ -475,7 +475,7 @@ namespace ScheduleDisconnectLight
                             // если осталось <= 30 минут
                             if (diff <= notifyBefore)
                             {
-                                if (!isPowerOn())
+                                if (!Api.IsPowerOn())
                                 {
                                     
                                  
@@ -526,41 +526,7 @@ namespace ScheduleDisconnectLight
 
 
 
-        private static bool isPowerOn()
-        {
-
-            var service = new SpreadSheet().GetService();
-            return SpreadSheet.GetValue<int>(service, SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
-
-            /*
-            string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
-
-            string result = "";
-            using (var httpClient = new HttpClient())
-            {
-                try
-                {
-                    // Синхронный GET
-                    HttpResponseMessage response = httpClient.GetAsync(url).Result;
-
-                    // Если ошибка, бросим исключение
-                    response.EnsureSuccessStatusCode();
-
-                    // Читаем тело ответа тоже синхронно
-                    result = response.Content.ReadAsStringAsync().Result;
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Ошибка: " + ex.Message);
-                    result = "+";
-                }
-            }
-
-            return result == "+";
-            */
-        }
-
+        
     }
 
 

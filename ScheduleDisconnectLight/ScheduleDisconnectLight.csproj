@@ -49,6 +49,7 @@
     <Compile Include="Service\SpreadSheet.cs" />
     <Compile Include="Service\Text.cs" />
     <Compile Include="Service\TypeTools.cs" />
+    <Compile Include="Service\ZvonokClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

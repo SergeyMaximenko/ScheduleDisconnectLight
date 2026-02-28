@@ -27,8 +27,8 @@ namespace Service
             {
                 if (_codeGroup == null)
                 {
-                    var service = new SpreadSheet().GetService();
-                    _codeGroup = SpreadSheet.GetValue<string>(service, SpreadSheet.SheetParam, 0, 1);
+                    
+                    _codeGroup = SpreadSheet.GetValue<string>(SpreadSheet.SheetParam, 0, 1);
                         
                 }
                 return _codeGroup;
@@ -260,7 +260,77 @@ namespace Service
             return !string.IsNullOrEmpty(result) ? "(" + result + ")" : "";
 
         }
-     
+
+        public static bool IsPowerOn()
+        {
+
+
+            return SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
+
+            /*
+            string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
+
+            string result = "";
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    // Синхронный GET
+                    HttpResponseMessage response = httpClient.GetAsync(url).Result;
+
+                    // Если ошибка, бросим исключение
+                    response.EnsureSuccessStatusCode();
+
+                    // Читаем тело ответа тоже синхронно
+                    result = response.Content.ReadAsStringAsync().Result;
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Ошибка: " + ex.Message);
+                    result = "+";
+                }
+            }
+
+            return result == "+";
+            */
+        }
+
+        public static bool IsGenOn()
+        {
+
+
+            return SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
+
+            /*
+            string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
+
+            string result = "";
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    // Синхронный GET
+                    HttpResponseMessage response = httpClient.GetAsync(url).Result;
+
+                    // Если ошибка, бросим исключение
+                    response.EnsureSuccessStatusCode();
+
+                    // Читаем тело ответа тоже синхронно
+                    result = response.Content.ReadAsStringAsync().Result;
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Ошибка: " + ex.Message);
+                    result = "+";
+                }
+            }
+
+            return result == "+";
+            */
+        }
+
 
         /*
         /// <summary>
@@ -368,7 +438,7 @@ namespace Service
 
     public class ConnectParam
     {
-        public string BotToken { get; private set; }
+        public KeyParam KeyParam { get; private set; }
         public string ChatId { get; private set; }
 
         public string ChatIdServiceGroup { get; private set; }
@@ -411,19 +481,48 @@ namespace Service
 
             }
 
+            KeyParam = KeyParam.Get();
 
+
+
+
+        }
+    }
+
+    public class KeyParam
+    {
+        public string BotToken { get; private set; }
+        public string ZvonokKey { get; private set; }
+
+
+        private static KeyParam _keyParam;
+
+        public static KeyParam Get()
+        {
+            if (_keyParam != null)
+            {
+                return _keyParam;
+            }
+
+            var keyParam = new KeyParam();
 
             // 1. Если работаем в GitHub Actions
             if (Api.IsGitHub())
             {
-                string tokenFromGitHub = Environment.GetEnvironmentVariable("BOT_TOKEN");
+                keyParam.BotToken = Environment.GetEnvironmentVariable("BOT_TOKEN");
+                keyParam.ZvonokKey = Environment.GetEnvironmentVariable("ZVONOK_KEY");
 
-                if (string.IsNullOrWhiteSpace(tokenFromGitHub))
+                if (string.IsNullOrWhiteSpace(keyParam.BotToken))
                 {
                     throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
                 }
 
-                BotToken = tokenFromGitHub;
+                if (string.IsNullOrWhiteSpace(keyParam.ZvonokKey))
+                {
+                    throw new Exception("ZVONOK_KEY не найден в GitHub Actions переменных!");
+                }
+
+
             }
             else
             {
@@ -437,14 +536,23 @@ namespace Service
                     throw new Exception($"Файл {localPath} не найден!");
                 }
 
-                BotToken = new Json(File.ReadAllText(localPath))["BotToken"].Value;
+                var json = new Json(File.ReadAllText(localPath));
+                keyParam.BotToken = json["BOT_TOKEN"].Value;
+                keyParam.ZvonokKey = json["ZVONOK_KEY"].Value;
 
-                if (string.IsNullOrWhiteSpace(BotToken))
+                if (string.IsNullOrWhiteSpace(keyParam.BotToken))
                 {
                     throw new Exception("BotToken не найден в appsettings.Local.json");
                 }
+                if (string.IsNullOrWhiteSpace(keyParam.ZvonokKey))
+                {
+                    throw new Exception("ZvonokKey не найден в appsettings.Local.json");
+                }
             }
 
+            _keyParam = keyParam;
+            return _keyParam;
         }
     }
+
 }

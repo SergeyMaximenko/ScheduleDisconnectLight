@@ -20,11 +20,11 @@ namespace ScheduleDisconnectLight
         private SendType _sendType = SendType.Auto;
 
         private Schedule _schedule;
-        private SheetsService _service;
+        
         private bool _sendTestGroup;
         public GeneratorNotification(Schedule schedule)
         {
-            _service = new SpreadSheet().GetService();
+            
             _sendTestGroup = Api.IsRegTest(_sendType);
 
             _schedule = schedule;
@@ -109,10 +109,10 @@ namespace ScheduleDisconnectLight
             string messageToTgRefuel = "";
             string messageToTgTehService = "";
 
-            var datePower = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 1, 1);
-            var dateGen = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 1);
-            var isPower = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
-            var isGen = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
+            var datePower = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 1, 1);
+            var dateGen = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 2, 1);
+            var isPower = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
+            var isGen = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
 
 
 
@@ -276,65 +276,15 @@ namespace ScheduleDisconnectLight
 
             }
 
-            var modemPercent =  (int)Math.Round(SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameOnOffStatus, 5, 1),0);
-            var modemStatus = SpreadSheet.GetValue<int>(_service, SpreadSheet.SheetNameOnOffStatus, 6, 1);
-            var modemDateTime = SpreadSheet.GetValue<DateTime>(_service, SpreadSheet.SheetNameOnOffStatus, 7, 1);
-
-
-            string getPercentStr(int percent)
-            {
-                if (percent >= 80) return "🟢🔋";
-                if (percent >= 50) return "🟡🔋";
-                if (percent >= 20) return "🟠🔋";
-                return "🔴🪫";
-            }
-
-            
-            var modemStatusEnum = EnumAttributes.ValueToEnum<StatusModemBattery>(modemStatus);
-            if (modemPercent == 100)
-            {
-                modemStatusEnum = StatusModemBattery.Full;
-            }
-            var modemStatusCaption = EnumAttributes.GetEnumAttribute(modemStatusEnum).GetCaption();
-
-
-            var modemTimeDiff = Api.DateTimeUaCurrent - modemDateTime;
-
-            var modemTimeUpd = "";
-            if (modemTimeDiff.TotalMinutes<1)
-            {
-                modemTimeUpd = "<b>щойно</b>";
-            }
-            else
-            {
-                modemTimeUpd = $"<b>{Api.GetTimeHours(modemTimeDiff, true)}</b> назад";
-
-            }
-
-            var modemWarningMessage = "";
-            if (modemTimeDiff.TotalMinutes > 30) 
-            {
-                // Модем не обновлялся больше 30 мин
-                modemWarningMessage = "🆘 Модем не в мережі, потрібно перезавантажити\n";
-            }
-            else if (modemPercent <= 20)
-            {
-                modemWarningMessage = "🆘 Низький рівень заряду модема\n";
-            }
-
-           messageModem.Append(
-                     $"<b>Модем:</b>\n" +
-                     $"{modemWarningMessage}" +
-                     $"📅 оновлено {modemTimeUpd}\n" +
-                     $"{getPercentStr(modemPercent)} {modemPercent}% заряду\n" +
-                     $"{modemStatusCaption}\n");
-
-
-            if (!string.IsNullOrEmpty(modemWarningMessage))
+            var modemParam = ModemParam.Get();
+            messageModem.Append(modemParam.Message);
+            if (!string.IsNullOrEmpty(modemParam.MessageWarning))
             {
                 new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(
-                     messageModem.ToString());
+                     modemParam.MessageWarning);
             }
+
+            ZvonokClient.MakeCall(modemParam);
 
             messageStatusPower.Append(
                  (isPower
@@ -487,29 +437,29 @@ namespace ScheduleDisconnectLight
 
         private void saveHoursRefuel(decimal hourse)
         {
-            SpreadSheet.SetValue(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
+            SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
         private decimal getHoursRefuel()
         {
-            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
+            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
         }
 
 
         private void saveHoursTehService(decimal hourse)
         {
-            SpreadSheet.SetValue(_service, SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1, hourse.ToString());
+            SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
         private decimal getHoursTehService()
         {
-            return SpreadSheet.GetValue<decimal>(_service, SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1);
+            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1);
         }
 
 
         private void saveNote(string note)
         {
-            SpreadSheet.AddNote(_service, SpreadSheet.SheetNameFuelStatus, 1, _sendTestGroup ? 2 : 1, note);
+            SpreadSheet.AddNote(SpreadSheet.SheetNameFuelStatus, 1, _sendTestGroup ? 2 : 1, note);
 
         }
 
@@ -732,4 +682,85 @@ namespace ScheduleDisconnectLight
         Error
     }
 
+
+    public class ModemParam
+    {
+        public int Percent;
+        public StatusModemBattery Status;
+        public DateTime DateTime;
+        public string Message;
+        public string MessageWarning;
+
+        public static ModemParam Get()
+        {
+
+            var param = new ModemParam();
+
+            var percent = (int)Math.Round(SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameOnOffStatus, 5, 1), 0);
+            var statusInt = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 6, 1);
+            var dateTime = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 7, 1);
+
+
+            string getPercentStr()
+            {
+                if (percent >= 80) return "🟢🔋";
+                if (percent >= 50) return "🟡🔋";
+                if (percent >= 20) return "🟠🔋";
+                return "🔴🪫";
+            }
+
+
+            var status = EnumAttributes.ValueToEnum<StatusModemBattery>(statusInt);
+            if (percent == 100)
+            {
+                status = StatusModemBattery.Full;
+            }
+            var modemStatusCaption = EnumAttributes.GetEnumAttribute(status).GetCaption();
+
+
+            var modemTimeDiff = Api.DateTimeUaCurrent - dateTime;
+
+            var modemTimeUpd = "";
+            if (modemTimeDiff.TotalMinutes < 1)
+            {
+                modemTimeUpd = "<b>щойно</b>";
+            }
+            else
+            {
+                modemTimeUpd = $"<b>{Api.GetTimeHours(modemTimeDiff, true)}</b> назад";
+
+            }
+
+            var messageWarning = "";
+            if (modemTimeDiff.TotalMinutes > 30)
+            {
+                // Модем не обновлялся больше 30 мин
+                messageWarning = "🆘 Модем не в мережі, потрібно перезавантажити\n";
+            }
+            else if (percent <= 20)
+            {
+                messageWarning = "🆘 Низький рівень заряду модема\n";
+            }
+
+            var message =
+                      $"<b>Модем:</b>\n" +
+                      $"{messageWarning}" +
+                      $"📅 оновлено {modemTimeUpd}\n" +
+                      $"{getPercentStr()} {percent}% заряду\n" +
+                      $"{modemStatusCaption}\n";
+            return new ModemParam()
+            {
+                Status = status,
+                Percent = percent,
+                Message = message,
+                MessageWarning = messageWarning
+
+            };
+        }
+    }
+
+
+
 }
+
+

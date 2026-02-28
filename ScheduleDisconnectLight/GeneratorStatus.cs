@@ -17,9 +17,6 @@ namespace ScheduleDisconnectLight
         /// Відправляти тільки в тестову групу 
         private SendType _sendType = SendType.Auto;
 
-        /// Сервіс для роботи з Excel
-        private SheetsService _sheetsService;
-
         /// <summary>
         /// Не відправляти повідомлення
         /// </summary>
@@ -29,7 +26,7 @@ namespace ScheduleDisconnectLight
         public GeneratorStatus(SendType sendType)
         {
             _sendType = sendType;
-            _sheetsService = new SpreadSheet().GetService();
+      
         }
 
         public ParamRefuel GetParamRefuel()
@@ -140,9 +137,9 @@ namespace ScheduleDisconnectLight
                     ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
                 }.Send(message);
 
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
+                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
+                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
             }
 
 
@@ -271,8 +268,8 @@ namespace ScheduleDisconnectLight
                 }.Send(message);
            
 
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTehService, tehService_Last_RowID, 10, hoursLastTo);
+                SpreadSheet.SetValue(SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(SpreadSheet.SheetNameTehService, tehService_Last_RowID, 10, hoursLastTo);
 
             }
 
@@ -329,7 +326,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         private Tuple<int, IList<object>, int, int> getRefuelLastRow()
         {
-            var refuel_Values = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameFuelStatistic}!A:I").Execute().Values;
+            var refuel_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameFuelStatistic}!A:I").Execute().Values;
 
             if (refuel_Values == null || refuel_Values.Count == 0)
             {
@@ -440,7 +437,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public Tuple<int, IList<object>> getTehServiceLastRow(bool isTehService)
         {
-            var tehService_Values = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameTehService}!A:J").Execute().Values;
+            var tehService_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameTehService}!A:J").Execute().Values;
 
             if (tehService_Values == null || tehService_Values.Count == 0)
             {
@@ -542,7 +539,7 @@ namespace ScheduleDisconnectLight
                 return _rangeGen;
             }
 
-            var requestOnOff = _sheetsService.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameOnOffStatistic}!A:F");
+            var requestOnOff = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameOnOffStatistic}!A:F");
             var valuesOnOff = requestOnOff.Execute().Values;
             if (valuesOnOff == null || valuesOnOff.Count == 0)
             {
@@ -799,10 +796,10 @@ namespace ScheduleDisconnectLight
                 {
                     if (_liter1HorseCache == null)
                     {
-                        var service = new SpreadSheet().GetService();
+                        
                         _liter1HorseCache = Api.IsRegTest()
-                            ? SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 2, 1)
-                            : SpreadSheet.GetValue<decimal>(service, SpreadSheet.SheetAvgRefuel, 1, 1);
+                            ? SpreadSheet.GetValue<decimal>(SpreadSheet.SheetAvgRefuel, 2, 1)
+                            : SpreadSheet.GetValue<decimal>(SpreadSheet.SheetAvgRefuel, 1, 1);
                     }
                     return (decimal)_liter1HorseCache;
                 }

@@ -32,7 +32,7 @@ namespace Service
 
             using (var httpClient = new HttpClient())
             {
-                string url = $"https://api.telegram.org/bot{connect.BotToken}/sendMessage";
+                string url = $"https://api.telegram.org/bot{connect.KeyParam.BotToken}/sendMessage";
 
                 var chat_id = "";
                 var message_thread_id = "";
