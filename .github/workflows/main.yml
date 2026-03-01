@@ -12,6 +12,7 @@ on:
      types: [run-from-crone]
 env:
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  ZVONOK_KEY: ${{ secrets.ZVONOK_KEY }}
 jobs:
   run:
     runs-on: windows-latest
@@ -45,6 +46,7 @@ jobs:
       - name: Run EXE
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          ZVONOK_KEY: ${{ secrets.ZVONOK_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}\gcp-key.json
           CHAT_ID:  ${{ secrets.CHAT_ID }}
         run: |
