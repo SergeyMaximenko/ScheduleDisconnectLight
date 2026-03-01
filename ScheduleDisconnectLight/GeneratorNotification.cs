@@ -278,10 +278,10 @@ namespace ScheduleDisconnectLight
 
             var modemParam = ModemParam.Get();
             messageModem.Append(modemParam.Message);
-            if (!string.IsNullOrEmpty(modemParam.MessageWarning))
+            if (modemParam.IsMessageWarning)
             {
                 new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(
-                     modemParam.MessageWarning);
+                     modemParam.Message);
             }
 
             ZvonokClient.MakeCall(modemParam);
@@ -689,7 +689,7 @@ namespace ScheduleDisconnectLight
         public StatusModemBattery Status;
         public DateTime DateTime;
         public string Message;
-        public string MessageWarning;
+        public bool IsMessageWarning;
 
         public static ModemParam Get()
         {
@@ -753,7 +753,7 @@ namespace ScheduleDisconnectLight
                 Status = status,
                 Percent = percent,
                 Message = message,
-                MessageWarning = messageWarning
+                IsMessageWarning = !string.IsNullOrEmpty(messageWarning)
 
             };
         }
