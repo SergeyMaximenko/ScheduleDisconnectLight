@@ -131,7 +131,7 @@ namespace Service
                     {
                 new KeyValuePair<string,string>("public_key", KeyParam.Get().ZvonokKey),
                 new KeyValuePair<string,string>("phone",phone ),
-                new KeyValuePair<string,string>("campaign_id", "22242650")
+                new KeyValuePair<string,string>("campaign_id", "2966588")
             });
 
                     var response = http.PostAsync(url, form).Result;
