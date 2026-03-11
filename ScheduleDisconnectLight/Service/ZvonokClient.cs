@@ -65,7 +65,7 @@ namespace Service
                     Console.WriteLine($"Звонок на модем. Не здійснено. Час здійнення не задано ");
                     return;
                 }
-                if (isNowInTimeRange(new TimeSpan(23, 30, 0), new TimeSpan(06, 00, 0)))
+                if (isNowInTimeRange(new TimeSpan(23, 30, 0), new TimeSpan(08, 30, 0)))
                 {
                     Console.WriteLine($"Звонок на модем. Не здійснено. В ночі не потрібно будити ");
                     return;

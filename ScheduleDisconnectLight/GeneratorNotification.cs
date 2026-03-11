@@ -30,16 +30,25 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() && 1 == 0) 
+            if (!Api.IsGitHub() && 1 == 0)   //
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
+               
 
 
 
 
 
-                
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.AvgRefuel })
+                }.Send(
+                "🔎 Натисніть кнопку нижче, щоб встановити <b>середній прогнозний</b> показник <b>витрат палива</b> ⬇️");
+
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
@@ -83,14 +92,69 @@ namespace ScheduleDisconnectLight
                 }.Send(
                  "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b>, <b>прогноз його закінчення</b> та <b>показники ТО</b>\r\n\r\n" +
                  "📌 <i>Ці дані завжди актуальні</i> ⬇️");
-                
+
+
+
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
                     SendType = sendTypeTmp,
-                    ReplyMarkupObj = GetReplyMarkup(sendTypeTmp, new[] { ReplyMarkup.AvgRefuel })
                 }.Send(
- "🔎 Натисніть кнопку нижче, щоб встановити <b>середній прогнозний</b> показник <b>витрат палива</b> ⬇️");
+                    "<b>Стан фінансування </b>\n" +
+                    "\n" +
+                    "🔗 <b>Посилання</b>\n" +
+                    "https://docs.google.com/spreadsheets/d/1nPngmdd1DMVKdVAojk8I94lhKi-jxcEE8osYJivZPRE/edit?gid=236973230#gid=236973230");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                }.Send(
+                   "<b>Збір коштів на встановлення СКД</b>\n" +
+                   "\n" +
+                   "🔗 <b>Посилання на банку</b>\n" +
+                   "https://send.monobank.ua/jar/ALSpG3zFCb\n" +
+                   "\n" +
+                   "💳 <b>Номер картки банки</b>\n" +
+                   "4874 1000 2023 0341\n" +
+                   "\n" +
+                   "💰 <b>Вартість</b>\n" +
+                   "   🔹 Перший брелок — безкоштовно\n" +
+                   "   🔹 з 2-го по 4-й — по <b>100 грн за шт.</b>\n" +
+                   "\n" +
+                   "📌 <b>Правила оформлення платежу</b>\n" +
+                   " 1️⃣ Кошти за <b>СКД</b>, відправлені на банку <b>Генератора</b>, будуть обліковуватися <b>за Генератор</b>. І навпаки. Прохання самостійно слідкувати, на яку банку відправляєте кошти\n" +
+                   " 2️⃣ У призначенні платежу <b>обов'язково вказати номер квартири</b>\n" +
+                   " 3️⃣ Після сплати, <b>надістати квитанцію в гілку Telegram \"Квитанції\"</b> і вказати номер квартири");
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                }.Send(
+                    "<b>Збір коштів на генератор+паливо</b>\n" +
+                    "\n" +
+                    "🔗 <b>Посилання на банку</b>\n" +
+                    "https://send.monobank.ua/jar/6rtc2LK9ri\n" +
+                    "\n" +
+                    "💳 <b>Номер картки банки</b>\n" +
+                    "5375 4112 2184 3258\n" +
+                    "\n" +
+                    "💰 <b>Вартість</b>\n" +
+                    "   🔹 Генератор — 3 400 грн\n" +
+                    "   🔹 Паливо — 2 500 грн\n       (<i>було 3 збори: 1000 + 1000 + 500</i>)\n" +
+                    "   🔹 <b>Разом: 5 900 грн</b>\n" +
+                    "\n" +
+                   "📌 <b>Правила оформлення платежу</b>\n" +
+                   " 1️⃣ Кошти за <b>СКД</b>, відправлені на банку <b>Генератора</b>, будуть обліковуватися <b>за Генератор</b>. І навпаки. Прохання самостійно слідкувати, на яку банку відправляєте кошти\n" +
+                   " 2️⃣ У призначенні платежу <b>обов'язково вказати номер квартири</b>\n" +
+                   " 3️⃣ Після сплати, <b>надістати квитанцію в гілку Telegram \"Квитанції\"</b> і вказати номер квартири");
+
+
+
+
+
+
 
 
             }
@@ -472,24 +536,25 @@ namespace ScheduleDisconnectLight
             var connect = new ConnectParam(sendType);
             string payload = Uri.EscapeDataString("IsTest=" + (connect.SendInTestGroup  ? "Yes" : "No"));
 
-            string miniAppLink1 = $"https://t.me/{connect.BotUsername}//?startapp={payload}";
-            string miniAppLink2 = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
-            string miniAppLink3 = $"https://t.me/{connect.BotUsername}/bonus/?startapp={payload}";
-            string miniAppLink4 = $"https://t.me/{connect.BotUsername}/tehservice/?startapp={payload}_IsTO=Yes";
-            string miniAppLink5 = $"https://t.me/{connect.BotUsername}/setmoto/?startapp={payload}";
-            string miniAppLink6 = $"https://t.me/{connect.BotUsername}/avgrefuel/?startapp={payload}";
+            
+            
+            
+            
+            
+            
 
             var inline_keyboard = new List<object>();
 
             if (replyMarkups.Contains(ReplyMarkup.Refuel))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}//?startapp={payload}";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "⛽️ Заправка генератора",
-                                    url = miniAppLink1   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
@@ -497,65 +562,70 @@ namespace ScheduleDisconnectLight
 
             if (replyMarkups.Contains(ReplyMarkup.ShowIndicators))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "📊 Online показники",
-                                    url = miniAppLink2   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
             }
             if (replyMarkups.Contains(ReplyMarkup.ShowBonus))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}/bonus/?startapp={payload}";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "💰 Винагорода",
-                                    url = miniAppLink3   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
             }
             if (replyMarkups.Contains(ReplyMarkup.TehService))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}/tehservice/?startapp={payload}_IsTO=Yes";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "🔧 Тех.обслуговування",
-                                    url = miniAppLink4   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
             }
             if (replyMarkups.Contains(ReplyMarkup.Moto))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}/setmoto/?startapp={payload}";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "🔄 Актуалізація мотогодин",
-                                    url = miniAppLink5   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
             }
             if (replyMarkups.Contains(ReplyMarkup.AvgRefuel))
             {
+                string miniAppLink = $"https://t.me/{connect.BotUsername}/avgrefuel/?startapp={payload}";
                 inline_keyboard.Add(
                     new[]
                             {
                                 new
                                 {
                                     text = "📈 Встановити прогноз витрат на паливо",
-                                    url = miniAppLink6   // ✅ ВАЖНО: url, НЕ web_app
+                                    url = miniAppLink   // ✅ ВАЖНО: url, НЕ web_app
                                 }
                             }
                     );
