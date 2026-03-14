@@ -10,7 +10,7 @@
       ]
     }
   ],
-  "IsEmergencyShutdowns": true,
+  "IsEmergencyShutdowns": false,
   "ScheduleDateLastUpdate": "2026-03-14T09:30:00",
   "ScheduleHashDateSet": "2026-03-14T09:36:24.9430634",
   "DateTimePowerOffLastMessage": "2026-03-12T20:00:00",
