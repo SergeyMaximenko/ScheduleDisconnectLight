@@ -1,19 +1,6 @@
 {
   "SchedulesHash": [
     {
-      "Date": "2026-03-19T00:00:00",
-      "Times": [
-        {
-          "From": "08:00",
-          "To": "12:30"
-        },
-        {
-          "From": "19:30",
-          "To": "23:00"
-        }
-      ]
-    },
-    {
       "Date": "2026-03-20T00:00:00",
       "Times": [
         {
@@ -25,11 +12,20 @@
           "To": "20:30"
         }
       ]
+    },
+    {
+      "Date": "2026-03-21T00:00:00",
+      "Times": [
+        {
+          "From": "13:00",
+          "To": "16:30"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-03-19T20:44:00",
-  "ScheduleHashDateSet": "2026-03-19T20:54:28.8131967",
+  "ScheduleDateLastUpdate": "2026-03-20T20:31:00",
+  "ScheduleHashDateSet": "2026-03-20T20:38:37.4458243",
   "DateTimePowerOffLastMessage": "2026-03-20T15:30:00",
   "DateTimePowerOnLastMessage": "2026-03-19T23:00:00"
 }
