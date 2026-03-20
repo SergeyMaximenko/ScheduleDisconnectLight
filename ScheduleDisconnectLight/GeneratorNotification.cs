@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using static ScheduleDisconnectLight.GeneratorStatus;
+using static Service.Api;
 
 
 namespace ScheduleDisconnectLight
@@ -261,69 +262,13 @@ namespace ScheduleDisconnectLight
                     messageNonStopTmp = $"⛔️ якщо генератор буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
 
-                var balanceShow = "";
-                if (statusGenRefuel.Refuel_Balance_Percent>=100)
-                {
-                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 90 && statusGenRefuel.Refuel_Balance_Percent < 100)
-                {
-                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 80 && statusGenRefuel.Refuel_Balance_Percent < 90)
-                {
-                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 70 && statusGenRefuel.Refuel_Balance_Percent < 80)
-                {
-                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 60 && statusGenRefuel.Refuel_Balance_Percent < 70)
-                {
-                    balanceShow = "🟩🟩🟩🟩🟩🟩⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 50 && statusGenRefuel.Refuel_Balance_Percent < 60)
-                {
-                    balanceShow = "🟨🟨🟨🟨🟨⬜️⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 40 && statusGenRefuel.Refuel_Balance_Percent < 50)
-                {
-                    balanceShow = "🟨🟨🟨🟨⬜️⬜️⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 30 && statusGenRefuel.Refuel_Balance_Percent < 40)
-                {
-                    balanceShow = "🟨🟨🟨⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 20 && statusGenRefuel.Refuel_Balance_Percent < 30)
-                {
-                    balanceShow = "🟥🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent >= 10 && statusGenRefuel.Refuel_Balance_Percent < 20)
-                {
-                    balanceShow = "🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
-                }
-                else if (statusGenRefuel.Refuel_Balance_Percent < 10)
-                {
-                    balanceShow = "🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
-                }
-            
-
-
-
-
-
-
-
-
-
-
-
-
+                var balanceVisualPercent = Api.GetVisualPercent(statusGenRefuel.Refuel_Balance_Percent, 5, 3, out ColorResult colorResult);
+                
                 
                 messageBalanceGen.Append(
                     $"<b>Стан по паливу:</b>\n" +
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л.</b>\n" +
-                    balanceShow  + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n");
+                    balanceVisualPercent + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n");
 
 
                 if (statusGenRefuel.Refuel_Balance_IsEmptyHours)
@@ -365,15 +310,18 @@ namespace ScheduleDisconnectLight
             if (statusGenTehService != null)
             {
 
+                var balanceTOVisualPercent = Api.GetVisualPercent(statusGenTehService.TehService_Balance_Percent, 5, 3, out ColorResult colorResult);
+
                 messageTehService.Append(
                     $"<b>Показники по ТО:</b>\n" +
                     (statusGenTehService.TehService_Balance_Hours < 10 ? "🆘 УВАГА! Критичний рівень залишку годин для ТО\n" : "") +
                     $"⏳ всього мотогодин <b>{statusGenTehService.TehService_ExecAll_HoursStr}</b>\n" +
                     $"⚙️ відпрацював після ТО <b>{statusGenTehService.TehService_ExecAfter_HoursStr}</b>\n" +
                     $"⚖️ норма для ТО <b>{Api.GetTimeHours(statusGenTehService._totalHoursTehService, true)}</b>\n" +
-                    $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b> (≈ {statusGenTehService.TehService_Balance_Percent}%)\n");
-                    
-                    
+                    $"⏳ до наступного ТО ~ <b>{statusGenTehService.TehService_Balance_HoursStr}</b>\n"+
+                    $"{balanceTOVisualPercent}<b>{statusGenTehService.TehService_Balance_Percent}%</b>\n");
+
+
 
                 messageTehService.Append("\n");
 
@@ -597,6 +545,7 @@ namespace ScheduleDisconnectLight
 
 
 
+       
         public static string GetReplyMarkup(SendType sendType, ReplyMarkup[] replyMarkups)
         {
 
@@ -837,7 +786,8 @@ namespace ScheduleDisconnectLight
             var statusInt = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 6, 1);
             var dateTime = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 7, 1);
 
-
+          
+            /*
             string getPercentStr()
             {
                 if (percent >= 80) return "🟢🔋";
@@ -845,6 +795,8 @@ namespace ScheduleDisconnectLight
                 if (percent >= 20) return "🟠🔋";
                 return "🔴🪫";
             }
+
+            */
 
 
             var status = EnumAttributes.ValueToEnum<StatusModemBattery>(statusInt);
@@ -879,11 +831,24 @@ namespace ScheduleDisconnectLight
                 messageWarning = "🆘 Низький рівень заряду модема\n";
             }
 
+
+            /*
+            string getPercentStr()
+            {
+                if (percent >= 80) return "🟢🔋";
+                if (percent >= 50) return "🟡🔋";
+                if (percent >= 20) return "🟠🔋";
+                return "🔴🪫";
+            }
+           */
+
+            var balanceVisualPercent = Api.GetVisualPercent(percent, 8, 3, out ColorResult colorResult);
             var message =
                       $"<b>Модем:</b>\n" +
                       $"{messageWarning}" +
                       $"📅 оновлено {modemTimeUpd}\n" +
-                      $"{getPercentStr()} {percent}% заряду\n" +
+                      $"{(colorResult == ColorResult.Red ? "🪫" : "🔋")} стан заряду:\n" +
+                      $"{balanceVisualPercent}<b>{percent}%</b>\n" +
                       $"{modemStatusCaption}\n";
             return new ModemParam()
             {

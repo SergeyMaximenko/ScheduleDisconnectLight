@@ -20,17 +20,23 @@ namespace ScheduleDisconnectLight
         public static bool IsSourceYasno = false;
 
 
+
         static void Main(string[] args)
         {
             // new SenderTelegram().Send(DateTime.Now.ToString(),"+");
-
+     
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
-            
+
             //Api.DateTimeUaCurrent = new DateTime(2025, 12, 24, 01, 00, 0);
 
 
+         /*
+            new SenderTelegram() { SendType = SendType.OnlyTest }.Send(getVisualPercent(49,  3, 5));
+
+            return;
+         */
             Schedule schedule = null;
 
 

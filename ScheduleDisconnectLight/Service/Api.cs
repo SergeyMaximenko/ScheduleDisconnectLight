@@ -261,6 +261,50 @@ namespace Service
 
         }
 
+
+        public enum ColorResult
+        {
+            Green,
+            Yellow,
+            Red
+
+        }
+
+
+        public static string GetVisualPercent(int percent, int green, int yellow, out ColorResult colorResult)
+        {
+
+            var whiteStr = "⬜️";
+
+
+
+            var countColor = Math.Max(1, (int)Math.Round(percent / 10.0, MidpointRounding.AwayFromZero));
+            countColor = Math.Min(countColor, 10);
+
+            var color = "";
+            if (countColor >= green)
+            {
+                colorResult = ColorResult.Green;
+                color = "🟩";
+            }
+            else if (countColor >= yellow)
+            {
+                colorResult = ColorResult.Yellow;
+                color = "🟨";
+            }
+            else
+            {
+                colorResult = ColorResult.Red;
+                color = "🟥";
+            }
+
+
+
+            return Text.Replicate(color, countColor) + Text.Replicate("⬜️", 10 - countColor);
+
+        }
+
+
         public static bool IsPowerOn()
         {
 
