@@ -320,9 +320,9 @@ namespace ScheduleDisconnectLight
 
                 
                 messageBalanceGen.Append(
-                    $"<b>Коли скінчиться паливо:</b>\n" +
+                    $"<b>Стан палива:</b>\n" +
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л.</b>\n" +
-                    balanceShow  + $"{statusGenRefuel.Refuel_Balance_Percent}%\n" +
+                    balanceShow  + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n" +
                     $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
                     messageNonStopTmp +
                     messageForecastTmp
