@@ -183,6 +183,7 @@ namespace ScheduleDisconnectLight
             var messageForecastTmp = "";
             var messageSchedule = new StringBuilder();
             var messageBalanceGen = new StringBuilder();
+            var messageGenStop = new StringBuilder();
             var messageLastRefuelExec = new StringBuilder();
             var messageTehService = new StringBuilder();
             var messageLastRefuel = new StringBuilder();
@@ -322,11 +323,7 @@ namespace ScheduleDisconnectLight
                 messageBalanceGen.Append(
                     $"<b>Стан по паливу:</b>\n" +
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л.</b>\n" +
-                    balanceShow  + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n" +
-                    $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
-                    messageNonStopTmp +
-                    messageForecastTmp
-                    );
+                    balanceShow  + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n");
 
 
                 if (statusGenRefuel.Refuel_Balance_IsEmptyHours)
@@ -335,6 +332,14 @@ namespace ScheduleDisconnectLight
 
                 }
 
+                messageGenStop.Append(
+                    $"<b>Коли скінчиться паливо:</b>\n" +
+                    $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
+                    messageNonStopTmp +
+                    messageForecastTmp
+                    );
+
+                
 
                 messageLastRefuelExec.Append(
                     $"<b>Після останньої заправки:</b>\n" +
@@ -438,6 +443,7 @@ namespace ScheduleDisconnectLight
                 messageDateIndicator.ToString(),
                 messageSetParam.ToString(),
                 messageBalanceGen.ToString(),
+                messageGenStop.ToString(),
                 messageSchedule.ToString(),
                 messageLastRefuelExec.ToString(),
                 replaceUserToHtml(messageLastRefuel).ToString(),
@@ -450,6 +456,7 @@ namespace ScheduleDisconnectLight
 
             messageToTgRefuel = concatMessage(
                 messageBalanceGen.ToString(),
+                messageGenStop.ToString(),
                 messageLastRefuel.ToString());
 
             messageToTgTehService = concatMessage(
