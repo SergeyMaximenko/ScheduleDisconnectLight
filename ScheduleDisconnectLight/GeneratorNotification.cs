@@ -260,13 +260,73 @@ namespace ScheduleDisconnectLight
                     messageNonStopTmp = $"⛔️ якщо генератор буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
 
+                var balanceShow = "";
+                if (statusGenRefuel.Refuel_Balance_Percent>=100)
+                {
+                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 90 && statusGenRefuel.Refuel_Balance_Percent < 100)
+                {
+                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 80 && statusGenRefuel.Refuel_Balance_Percent < 90)
+                {
+                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩🟩⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 70 && statusGenRefuel.Refuel_Balance_Percent < 80)
+                {
+                    balanceShow = "🟩🟩🟩🟩🟩🟩🟩⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 60 && statusGenRefuel.Refuel_Balance_Percent < 70)
+                {
+                    balanceShow = "🟩🟩🟩🟩🟩🟩⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 50 && statusGenRefuel.Refuel_Balance_Percent < 60)
+                {
+                    balanceShow = "🟨🟨🟨🟨🟨⬜️⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 40 && statusGenRefuel.Refuel_Balance_Percent < 50)
+                {
+                    balanceShow = "🟨🟨🟨🟨⬜️⬜️⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 30 && statusGenRefuel.Refuel_Balance_Percent < 40)
+                {
+                    balanceShow = "🟨🟨🟨⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 20 && statusGenRefuel.Refuel_Balance_Percent < 30)
+                {
+                    balanceShow = "🟥🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent >= 10 && statusGenRefuel.Refuel_Balance_Percent < 20)
+                {
+                    balanceShow = "🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
+                }
+                else if (statusGenRefuel.Refuel_Balance_Percent < 10)
+                {
+                    balanceShow = "🟥⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️";
+                }
+            
+
+
+
+
+
+
+
+
+
+
+
+
                 
                 messageBalanceGen.Append(
                     $"<b>Коли скінчиться паливо:</b>\n" +
+                    $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л (≈ {statusGenRefuel.Refuel_Balance_Percent}%)</b>\n" +
+                    balanceShow  + "\n"+
                     $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
                     messageNonStopTmp +
-                    messageForecastTmp +
-                    $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л (≈ {statusGenRefuel.Refuel_Balance_Percent}%)</b>\n");
+                    messageForecastTmp
+                    );
 
 
                 if (statusGenRefuel.Refuel_Balance_IsEmptyHours)
