@@ -24,7 +24,9 @@ namespace ScheduleDisconnectLight
         static void Main(string[] args)
         {
             // new SenderTelegram().Send(DateTime.Now.ToString(),"+");
-     
+
+
+            return;
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
