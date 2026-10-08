@@ -412,7 +412,6 @@ namespace ScheduleDisconnectLight
 
 
 
-
             if (statusGenRefuel != null)
             {
                 decimal balanceHoursOld = getHoursRefuel();

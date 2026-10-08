@@ -375,8 +375,7 @@ namespace ScheduleDisconnectLight
 
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
 
-
-            if (!schedule.ScheduleCurrentDay.IsEmpty())
+            if (!schedule.ScheduleCurrentDay.IsEmpty() && false)
             {
                 Console.WriteLine("Напоминание об отключении света: старт");
                 // за сколько минут до события отправлять оповещение в телеграм 
