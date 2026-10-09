@@ -361,7 +361,13 @@ namespace ScheduleDisconnectLight
                      modemParam.Message);
             }
 
-            ZvonokClient.MakeCall(modemParam);
+
+
+            if (false)
+            {
+                ZvonokClient.MakeCall(modemParam);
+            }
+            
 
             messageStatusPower.Append(
                  (isPower
@@ -388,6 +394,7 @@ namespace ScheduleDisconnectLight
 
 
             var messageSaveIndicatorsToExcel = concatMessage(
+                "⚠️Увага! Всі сервіси моніторингу на поточний момент відключені, тому показники нижче не актуальні\n\n"+
                 messageDateIndicator.ToString(),
                 messageSetParam.ToString(),
                 messageBalanceGen.ToString(),
@@ -438,11 +445,14 @@ namespace ScheduleDisconnectLight
                             $"🆘 <b>Потрібна заправка генератора</b>\n\n" +
                             messageToTgRefuel;
 
-                        new SenderTelegram()
+                        if (Service.Api.SEND_GRAPHIK)
                         {
-                            SendType = _sendType,
-                            ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
-                        }.Send(messageTelegram);
+                            new SenderTelegram()
+                            {
+                                SendType = _sendType,
+                                ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
+                            }.Send(messageTelegram);
+                        }
 
                     }
                     else
@@ -483,12 +493,14 @@ namespace ScheduleDisconnectLight
                         var messageTelegram =
                             $"⚠️ <b>Потрібно планувати тех.обслуговування генератора</b>\n\n" +
                             messageToTgTehService;
-
-                        new SenderTelegram()
+                        if (Service.Api.SEND_GRAPHIK)
                         {
-                            SendType = _sendType,
-                            ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService, ReplyMarkup.ShowIndicators })
-                        }.Send(messageTelegram);
+                            new SenderTelegram()
+                            {
+                                SendType = _sendType,
+                                ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService, ReplyMarkup.ShowIndicators })
+                            }.Send(messageTelegram);
+                        }
 
                     }
                     else

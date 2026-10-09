@@ -28,7 +28,7 @@ namespace Service
         {
             var connect = new ConnectParam(SendType);
 
-
+        
 
             using (var httpClient = new HttpClient())
             {

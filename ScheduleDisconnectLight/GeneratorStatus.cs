@@ -112,19 +112,26 @@ namespace ScheduleDisconnectLight
                   $"📅 за <b>{Api.GetMonthName(refuel_Last_DateTime.Month)}</b>\n" +
                   $"💪 заправок: <b>{refuel_Count_Month}</b>\n" +
                   $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
-                  $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n" +
-                  "\n" +
-                  $"<b>Показники з моменту останньої заправки:</b>\n" +
-                  $"🔹 <b>Фактичні:</b>\n" +
-                  $"🕔 відпрацював: <b>{oldGenStatus.Refuel_ExecAfter_HoursStr}</b>\n" +
-                  $"⛽️ дозаправлено: <b>{refuel_Last_Liters} л</b>\n" +
-                  $"📈 середній розхід: <b>{factAvgRefuel.ToString("0.##")} л/год</b>\n" +
-                  $"🕒 бака вистачить: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / factAvgRefuel, true)}</b>\n" +
-                  "\n" +
-                  $"🔹 <b>Прогнозні:</b>\n" +
-                  $"⛽️ використано: <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" +
-                  $"📈 середній розхід: <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
-                  $"🕒 бака вистачить: <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n";
+                  $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n";
+
+                if (Api.SEND_GRAPHIK)
+                {
+
+                    message = message +
+                    "\n" +
+                    $"<b>Показники з моменту останньої заправки:</b>\n" +
+                    $"🔹 <b>Фактичні:</b>\n" +
+                    $"🕔 відпрацював: <b>{oldGenStatus.Refuel_ExecAfter_HoursStr}</b>\n" +
+                    $"⛽️ дозаправлено: <b>{refuel_Last_Liters} л</b>\n" +
+                    $"📈 середній розхід: <b>{factAvgRefuel.ToString("0.##")} л/год</b>\n" +
+                    $"🕒 бака вистачить: <b>{Api.GetTimeHours(factAvgRefuel == 0 ? 0 : ParamRefuel._totalLitersInGenerator / factAvgRefuel, true)}</b>\n" +
+                    "\n" +
+                    $"🔹 <b>Прогнозні:</b>\n" +
+                    $"⛽️ використано: <b>{oldGenStatus.Refuel_ExecAfter_LitersStr} л</b>\n" +
+                    $"📈 середній розхід: <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
+                    $"🕒 бака вистачить: <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n";
+                }
+                
 
 
            
@@ -254,9 +261,15 @@ namespace ScheduleDisconnectLight
                   "\n" +
                   "<b>ТО проведено:</b>\n" +
                   $"📅 {Api.GetCaptionDate(tehService_Last_DateTime)}\n" +
-                  $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n" +
-                  $"⏳ всього мотогодин <b>{Api.GetTimeHours(paramTehService.TehService_Last_Hours, true)}</b>\n" +
-                  (hoursLastTo != 0 ? $"⏳ з моменту останнього ТО <b>{Api.GetTimeHours(hoursLastTo, true)}</b>\n" : "");
+                  $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n";
+
+
+                if (Api.SEND_GRAPHIK)
+                {
+                    message = message +
+                    $"⏳ всього мотогодин <b>{Api.GetTimeHours(paramTehService.TehService_Last_Hours, true)}</b>\n" +
+                    (hoursLastTo != 0 ? $"⏳ з моменту останнього ТО <b>{Api.GetTimeHours(hoursLastTo, true)}</b>\n" : "");
+                }
                   
 
 

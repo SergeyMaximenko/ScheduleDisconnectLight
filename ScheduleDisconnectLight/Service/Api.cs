@@ -19,6 +19,10 @@ namespace Service
 
     public static class Api
     {
+
+
+        public static bool SEND_GRAPHIK = false;
+
         private static string _codeGroup = null;
 
         public static string CodeGroup

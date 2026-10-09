@@ -26,7 +26,6 @@ namespace ScheduleDisconnectLight
             // new SenderTelegram().Send(DateTime.Now.ToString(),"+");
 
 
-            return;
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
@@ -349,9 +348,13 @@ namespace ScheduleDisconnectLight
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
-
-                new SenderTelegram().Send(message.ToString());
-                Console.WriteLine("Сообщение об изменении графика отправлено");
+                if (Api.SEND_GRAPHIK)
+                {
+                    new SenderTelegram().Send(message.ToString());
+                    Console.WriteLine("Сообщение об изменении графика отправлено");
+                }
+                
+                
 
                 // Сохраняем статус 
                 state.ScheduleHashDateSet = Api.DateTimeUaCurrent;
@@ -377,7 +380,7 @@ namespace ScheduleDisconnectLight
 
             // Уведомления отправляем только по текущей дате. Определить, какой из графиков относится к текущей дате
 
-            if (!schedule.ScheduleCurrentDay.IsEmpty() && false)
+            if (!schedule.ScheduleCurrentDay.IsEmpty() )
             {
                 Console.WriteLine("Напоминание об отключении света: старт");
                 // за сколько минут до события отправлять оповещение в телеграм 
@@ -424,10 +427,14 @@ namespace ScheduleDisconnectLight
                                 {
                                     
                                     isSendMessageOff = true;
-                                    new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes+1).ToString() + "</b> хв) планується відключення світла\n" +
-                                        "\n" +
-                                        schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(Api.DateTimeUaCurrent.TimeOfDay));
 
+
+                                    if (Api.SEND_GRAPHIK)
+                                    {
+                                        new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) планується відключення світла\n" +
+                                            "\n" +
+                                            schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(Api.DateTimeUaCurrent.TimeOfDay));
+                                    }
                                     state.DateTimePowerOffLastMessage = dateTimePowerOff;
                                     AppState.SaveState(stateFile, state);
                                     Console.WriteLine($"      => сообщение отправлено");
@@ -489,14 +496,16 @@ namespace ScheduleDisconnectLight
                                     // Признак, что текущий день закончен. В этом случае не нужно писать, что на сегодня отключения больше не запланированы 
                                     var isDayOff = dateTimePowerOn >= new DateTime(Api.DateTimeUaCurrent.Year, Api.DateTimeUaCurrent.Month, Api.DateTimeUaCurrent.Day, 23, 59, 0);
 
-
-                                    new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
-                                        "\n"+ 
+                                    if (Api.SEND_GRAPHIK)
+                                    {
+                                        new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
+                                        "\n" +
                                         (isDayOff
                                             ? ""
                                             : schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(Api.DateTimeUaCurrent.TimeOfDay)
                                          )
                                         );
+                                    }
 
                                     state.DateTimePowerOnLastMessage = dateTimePowerOn;
                                     AppState.SaveState(stateFile, state);
