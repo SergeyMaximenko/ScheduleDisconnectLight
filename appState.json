@@ -8,15 +8,19 @@
           "To": "10:30"
         },
         {
-          "From": "16:00",
-          "To": "19:30"
+          "From": "15:30",
+          "To": "18:30"
+        },
+        {
+          "From": "21:30",
+          "To": "24:00"
         }
       ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-10-18T11:25:00",
-  "ScheduleHashDateSet": "2026-10-18T11:26:21.0130183",
+  "ScheduleDateLastUpdate": "2026-10-18T15:35:00",
+  "ScheduleHashDateSet": "2026-10-18T15:36:22.3577783",
   "DateTimePowerOffLastMessage": "2026-10-18T16:00:00",
   "DateTimePowerOnLastMessage": "2026-04-10T20:00:00"
 }
