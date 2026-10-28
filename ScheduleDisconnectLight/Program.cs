@@ -348,12 +348,9 @@ namespace ScheduleDisconnectLight
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
-                if (Api.SEND_GRAPHIK)
-                {
-                    new SenderTelegram().Send(message.ToString());
-                    Console.WriteLine("Сообщение об изменении графика отправлено");
-                }
-                
+                new SenderTelegram().Send(message.ToString());
+                Console.WriteLine("Сообщение об изменении графика отправлено");
+   
                 
 
                 // Сохраняем статус 
