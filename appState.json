@@ -16,11 +16,28 @@
           "To": "24:00"
         }
       ]
+    },
+    {
+      "Date": "2026-10-29T00:00:00",
+      "Times": [
+        {
+          "From": "06:00",
+          "To": "08:00"
+        },
+        {
+          "From": "13:00",
+          "To": "16:30"
+        },
+        {
+          "From": "20:30",
+          "To": "24:00"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-10-28T12:05:00",
-  "ScheduleHashDateSet": "2026-10-28T19:42:26.7476912",
+  "ScheduleDateLastUpdate": "2026-10-28T20:39:00",
+  "ScheduleHashDateSet": "2026-10-28T20:44:41.40275",
   "DateTimePowerOffLastMessage": "2026-10-28T16:00:00",
   "DateTimePowerOnLastMessage": "2026-04-10T20:00:00"
 }
