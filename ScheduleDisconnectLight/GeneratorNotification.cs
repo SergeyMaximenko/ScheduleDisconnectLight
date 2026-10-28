@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using static ScheduleDisconnectLight.GeneratorStatus;
 using static Service.Api;
+using static System.Net.WebRequestMethods;
 
 
 namespace ScheduleDisconnectLight
@@ -35,12 +36,46 @@ namespace ScheduleDisconnectLight
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
-               
+
+
+
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                }.Send(
+   "<b>❓ Як визначити номер групи відключення по адресі будинку</b>\n" +
+   "\n" +
+   "1️⃣ По даним DTEK: " +
+   "\n" +
+   "🔗 https://lights-monitor.spatki.xyz/group.html"+
+   "\n" +
+   "\n" +
+   "1️⃣ По даним YASNO: " +
+   "\n" +
+   "🔗 https://sergeymaximenko.github.io/SetTimeGenerator/GetGroupForKiev"+
+   "\n" +
+   "\n" +
+   "P.S. Дані DTEK та YASNO щодо групи відключення мають співпадати, але інколи є розбіжності");
 
 
 
 
 
+
+                /*
+                 
+                new SenderTelegram()
+                {
+                    SendInChatIdThreadAddition = true,
+                    SendType = sendTypeTmp,
+                }.Send(
+   "<b>⚡ Стан мережі, робота інвертора та заряд акумулятора нашого будинку ⬇️</b>\n" +
+   "\n" +
+   "🔗 https://sergeymaximenko.github.io/C13PowerDashboard/");
+
+
+                
 
                 new SenderTelegram()
                 {
@@ -152,7 +187,7 @@ namespace ScheduleDisconnectLight
                    " 3️⃣ Після сплати, <b>надістати квитанцію в гілку Telegram \"Квитанції\"</b> і вказати номер квартири");
 
 
-
+                */
 
 
 
