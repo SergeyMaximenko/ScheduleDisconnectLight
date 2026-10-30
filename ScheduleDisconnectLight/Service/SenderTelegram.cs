@@ -54,7 +54,8 @@ namespace Service
                         { "chat_id", chat_id },
                         { "message_thread_id", message_thread_id },
                         { "text", message },
-                        { "parse_mode", "HTML"}
+                        { "parse_mode", "HTML"},
+                        { "link_preview_options", "{\"is_disabled\":true}" }
                     };
 
                 if (!string.IsNullOrEmpty(ReplyMarkupObj))
