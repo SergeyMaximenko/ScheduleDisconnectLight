@@ -335,6 +335,10 @@ namespace ScheduleDisconnectLight
                     message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateNextDay.IsDefine ? stateNextDay.ScheduleOneDay.Times : null) + "\n");
                     message.Append("\n");
                 }
+
+                message.Append($@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Онлайн стан мережі</a></b>"+ "\n");
+                message.Append("\n");
+
                 message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + Api.DateTimeToStr(schedule.DateLastUpdate) + "</i>\n");
 
 
