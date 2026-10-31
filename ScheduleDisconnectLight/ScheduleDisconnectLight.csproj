@@ -44,6 +44,7 @@
     <Compile Include="Service\Json.cs" />
     <Compile Include="FormerScheduleFromDTEK_Parser.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ScheduleImageGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\SenderTelegram.cs" />
     <Compile Include="Service\SpreadSheet.cs" />
@@ -93,6 +94,7 @@
       <HintPath>..\packages\Remote.Linq.Newtonsoft.Json.7.2.2\lib\netstandard2.0\Remote.Linq.Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
     </Reference>

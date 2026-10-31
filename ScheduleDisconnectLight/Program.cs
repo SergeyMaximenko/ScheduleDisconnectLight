@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Service;
 using System;
 using System.Collections.Generic;
@@ -29,6 +29,8 @@ namespace ScheduleDisconnectLight
 
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
+
+
 
             //Api.DateTimeUaCurrent = new DateTime(2025, 12, 24, 01, 00, 0);
 
@@ -357,7 +359,10 @@ namespace ScheduleDisconnectLight
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
-                new SenderTelegram().Send(message.ToString());
+                new SenderTelegram
+                {
+                    Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns)
+                }.Send(message.ToString());
                 Console.WriteLine("Сообщение об изменении графика отправлено");
    
                 
