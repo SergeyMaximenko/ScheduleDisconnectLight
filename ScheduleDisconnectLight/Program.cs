@@ -248,6 +248,7 @@ namespace ScheduleDisconnectLight
                     {
                         var totalTimeOffPowerNew = schedule.ScheduleCurrentDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateCurrentDay.ScheduleOneDay.GetTotalTimeOffPower();
+                        var isMinus = false;
                         if (stateCurrentDay.IsDefine)
                         {
                             if (totalTimeOffPowerNew != totalTimeOffPowerOld)
@@ -261,6 +262,7 @@ namespace ScheduleDisconnectLight
                                 {
                                     //⬇︎😊
                                     message.Append("💚 Мінус <b>" + Api.GetTimeHours(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    isMinus = true;
                                 }
                             }
                             else
@@ -280,9 +282,9 @@ namespace ScheduleDisconnectLight
                         {
                             message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
-          
 
-                        message.Append($"📉 <b>{schedule.ScheduleCurrentDay.GetPercentOffPower()}%</b> часу без світла\n");
+                        var pict = isMinus ? "📉" : "📈";
+                        message.Append($"{pict} <b>{schedule.ScheduleCurrentDay.GetPercentOffPower()}%</b> часу без світла\n");
                         
 
 
@@ -301,6 +303,9 @@ namespace ScheduleDisconnectLight
                     {
                         var totalTimeOffPowerNew = schedule.ScheduleNextDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateNextDay.ScheduleOneDay.GetTotalTimeOffPower();
+
+                        var isMinus = false;
+
                         if (stateNextDay.IsDefine)
                         {
                             if (totalTimeOffPowerNew != totalTimeOffPowerOld)
@@ -314,6 +319,7 @@ namespace ScheduleDisconnectLight
                                 {
                                     //⬇︎😊
                                     message.Append("💚 Мінус <b>" + Api.GetTimeHours(totalTimeOffPowerOld - totalTimeOffPowerNew, true) + "</b> відключень\n");
+                                    isMinus = true;
                                 }
                             }
                             else
@@ -332,7 +338,8 @@ namespace ScheduleDisconnectLight
                         {
                             message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
-                        message.Append($"📉 <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
+                        var pict = isMinus ? "📉" : "📈";
+                        message.Append($"{pict} <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
                     }
                     message.Append(schedule.ScheduleNextDay.GetPeriodStrForHtmlSchedule(stateNextDay.IsDefine ? stateNextDay.ScheduleOneDay.Times : null) + "\n");
                     message.Append("\n");
