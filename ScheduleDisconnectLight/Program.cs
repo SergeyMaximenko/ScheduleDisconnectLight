@@ -368,7 +368,7 @@ namespace ScheduleDisconnectLight
 
                 new SenderTelegram
                 {
-                    Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns)
+                    Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns && false)
                 }.Send(message.ToString());
                 Console.WriteLine("Сообщение об изменении графика отправлено");
    
