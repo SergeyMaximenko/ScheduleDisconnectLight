@@ -553,7 +553,7 @@ namespace ScheduleDisconnectLight
 
                                     if (Parameters.IsOn(Parameters.TgOutageReminder))
                                     {
-                                        new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) планується відключення світла\n" +
+                                        new SenderTelegram() { AddLinkDashBoard = true}.Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) планується відключення світла\n" +
                                             "\n" +
                                             schedule.ScheduleCurrentDay.GetPeriodStrForHtmlNotification(Api.DateTimeUaCurrent.TimeOfDay));
                                     }
@@ -620,7 +620,7 @@ namespace ScheduleDisconnectLight
 
                                     if (Parameters.IsOn(Parameters.TgOutageReminder))
                                     {
-                                        new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
+                                        new SenderTelegram() { AddLinkDashBoard = true }.Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
                                         "\n" +
                                         (isDayOff
                                             ? ""

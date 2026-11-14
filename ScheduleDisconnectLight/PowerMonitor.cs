@@ -27,11 +27,7 @@ namespace ScheduleDisconnectLight
         /// </summary>
         private const string InverterSn = "2602042290";
 
-        /// <summary>
-        /// Куди слати повідомлення про світло.
-        /// Auto: на GitHub іде в основну групу, локально - у тестову. Вмикається/вимикається параметром TG_LIGHT_EVENT.
-        /// </summary>
-        private const SendType TelegramSendType = SendType.Auto;
+
 
         /// <summary>
         /// Етап 1: оновити стан у таблиці. Повертає подію зміни світла (для повідомлення) або null, якщо світло не змінювалось.
@@ -190,7 +186,7 @@ namespace ScheduleDisconnectLight
                 {
                     if (Parameters.IsOn(Parameters.TgLightEvent))
                     {
-                        new SenderTelegram { SendType = TelegramSendType }.Send(message);
+                        new SenderTelegram { AddLinkDashBoard = true }.Send(message);
                     }
                     return;
                 }

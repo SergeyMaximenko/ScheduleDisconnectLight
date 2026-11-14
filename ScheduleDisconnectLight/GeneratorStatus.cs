@@ -269,12 +269,11 @@ namespace ScheduleDisconnectLight
                   $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n";
 
 
-                if (false)
-                {
-                    message = message +
+            
+                message = message +
                     $"⏳ всього мотогодин <b>{Api.GetTimeHours(paramTehService.TehService_Last_Hours, true)}</b>\n" +
                     (hoursLastTo != 0 ? $"⏳ з моменту останнього ТО <b>{Api.GetTimeHours(hoursLastTo, true)}</b>\n" : "");
-                }
+               
                   
 
 
@@ -295,47 +294,6 @@ namespace ScheduleDisconnectLight
 
             }
 
-            /*
-            if (tehService_Last_IsSend != "так" && !NotSendMessage)
-            {
-                ParamTehService oldGenStatus = null;
-                var oldDateTimeUaCurrent = Api.DateTimeUaCurrent;
-                Api.DateTimeUaCurrent = tehService_Last_DateTime.AddSeconds(-1);
-                try
-                {
-                    oldGenStatus = new GeneratorStatus(_sendType).GetParam()?.Item2;
-                }
-                finally
-                {
-                    Api.DateTimeUaCurrent = oldDateTimeUaCurrent;
-                }
-
-
-                var message =
-
-                  $"✅ <b>Генератор пройшов ТО</b>\n" +
-                  $"\n" +
-                  $"🙏 <b>Дякуємо {tehService_Last_UserName}</b>\n" +
-                  (!string.IsNullOrEmpty(tehService_Last_UserCode) ? $"👤 <b>@{tehService_Last_UserCode}</b>\n" : "") +
-                  "\n" +
-                  "<b>ТО проведено:</b>\n" +
-                  $"📅 {Api.GetCaptionDate(tehService_Last_DateTime)}\n" +
-                  $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n" +
-                  $"⚙️ мотогодини ТО - {tehService_Last_Hours}\n" +
-                  $"📈 всього пройдено ТО: <b>{tehService_Count_All}</b>\n";
-
-
-
-                new SenderTelegram()
-                {
-                    SendType = _sendType,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.SetIndicators, ReplyMarkup.ShowIndicators })
-                }.Send(message);
-
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTOStatistic, refuel_Last_RowID, 7, "так");
-                SpreadSheet.SetValue(_sheetsService, SpreadSheet.SheetNameTOStatistic, refuel_Last_RowID, 8, Math.Round(oldGenStatus?.TehService_Balance_Hours ?? (decimal)0, 3));
-            }
-            */
 
             return paramTehService;
         }
@@ -584,9 +542,8 @@ namespace ScheduleDisconnectLight
                 }
                 var row = valuesOnOff[i];
 
-                // Тестові рядки журналу (колонка F "Режим теста" = "так") у бойовому режимі не враховуємо.
-                // Локально (тестовий режим) враховуємо всі рядки.
-                if (!Api.IsRegTest() && fromRow<string>(row, 5) == "так")
+                //  Тестові рядки НЕ враховуємо
+                if (fromRow<string>(row, 5) == "так")
                 {
                     continue;
                 }
