@@ -296,8 +296,7 @@ namespace ScheduleDisconnectLight
 
 
                 var balanceVisualPercent = Api.GetVisualPercent(statusGenRefuel.Refuel_Balance_Percent, 5, 3, out ColorResult colorResult);
-                
-                
+                                
                 messageBalanceGen.Append(
                     $"<b>Стан по паливу після заправки:</b>\n" +
                     $"⚙️ генератор відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
