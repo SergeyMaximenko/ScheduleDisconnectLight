@@ -46,7 +46,7 @@ namespace Service
                     {
 
                         text = text + "\n" +
-                        $@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Стан мережі по будинку</a></b>" + "\n";
+                        $@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Онлайн стан мережі</a></b>" + "\n";
                     }
 
 
