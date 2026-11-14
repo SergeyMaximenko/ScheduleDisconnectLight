@@ -233,7 +233,7 @@ namespace ScheduleDisconnectLight
             
             var messageLastRefuelExec = new StringBuilder();
             var messageTehService = new StringBuilder();
-            var messageLastRefuel = new StringBuilder();
+           
             
             
             var messageStatusPowerGen = new StringBuilder();
@@ -311,12 +311,12 @@ namespace ScheduleDisconnectLight
 
                 }
 
-                
-                
 
 
+                messageBalanceGen.Append("\n");
 
-                messageLastRefuel.Append(
+
+                messageBalanceGen.Append(
                     $"<b>Остання заправка:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenRefuel.Refuel_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenRefuel.Refuel_Last_DateTime)}\n" +
@@ -368,7 +368,6 @@ namespace ScheduleDisconnectLight
                 //"⚠️Увага! Всі сервіси моніторингу на поточний момент відключені, тому показники нижче не актуальні\n\n"+
                 messageDateIndicator.ToString(),
                 messageBalanceGen.ToString(),
-                messageLastRefuel.ToString(),
                 messageSchedule.ToString(),
                 messageTehService.ToString(),
                 messageSetParam.ToString()
@@ -381,9 +380,7 @@ namespace ScheduleDisconnectLight
             LastIndicatorsAt = Api.DateTimeUaCurrent;
 
             messageToTgRefuel = concatMessage(
-                messageBalanceGen.ToString(),
-      
-                messageLastRefuel.ToString());
+                messageBalanceGen.ToString());
 
             messageToTgTehService = concatMessage(
                 messageTehService.ToString()); 
@@ -394,7 +391,7 @@ namespace ScheduleDisconnectLight
             {
                 decimal balanceHoursOld = getHoursRefuel();
 
-                if (statusGenRefuel.Refuel_Balance_Hours >= 3)
+                if (statusGenRefuel.Refuel_Balance_Hours >= 2)
                 {
                     Console.WriteLine("Баланс палива на заправку. В нормі і складає " + statusGenRefuel.Refuel_Balance_Hours + " Відправлений показник " + balanceHoursOld);
                     if (balanceHoursOld != 999)
@@ -445,7 +442,7 @@ namespace ScheduleDisconnectLight
             {
                 decimal balanceHoursOld = getHoursTehService();
 
-                if (statusGenTehService.TehService_Balance_Hours >= 75)
+                if (statusGenTehService.TehService_Balance_Hours >= 50)
                 {
                     Console.WriteLine("Баланс годин на ТО. В нормі і складає " + statusGenTehService.TehService_Balance_Hours + " Відправлений показник " + balanceHoursOld);
                     if (balanceHoursOld != 999)
@@ -456,7 +453,7 @@ namespace ScheduleDisconnectLight
                 }
                 else if (statusGenTehService.TehService_Balance_Hours >= 1)
                 {
-                    if (balanceHoursOld - statusGenTehService.TehService_Balance_Hours >= 25)
+                    if (balanceHoursOld - statusGenTehService.TehService_Balance_Hours >= 15)
                     {
                         Console.WriteLine("Баланс палива на ТО. Повідомлення  відправлено. Старий баланс - " + balanceHoursOld + ", поточний баланс - " + statusGenTehService.TehService_Balance_Hours);
                         // Отправить
