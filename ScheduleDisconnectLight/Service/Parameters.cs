@@ -34,6 +34,10 @@ namespace Service
         /// <summary>Повідомлення про зміну графіка відключень</summary>
         public const string TgScheduleChange = "TG_SCHEDULE_CHANGE";
 
+        /// <summary>Зарплата</summary>
+        public const string RefuelSalary = "REFUEL_SALARY";
+        
+
         private static Dictionary<string, string> _values;
 
         /// <summary>Читає закладку одним запитом. Кидає виняток, якщо не вдалося.</summary>
@@ -74,6 +78,26 @@ namespace Service
             if (_values == null) Load();
             string value;
             return _values.TryGetValue(code, out value) ? value : null;
+        }
+
+        /// <summary>
+        /// Ціле число з параметра (наприклад зарплата). null, якщо коду немає, значення порожнє або це не ціле число
+        /// (в лог пишеться попередження). Пробіли в числі ("1 500") допускаються.
+        /// </summary>
+        public static int? GetInt(string code)
+        {
+            var text = GetString(code);
+            if (text == null)
+            {
+                Console.WriteLine("Parameters: параметра " + code + " немає в таблиці");
+                return null;
+            }
+            var clean = text.Replace(" ", "").Replace("\u00A0", "");
+            int value;
+            if (int.TryParse(clean, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out value))
+                return value;
+            Console.WriteLine("Parameters: параметр " + code + " = '" + text + "' не є цілим числом");
+            return null;
         }
 
         /// <summary>

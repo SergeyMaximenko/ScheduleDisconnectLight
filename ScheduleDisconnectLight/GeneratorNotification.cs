@@ -278,7 +278,7 @@ namespace ScheduleDisconnectLight
             if (statusGenRefuel != null)
             {
                 messageSetParam.Append(
-                    $"<b>Параметри прогнозу:</b>\n" +
+                    $"<b>Параметри прогнозу генератора:</b>\n" +
                     $"📈 середній розхід - <b>{ParamRefuel._liter1Horse.ToString("0.##")} л/год</b>\n" +
                     $"⛽️ об'єм бака - <b>{ParamRefuel._totalLitersInGenerator.ToString("0.##")} л</b>\n" +
                     $"⏳ повного бака вистачить ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
