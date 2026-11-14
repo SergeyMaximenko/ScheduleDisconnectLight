@@ -32,7 +32,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() && 1 == 0)   //
+            if (!Api.IsGitHub() && 1 == 1)   //
             {
                 var sendTypeTmp = SendType.OnlyTest;
 
@@ -63,7 +63,7 @@ namespace ScheduleDisconnectLight
 
 
 
-                /*
+               
                  
                 new SenderTelegram()
                 {
@@ -120,6 +120,7 @@ namespace ScheduleDisconnectLight
                 }.Send(
                 "🔎 Натисніть кнопку нижче, щоб <b>внести</b> показники <b>заправки генератора</b>⬇️");
 
+                /*
                 new SenderTelegram()
                 {
                     SendInChatIdThreadAddition = true,
@@ -128,7 +129,7 @@ namespace ScheduleDisconnectLight
                 }.Send(
                  "🔎 Натисніть кнопку нижче, щоб переглянути <b>залишки палива</b>, <b>прогноз його закінчення</b> та <b>показники ТО</b>\r\n\r\n" +
                  "📌 <i>Ці дані завжди актуальні</i> ⬇️");
-
+                */
 
 
                 new SenderTelegram()
@@ -187,7 +188,7 @@ namespace ScheduleDisconnectLight
                    " 3️⃣ Після сплати, <b>надістати квитанцію в гілку Telegram \"Квитанції\"</b> і вказати номер квартири");
 
 
-                */
+               
 
 
 
@@ -561,7 +562,7 @@ namespace ScheduleDisconnectLight
                     );
             }
 
-            /*
+          
             if (replyMarkups.Contains(ReplyMarkup.ShowIndicators))
             {
                 string miniAppLink = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
@@ -576,7 +577,7 @@ namespace ScheduleDisconnectLight
                             }
                     );
             }
-            */
+          
 
             if (replyMarkups.Contains(ReplyMarkup.ShowBonus))
             {
@@ -733,6 +734,7 @@ namespace ScheduleDisconnectLight
     public enum ReplyMarkup
     {
         Refuel,
+        ShowIndicators,
         ShowBonus,
         TehService,
         Moto,

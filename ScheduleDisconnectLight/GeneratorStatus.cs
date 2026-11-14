@@ -98,6 +98,14 @@ namespace ScheduleDisconnectLight
 
                 var factAvgRefuel = oldGenStatus.Refuel_ExecAfter_Hours == 0 ? 0 : Math.Round(refuel_Last_Liters / oldGenStatus.Refuel_ExecAfter_Hours, 2);
 
+                // Винагорода за цю заправку завжди береться з параметра REFUEL_SALARY (закладка Parameters).
+                // Якщо параметра немає або він не число, суму не показуємо і в таблицю не пишемо.
+                int? refuelReward = Parameters.GetInt(Parameters.RefuelSalary);
+                var rewardLines = refuelReward.HasValue
+                    ? //$"💰 <b>винагорода за заправку:</b> <b>{refuelReward.Value} грн</b>\n" +
+                      $"💵 винагорода за місяць: <b>{_refuelRewardMonthOthers + refuelReward.Value} грн</b>\n"
+                    : "";
+
                 var message =
 
                   $"✅ <b>Генератор заправлено</b>\n" +
@@ -112,7 +120,7 @@ namespace ScheduleDisconnectLight
                   $"<b>Ваша винагорода:</b>\n" +
                   $"📅 за <b>{Api.GetMonthName(refuel_Last_DateTime.Month)}</b>\n" +
                   $"💪 заправок: <b>{refuel_Count_Month}</b>\n" +
-                  $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
+                  rewardLines +
                   $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n";
 
                 if (false)
@@ -152,6 +160,10 @@ namespace ScheduleDisconnectLight
                 SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 8, "так");
                 SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
                 SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
+                if (refuelReward.HasValue)
+                {
+                    SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 12, refuelReward.Value);
+                }
             }
 
 
@@ -304,9 +316,12 @@ namespace ScheduleDisconnectLight
         /// <summary>
         /// Отримати рядок останньої заправки 
         /// </summary>
+        // Винагорода за місяць по інших заправках користувача (без останньої), з колонки M
+        private int _refuelRewardMonthOthers;
+
         private Tuple<int, IList<object>, int, int> getRefuelLastRow()
         {
-            var refuel_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetFuelStatistic}!A:I").Execute().Values;
+            var refuel_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetFuelStatistic}!A:M").Execute().Values;
 
             if (refuel_Values == null || refuel_Values.Count == 0)
             {
@@ -377,6 +392,7 @@ namespace ScheduleDisconnectLight
             //2. Для користувача знайти кільеість заправок
             var countRefuel_All = 0;
             var countRefuel_Month = 0;
+            _refuelRewardMonthOthers = 0;
 
             if (refuel_Last_Row != null)
             {
@@ -402,6 +418,9 @@ namespace ScheduleDisconnectLight
                         if (refuel_Last_Date.Year == dateRow.Year && refuel_Last_Date.Month == dateRow.Month)
                         {
                             countRefuel_Month = countRefuel_Month + 1;
+
+                            // Винагорода (колонка M): зберігається в рядку заправки на момент відправки повідомлення
+                            if (i != refuel_Last_RowID) _refuelRewardMonthOthers += fromRow<int>(row, 12);
                         }
                     }
                 }
