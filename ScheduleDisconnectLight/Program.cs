@@ -144,10 +144,41 @@ namespace ScheduleDisconnectLight
             catch (Exception ex)
             {
                 Console.WriteLine("❌ Помилка в WorkerSync:" + ex.Message);
+                if (ex.Message.Contains("KV_LIMIT")) NotifyKvLimit();
             }
 
 
 
+        }
+
+        /// <summary>
+        /// Worker відповів KV_LIMIT: вичерпано ліміт записів Cloudflare KV, сайт не оновлюється до 00:00 UTC.
+        /// Яскраве повідомлення в тестову групу, не частіше разу на добу (дата зберігається в appState).
+        /// </summary>
+        private static void NotifyKvLimit()
+        {
+            try
+            {
+                var repoRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+                var stateFile = Path.Combine(repoRoot, Api.IsGitHub() ? "appState.json" : "appState-local.json");
+                var state = AppState.LoadState(stateFile);
+                var today = Api.DateTimeUaCurrent.Date;
+                if (state.KvLimitAlertDate == today) return;
+
+                new SenderTelegram { SendType = SendType.OnlyTest }.Send(
+                    "🚨🚨🚨 <b>САЙТ НЕ ОНОВЛЮЄТЬСЯ!</b> 🚨🚨🚨\n\n" +
+                    "🔴 <b>Cloudflare KV: вичерпано ліміт записів</b> (1000 на добу).\n" +
+                    "Дашборд показує старі дані, нові не записуються.\n\n" +
+                    "⏰ Ліміт скидається о 00:00 UTC (02:00–03:00 за Києвом).\n" +
+                    "Це повідомлення надсилається раз на добу.");
+
+                state.KvLimitAlertDate = today;
+                AppState.SaveState(stateFile, state);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Не вдалося надіслати повідомлення про KV_LIMIT: " + ex.Message);
+            }
         }
 
         private static Schedule scheduleFormer()
@@ -1070,6 +1101,12 @@ namespace ScheduleDisconnectLight
         /// </summary>
         [JsonProperty]
         public DateTime DateTimePowerOffLastMessage { get; set; }
+
+        /// <summary>
+        /// Дата останнього повідомлення про вичерпаний ліміт KV (раз на добу)
+        /// </summary>
+        [JsonProperty]
+        public DateTime KvLimitAlertDate { get; set; }
 
         /// <summary>
         /// Время включения света, по которому уже было отправлено напоминание
