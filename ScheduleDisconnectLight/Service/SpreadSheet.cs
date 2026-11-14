@@ -21,20 +21,20 @@ namespace Service
     {
         public static string SpreadsheetId = "1G20MV3_PX9OIu1vSaCB_vaOFJjeu9lnVg3ZR2QiPI2s";
 
-        public const string SheetNameFuelStatistic = "ЗаправкаСтатистика";
-        public const string SheetNameFuelStatus = "ЗаправкаСтатус";
+        public const string SheetFuelStatistic = "ЗаправкаСтатистика";
+        public const string SheetIndicators = "Показники";
 
         public const string SheetAvgRefuel = "СередніВитрати";
         
-        public const string SheetParam = "Параметри";
+        public const string SheetParam = "Parameters";
 
-        public const string SheetNameTehService = "ТОСтатистика";
+        public const string SheetTehService = "ТОСтатистика";
 
         
 
-        public const string SheetNameOnOffStatistic = "OnOffСтатистика";
-        public const string SheetNameOnOffStatus = "OnOffСтатус";
-        public const string SheetNameZvonokCall = "МодемЗвонки";
+        public const string SheetNameOnOffStatistic = "DeyeСтатистика";
+        public const string SheetNameOnOffStatus = "DeyeСтатус";
+        //public const string SheetNameZvonokCall = "МодемЗвонки";
 
         // public const string SheetNameTOStatistic = "ТоСтатистика";
 

@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -11,6 +12,9 @@ namespace Service
         public SendType SendType { get; set; }
         public bool SendInChatIdThreadAddition { get; set; }
         public string ReplyMarkupObj { get; set; }
+
+        public bool AddLinkDashBoard { get; set; }
+
         public byte[] Photo { get; set; }
 
         public void Send(string message)
@@ -21,7 +25,7 @@ namespace Service
             var connect = new ConnectParam(SendType);
             var chat_id = "";
             var message_thread_id = "";
-            if (SendType == SendType.ServiceGroup)
+            if (SendType == SendType.ServiceGroup )
             {
                 chat_id = connect.ChatIdServiceGroup;
                 message_thread_id = "";
@@ -38,6 +42,14 @@ namespace Service
 
                 {
                     string text = message;
+                    if (AddLinkDashBoard)
+                    {
+
+                        text = text + "\n" +
+                        $@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Стан мережі по будинку</a></b>" + "\n";
+                    }
+
+
                     var data = new Dictionary<string, string> { { "chat_id", chat_id } };
                     if (!string.IsNullOrEmpty(message_thread_id))
                     {

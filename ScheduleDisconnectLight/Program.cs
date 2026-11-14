@@ -30,6 +30,18 @@ namespace ScheduleDisconnectLight
             TimeZoneInfo kyiv = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
             Api.DateTimeUaCurrent = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, kyiv);
 
+            // Параметри із закладки Parameters читаємо одразу, одним запитом.
+            // Не вдалося прочитати: нічого не робимо, завершуємо запуск (наступний запуск спробує ще раз).
+            try
+            {
+                Parameters.Load();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Не вдалося прочитати закладку Parameters, запуск пропущено: " + ex.Message);
+                return;
+            }
+
 
 
             //Api.DateTimeUaCurrent = new DateTime(2025, 12, 24, 01, 00, 0);
@@ -40,6 +52,27 @@ namespace ScheduleDisconnectLight
 
             return;
          */
+            //--------------------------------
+            //   СВІТЛО І ГЕНЕРАТОР ЗА ДАНИМИ DEYE
+            //--------------------------------
+            // Це першим кроком: далі код (графік, нагадування, показники генератора)
+            // читає актуальний статус світла із закладки DeyeСтатус.
+            // Повідомлення про зміну світла надсилається пізніше, після формування графіка
+            // (в ньому є час очікуваного повернення світла / наступного відключення).
+            LightEvent lightEvent = null;
+            try
+            {
+                Console.WriteLine("✅ Запуск PowerMonitor");
+                lightEvent = PowerMonitor.Run();
+            }
+            catch (Exception ex)
+            {
+                // Помилки PowerMonitor пишемо ТІЛЬКИ в лог (у Telegram не надсилаємо, так вирішено).
+                // На GitHub лог видно в Actions у кроці "Run EXE".
+                Console.WriteLine("❌ Помилка в PowerMonitor:" + ex.Message);
+                Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
+            }
+
             Schedule schedule = null;
 
 
@@ -60,7 +93,27 @@ namespace ScheduleDisconnectLight
 
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в scheduleFormer");
             }
-        
+
+
+            //--------------------------------
+            //   ПОВІДОМЛЕННЯ ПРО ЗМІНУ СВІТЛА
+            //--------------------------------
+            // Після графіка: schedule може бути null, тоді повідомлення піде без рядків про розклад.
+            // Помилки пишемо тільки в лог.
+            try
+            {
+                if (lightEvent != null)
+                {
+                    Console.WriteLine("✅ Відправка повідомлення про світло");
+                }
+                PowerMonitor.SendLightMessage(lightEvent, schedule);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Помилка відправки повідомлення про світло:" + ex.Message);
+                Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
+            }
+
 
             //--------------------------------
             //   ЗАПРАВКА ТОПЛИВА НА ГЕНЕРАТОР
@@ -76,7 +129,23 @@ namespace ScheduleDisconnectLight
                 Console.WriteLine("❌ Стек помилки:" + ex.StackTrace);
                 new SenderTelegram() { SendType = SendType.OnlyTest }.Send("Помилка в GeneratorNotification");
             }
-            
+
+
+            //--------------------------------
+            //   ПЕРЕДАЧА ДАНИХ НА WORKER (дашборд C13PowerDashboard)
+            //--------------------------------
+            // Останнім кроком: у знімок входить текст показників генератора, який формує GeneratorNotification.
+            // Помилки лише в лог: збій Worker не має впливати на решту роботи.
+            try
+            {
+                Console.WriteLine("✅ Запуск WorkerSync");
+                WorkerSync.Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Помилка в WorkerSync:" + ex.Message);
+            }
+
 
 
         }
@@ -154,10 +223,12 @@ namespace ScheduleDisconnectLight
                 if (schedule.IsEmergencyShutdowns)
                 {
                     
-                    /*
-                    new SenderTelegram().Send(
-                        "🚨 ЯСНО: У Києві екстрені відключення, графіки не діють");
-                    */
+                    // Відправка керується параметром TG_EMERGENCY із закладки Parameters
+                    if (Parameters.IsOn(Parameters.TgEmergency))
+                    {
+                        new SenderTelegram().Send(
+                            "🚨 ЯСНО: У Києві екстрені відключення, графіки не діють");
+                    }
                     Console.WriteLine("Отправлено сообщение: Аварийные отключения!");
                     // Сохраняем статус 
                     state.IsEmergencyShutdowns = true;
@@ -165,10 +236,11 @@ namespace ScheduleDisconnectLight
                 }
                 else
                 {
-                    /*
-                    new SenderTelegram().Send(
-                        "✅ ЯСНО: Екстрені відключення скасовано, повертаємось до графіків");
-                    */
+                    if (Parameters.IsOn(Parameters.TgEmergency))
+                    {
+                        new SenderTelegram().Send(
+                            "✅ ЯСНО: Екстрені відключення скасовано, повертаємось до графіків");
+                    }
                     Console.WriteLine("Отправлено сообщение: Аварийные отключения скасовані!");
 
                     state.IsEmergencyShutdowns = false;
@@ -351,9 +423,6 @@ namespace ScheduleDisconnectLight
                 message.Append($"<i>P.S. Оновлено на {(IsSourceYasno ? "Yasno" : "DTEK")} " + Api.DateTimeToStr(schedule.DateLastUpdate) + "</i>\n");
 
 
-                message.Append("\n");
-                message.Append($@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Онлайн стан мережі</a></b>" + "\n");
-                
 
 
                 if (schedule.IsEmergencyShutdowns)
@@ -366,10 +435,14 @@ namespace ScheduleDisconnectLight
 
                 Console.WriteLine("График збережений:" + string.Join(" ", scheduleHashNew.Select(t => t.GetHashStr())));
 
-                new SenderTelegram
+                if (Parameters.IsOn(Parameters.TgScheduleChange))
                 {
-                    Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns && false)
-                }.Send(message.ToString());
+                    new SenderTelegram
+                    {
+                        AddLinkDashBoard = true,
+                        Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns && false)
+                    }.Send(message.ToString());
+                }
                 Console.WriteLine("Сообщение об изменении графика отправлено");
    
                 
@@ -447,7 +520,7 @@ namespace ScheduleDisconnectLight
                                     isSendMessageOff = true;
 
 
-                                    if (Api.SEND_GRAPHIK)
+                                    if (Parameters.IsOn(Parameters.TgOutageReminder))
                                     {
                                         new SenderTelegram().Send($"⚠️🔴 О <b>{Api.TimeToStr(dateTimePowerOff.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) планується відключення світла\n" +
                                             "\n" +
@@ -514,7 +587,7 @@ namespace ScheduleDisconnectLight
                                     // Признак, что текущий день закончен. В этом случае не нужно писать, что на сегодня отключения больше не запланированы 
                                     var isDayOff = dateTimePowerOn >= new DateTime(Api.DateTimeUaCurrent.Year, Api.DateTimeUaCurrent.Month, Api.DateTimeUaCurrent.Day, 23, 59, 0);
 
-                                    if (Api.SEND_GRAPHIK)
+                                    if (Parameters.IsOn(Parameters.TgOutageReminder))
                                     {
                                         new SenderTelegram().Send($"⚠️🟢 В <b>{Api.TimeToStr(dateTimePowerOn.TimeOfDay)}</b> (через ~<b>" + (diff.Minutes + 1).ToString() + "</b> хв) очікується відновлення світла\n" +
                                         "\n" +

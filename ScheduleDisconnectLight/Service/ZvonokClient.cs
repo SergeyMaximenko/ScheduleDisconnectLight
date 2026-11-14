@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 namespace Service
 {
 
-
+    /*
 
     public static class ZvonokClient
     {
@@ -41,6 +41,8 @@ namespace Service
 
         public static void MakeCall(ModemParam modemParam)
         {
+
+           
             var isTest = false;
 
             if (string.IsNullOrEmpty(SpreadSheet.GetValue<string>(SpreadSheet.SheetParam, 3, 1)))
@@ -108,8 +110,8 @@ namespace Service
             {
                 SpreadSheet.SetValue(SpreadSheet.SheetNameOnOffStatus, 8, 1, Api.DateTimeUaCurrent.ToString("yyyy-MM-dd HH:mm:ss"));
             }
-            
-
+           
+           
 
         }
 
@@ -162,4 +164,5 @@ namespace Service
         }
 
     }
+    */
 }

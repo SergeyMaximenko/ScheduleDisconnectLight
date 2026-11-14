@@ -21,8 +21,6 @@ namespace Service
     {
 
 
-        public static bool SEND_GRAPHIK = false;
-
         private static string _codeGroup = null;
 
         public static string CodeGroup
@@ -32,7 +30,7 @@ namespace Service
                 if (_codeGroup == null)
                 {
                     
-                    _codeGroup = SpreadSheet.GetValue<string>(SpreadSheet.SheetParam, 0, 1);
+                    _codeGroup = Parameters.GetString(Parameters.GroupCode);
                         
                 }
                 return _codeGroup;
@@ -313,7 +311,8 @@ namespace Service
         {
 
 
-            return SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
+            // Світло є за даними закладки DeyeСтатус (рядок "Мережа. Статус")
+            return DeyeSheet.IsGridOn();
 
             /*
             string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
@@ -348,7 +347,8 @@ namespace Service
         {
 
 
-            return SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
+            // Генератор працює за даними закладки DeyeСтатус (рядок "Генератор. Статус")
+            return DeyeSheet.IsGeneratorOn();
 
             /*
             string url = "https://script.google.com/macros/s/AKfycbzQMlzERj-TDWq6SYEG69Th0KW1u07CuHOx-SJNgVoyWn6J_OSV1YI8dMBm4FkCNfiIfQ/exec";
@@ -540,7 +540,7 @@ namespace Service
     public class KeyParam
     {
         public string BotToken { get; private set; }
-        public string ZvonokKey { get; private set; }
+        //public string ZvonokKey { get; private set; }
 
 
         private static KeyParam _keyParam;
@@ -558,18 +558,19 @@ namespace Service
             if (Api.IsGitHub())
             {
                 keyParam.BotToken = Environment.GetEnvironmentVariable("BOT_TOKEN");
-                keyParam.ZvonokKey = Environment.GetEnvironmentVariable("ZVONOK_KEY");
+                //keyParam.ZvonokKey = Environment.GetEnvironmentVariable("ZVONOK_KEY");
 
                 if (string.IsNullOrWhiteSpace(keyParam.BotToken))
                 {
                     throw new Exception("BOT_TOKEN не найден в GitHub Actions переменных!");
                 }
 
+                /*
                 if (string.IsNullOrWhiteSpace(keyParam.ZvonokKey))
                 {
                     throw new Exception("ZVONOK_KEY не найден в GitHub Actions переменных!");
                 }
-
+                */
 
             }
             else
@@ -586,16 +587,19 @@ namespace Service
 
                 var json = new Json(File.ReadAllText(localPath));
                 keyParam.BotToken = json["BOT_TOKEN"].Value;
-                keyParam.ZvonokKey = json["ZVONOK_KEY"].Value;
+                //keyParam.ZvonokKey = json["ZVONOK_KEY"].Value;
 
                 if (string.IsNullOrWhiteSpace(keyParam.BotToken))
                 {
                     throw new Exception("BotToken не найден в appsettings.Local.json");
                 }
+
+                /*
                 if (string.IsNullOrWhiteSpace(keyParam.ZvonokKey))
                 {
                     throw new Exception("ZvonokKey не найден в appsettings.Local.json");
                 }
+                */
             }
 
             _keyParam = keyParam;

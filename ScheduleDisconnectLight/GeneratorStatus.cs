@@ -2,6 +2,7 @@
 using Service;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 
 namespace ScheduleDisconnectLight
@@ -114,7 +115,7 @@ namespace ScheduleDisconnectLight
                   $"💰 <b>винагорода:</b> {refuel_Count_Month}*200=<b>{refuel_Count_Month * 200} грн</b>\n" +
                   $"📈 всього Ваших заправок: <b>{refuel_Count_All}</b>\n";
 
-                if (Api.SEND_GRAPHIK)
+                if (false)
                 {
 
                     message = message +
@@ -138,15 +139,19 @@ namespace ScheduleDisconnectLight
 
 
 
-                new SenderTelegram()
+                if (Parameters.IsOn(Parameters.TgRefuelDone))
                 {
-                    SendType = _sendType,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
-                }.Send(message);
+                    new SenderTelegram()
+                    {
+                        AddLinkDashBoard = true,
+                        SendType = _sendType,
+                        ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel })
+                    }.Send(message);
+                }
 
-                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 8, "так");
-                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
-                SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
+                SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 9, Math.Round(oldGenStatus?.Refuel_ExecAfter_Liters ?? (decimal)0, 3));
+                SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 11, factAvgRefuel);
             }
 
 
@@ -264,7 +269,7 @@ namespace ScheduleDisconnectLight
                   $"🕒 {Api.TimeToStr(tehService_Last_DateTime)}\n";
 
 
-                if (Api.SEND_GRAPHIK)
+                if (false)
                 {
                     message = message +
                     $"⏳ всього мотогодин <b>{Api.GetTimeHours(paramTehService.TehService_Last_Hours, true)}</b>\n" +
@@ -274,15 +279,19 @@ namespace ScheduleDisconnectLight
 
 
              
-                new SenderTelegram()
+                if (Parameters.IsOn(Parameters.TgToDone))
                 {
-                    SendType = _sendType,
-                    ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.ShowIndicators })
-                }.Send(message);
+                    new SenderTelegram()
+                    {
+                        AddLinkDashBoard = true,
+                        SendType = _sendType,
+                        //ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.ShowIndicators })
+                    }.Send(message);
+                }
            
 
-                SpreadSheet.SetValue(SpreadSheet.SheetNameTehService, tehService_Last_RowID, 8, "так");
-                SpreadSheet.SetValue(SpreadSheet.SheetNameTehService, tehService_Last_RowID, 10, hoursLastTo);
+                SpreadSheet.SetValue(SpreadSheet.SheetTehService, tehService_Last_RowID, 8, "так");
+                SpreadSheet.SetValue(SpreadSheet.SheetTehService, tehService_Last_RowID, 10, hoursLastTo);
 
             }
 
@@ -339,11 +348,11 @@ namespace ScheduleDisconnectLight
         /// </summary>
         private Tuple<int, IList<object>, int, int> getRefuelLastRow()
         {
-            var refuel_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameFuelStatistic}!A:I").Execute().Values;
+            var refuel_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetFuelStatistic}!A:I").Execute().Values;
 
             if (refuel_Values == null || refuel_Values.Count == 0)
             {
-                Console.WriteLine($"Закладка {SpreadSheet.SheetNameFuelStatistic} пуста");
+                Console.WriteLine($"Закладка {SpreadSheet.SheetFuelStatistic} пуста");
                 return null;
             }
 
@@ -450,11 +459,11 @@ namespace ScheduleDisconnectLight
         /// </summary>
         public Tuple<int, IList<object>> getTehServiceLastRow(bool isTehService)
         {
-            var tehService_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetNameTehService}!A:J").Execute().Values;
+            var tehService_Values = SpreadSheet.Service.Spreadsheets.Values.Get(SpreadSheet.SpreadsheetId, $"{SpreadSheet.SheetTehService}!A:J").Execute().Values;
 
             if (tehService_Values == null || tehService_Values.Count == 0)
             {
-                Console.WriteLine($"Закладка {SpreadSheet.SheetNameTehService} пуста");
+                Console.WriteLine($"Закладка {SpreadSheet.SheetTehService} пуста");
                 return null;
             }
 
@@ -575,19 +584,31 @@ namespace ScheduleDisconnectLight
                 }
                 var row = valuesOnOff[i];
 
-                var tip = fromRow<string>(row, 0);
-
-                if (tip == "Світло")
-                {
-                    fillRanges(Source.Power, row, ref rangePower, rangesPower);
-                }
-                else if (tip == "Генератор")
-                {
-                    fillRanges(Source.Gen, row, ref rangeGen, rangesGen);
-                }
-                else
+                // Тестові рядки журналу (колонка F "Режим теста" = "так") у бойовому режимі не враховуємо.
+                // Локально (тестовий режим) враховуємо всі рядки.
+                if (!Api.IsRegTest() && fromRow<string>(row, 5) == "так")
                 {
                     continue;
+                }
+
+                try
+                {
+                    var tip = fromRow<string>(row, 0);
+
+                    if (tip == "Світло")
+                    {
+                        fillRanges(Source.Power, row, ref rangePower, rangesPower);
+                    }
+                    else if (tip == "Генератор")
+                    {
+                        fillRanges(Source.Gen, row, ref rangeGen, rangesGen);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Некоректне значення в рядку журналу (наприклад, дата не розпізнається): рядок пропускаємо, але видно в логу, який саме.
+                    Console.WriteLine($"❌ Журнал {SpreadSheet.SheetNameOnOffStatistic}, рядок {i + 1}: {ex.Message}. Значення: " +
+                        string.Join(" | ", row.Select(c => "'" + c + "'")));
                 }
             }
             if (rangePower != null)

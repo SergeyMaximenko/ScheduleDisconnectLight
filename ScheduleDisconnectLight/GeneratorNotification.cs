@@ -198,6 +198,15 @@ namespace ScheduleDisconnectLight
         }
 
 
+        /// <summary>
+        /// Текст показників генератора (HTML у форматі Telegram), який записується в нотатку закладки "Показники".
+        /// Заповнюється в Form(); null, якщо Form() не дійшов до формування тексту. Його передає WorkerSync.
+        /// </summary>
+        public static string LastIndicatorsHtml;
+
+        /// <summary>Час (київський), на який пораховано LastIndicatorsHtml</summary>
+        public static DateTime? LastIndicatorsAt;
+
         public void Form()
         {
 
@@ -209,26 +218,26 @@ namespace ScheduleDisconnectLight
             string messageToTgRefuel = "";
             string messageToTgTehService = "";
 
-            var datePower = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 1, 1);
-            var dateGen = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 2, 1);
-            var isPower = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 1, 2) == 1;
-            var isGen = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 2, 2) == 1;
+            // Поточний стан світла і генератора беремо із закладки DeyeСтатус (його оновлює PowerMonitor)
+            var deyeStored = DeyeSheet.ReadStored();
+            var datePower = deyeStored.GridDate ?? DateTime.MinValue;
+            var dateGen = deyeStored.GenDate ?? DateTime.MinValue;
+            var isPower = deyeStored.GridStatus == 1;
+            var isGen = deyeStored.GenStatus == 1;
 
 
 
-            var messageForecastTmp = "";
             var messageSchedule = new StringBuilder();
             var messageBalanceGen = new StringBuilder();
-            var messageGenStop = new StringBuilder();
+            
             var messageLastRefuelExec = new StringBuilder();
             var messageTehService = new StringBuilder();
             var messageLastRefuel = new StringBuilder();
-            var messageStatusPower = new StringBuilder();
-            var messageStatusGen = new StringBuilder();
+            
+            
             var messageStatusPowerGen = new StringBuilder();
          
             var messageDateIndicator = new StringBuilder();
-            var messageModem = new StringBuilder();
 
             var messageSetParam = new StringBuilder();
 
@@ -239,20 +248,6 @@ namespace ScheduleDisconnectLight
 
                 getTimeForecast(_schedule, statusGenRefuel.Refuel_Balance_Hours, out hasForecast, out DateTime dateStopGenStr, out string balanceTimeStr, out bool isCurrentDay);
 
-                //-----
-                // ПРОГНОЗ
-                //-----
-                if (dateStopGenStr != DateTime.MinValue)
-                {
-                    //
-                    messageForecastTmp = $"⛔️ якщо враховувати наявні графіки відключення, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateStopGenStr)}</b>\n";
-                }
-                else
-                {
-                    //
-                    messageForecastTmp = $"⏳ якщо враховувати наявні графіки відключення, {(isCurrentDay ? "сьогодні" : "завтра")}, в кінці дня, запасу палива вистачить ще на ~ <b>{balanceTimeStr}</b>\n";
-
-                }
 
 
                 //-----
@@ -288,7 +283,7 @@ namespace ScheduleDisconnectLight
                     $"⛽️ об'єм бака - <b>{ParamRefuel._totalLitersInGenerator.ToString("0.##")} л</b>\n" +
                     $"⏳ повного бака вистачить ~ <b>{Api.GetTimeHours(ParamRefuel._totalLitersInGenerator / ParamRefuel._liter1Horse, true)}</b>\n");
 
-
+                /*
                 string messageNonStopTmp= "";
                 if (isGen && statusGenRefuel != null && statusGenRefuel.Refuel_Balance_Hours >= 1)
                 {
@@ -296,12 +291,16 @@ namespace ScheduleDisconnectLight
                     
                     messageNonStopTmp = $"⛔️ якщо генератор буде працювати без зупинок, паливо скінчиться ~ <b>{Api.GetCaptionDateTimeShort(dateTimeStopGen)}</b>\n";
                 }
+                */
+
 
                 var balanceVisualPercent = Api.GetVisualPercent(statusGenRefuel.Refuel_Balance_Percent, 5, 3, out ColorResult colorResult);
                 
                 
                 messageBalanceGen.Append(
                     $"<b>Стан по паливу:</b>\n" +
+                    $"⚙️ відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
+                    $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
                     $"⛽️ залишок у баку ~ <b>{statusGenRefuel.Refuel_Balance_LitersStr} л.</b>\n" +
                     balanceVisualPercent + $"<b>{statusGenRefuel.Refuel_Balance_Percent}%</b>\n");
 
@@ -312,29 +311,16 @@ namespace ScheduleDisconnectLight
 
                 }
 
-                messageGenStop.Append(
-                    $"<b>Коли скінчиться паливо:</b>\n" +
-                    $"⏳ вистачить на ~ <b>{statusGenRefuel.Refuel_Balance_HoursStr}</b>\n" +
-                    messageNonStopTmp +
-                    messageForecastTmp
-                    );
-
+                
                 
 
-                messageLastRefuelExec.Append(
-                    $"<b>Після останньої заправки:</b>\n" +
-                    $"⚙️ відпрацював - <b>{statusGenRefuel.Refuel_ExecAfter_HoursStr}</b>\n" +
-                    $"⛽️ спожито палива ~ <b>{statusGenRefuel.Refuel_ExecAfter_LitersStr} л</b>\n");
-                    
-                    
 
 
                 messageLastRefuel.Append(
                     $"<b>Остання заправка:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenRefuel.Refuel_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenRefuel.Refuel_Last_DateTime)}\n" +
-                    $"🙏 заправляв <b>{statusGenRefuel.Refuel_Last_UserName}</b>\n" +
-                    (!string.IsNullOrEmpty(statusGenRefuel.Refuel_Last_UserCode) ? $"👤 <b>@{statusGenRefuel.Refuel_Last_UserCode}</b>\n" : ""));
+                    $"👤 заправляв <b>{statusGenRefuel.Refuel_Last_UserName}</b>\n");
 
 
 
@@ -364,61 +350,11 @@ namespace ScheduleDisconnectLight
                     $"<b>Останнє ТО:</b>\n" +
                     $"📅 {Api.GetCaptionDate(statusGenTehService.TehService_Last_DateTime)}\n" +
                     $"🕒 {Api.TimeToStr(statusGenTehService.TehService_Last_DateTime)}\n" +
-                    $"🙏 контролював <b>{statusGenTehService.TehService_Last_UserName}</b>\n" +
-                    (!string.IsNullOrEmpty(statusGenTehService.TehService_Last_UserCode) ? $"👤 <b>@{statusGenTehService.TehService_Last_UserCode}</b>\n" : ""));
+                    $"👤 контролював <b>{statusGenTehService.TehService_Last_UserName}</b>\n");
             }
 
-            string replaceUserToHtml(StringBuilder message)
-            {
-                var messageResult = message.ToString();
-                if (statusGenRefuel != null && !string.IsNullOrEmpty(statusGenRefuel.Refuel_Last_UserCode))
-                {
-                    var refHtml = $"<a href=\"https://t.me/{statusGenRefuel.Refuel_Last_UserCode}\" target=\"_blank\">t.me/{statusGenRefuel.Refuel_Last_UserCode}</a>";
-                    messageResult = messageResult.Replace($"@{statusGenRefuel.Refuel_Last_UserCode}", refHtml);
-                }
-
-                if (statusGenTehService != null && !string.IsNullOrEmpty(statusGenTehService.TehService_Last_UserCode))
-                {
-                    var refHtml = $"<a href=\"https://t.me/{statusGenTehService.TehService_Last_UserCode}\" target=\"_blank\">t.me/{statusGenTehService.TehService_Last_UserCode}</a>";
-                    messageResult = messageResult.ToString().Replace($"@{statusGenTehService.TehService_Last_UserCode}", refHtml);
-                }
-
-                return messageResult.ToString();
-
-
-            }
-
-            var modemParam = ModemParam.Get();
-            messageModem.Append(modemParam.Message);
-            if (modemParam.IsMessageWarning)
-            {
-                new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(
-                     modemParam.Message);
-            }
-
-
-
-            if (false)
-            {
-                ZvonokClient.MakeCall(modemParam);
-            }
             
 
-            messageStatusPower.Append(
-                 (isPower
-                 ? "✅💡 <b>Світло є</b>\n" +
-                   "🕒 було включено в <b>" + Api.TimeToStr(datePower) + "</b>\n"
-                 : "❌💡 <b>Світло відсутнє</b>\n" +
-                   "🕒 було виключено в <b>" + Api.TimeToStr(datePower) + "</b>\n") +
-                "📅 " + Api.GetCaptionDate(datePower) + "\n");
-
-            messageStatusGen.Append(
-                 (isGen
-                 ? "✅🔋 <b>Генератор працює</b>\n" +
-                   "🕒 запустився в <b>" + Api.TimeToStr(dateGen) + "</b>\n"
-                 : "❌🔋 <b>Генератор відпочиває</b>\n" +
-                   "🕒 зупинився в <b>" + Api.TimeToStr(dateGen) + "</b>\n") +
-                "📅 " + Api.GetCaptionDate(dateGen) + "\n");
 
 
 
@@ -429,24 +365,24 @@ namespace ScheduleDisconnectLight
 
 
             var messageSaveIndicatorsToExcel = concatMessage(
-                "⚠️Увага! Всі сервіси моніторингу на поточний момент відключені, тому показники нижче не актуальні\n\n"+
+                //"⚠️Увага! Всі сервіси моніторингу на поточний момент відключені, тому показники нижче не актуальні\n\n"+
                 messageDateIndicator.ToString(),
-                messageSetParam.ToString(),
                 messageBalanceGen.ToString(),
-                messageGenStop.ToString(),
+                messageLastRefuel.ToString(),
                 messageSchedule.ToString(),
-                messageLastRefuelExec.ToString(),
-                replaceUserToHtml(messageLastRefuel).ToString(),
-                messageModem.ToString(),
-                messageStatusPower.ToString(),
-                messageStatusGen.ToString(),
-                replaceUserToHtml(messageTehService).ToString());
+                messageTehService.ToString(),
+                messageSetParam.ToString()
+                );
 
             saveNote(messageSaveIndicatorsToExcel);
 
+            // Той самий текст передаємо на Worker (WorkerSync), щоб показати його в дашборді
+            LastIndicatorsHtml = messageSaveIndicatorsToExcel;
+            LastIndicatorsAt = Api.DateTimeUaCurrent;
+
             messageToTgRefuel = concatMessage(
                 messageBalanceGen.ToString(),
-                messageGenStop.ToString(),
+      
                 messageLastRefuel.ToString());
 
             messageToTgTehService = concatMessage(
@@ -480,14 +416,16 @@ namespace ScheduleDisconnectLight
                             $"🆘 <b>Потрібна заправка генератора</b>\n\n" +
                             messageToTgRefuel;
 
-                        if (Service.Api.SEND_GRAPHIK)
-                        {
-                            new SenderTelegram()
+
+                            if (Parameters.IsOn(Parameters.TgFuelLow))
                             {
-                                SendType = _sendType,
-                                ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel, ReplyMarkup.ShowIndicators })
-                            }.Send(messageTelegram);
-                        }
+                                new SenderTelegram()
+                                {
+                                    AddLinkDashBoard = true,
+                                    SendType = _sendType,
+                                    ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel })
+                                }.Send(messageTelegram);
+                            }
 
                     }
                     else
@@ -528,14 +466,15 @@ namespace ScheduleDisconnectLight
                         var messageTelegram =
                             $"⚠️ <b>Потрібно планувати тех.обслуговування генератора</b>\n\n" +
                             messageToTgTehService;
-                        if (Service.Api.SEND_GRAPHIK)
-                        {
-                            new SenderTelegram()
+                            if (Parameters.IsOn(Parameters.TgToNeeded))
                             {
-                                SendType = _sendType,
-                                ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService, ReplyMarkup.ShowIndicators })
-                            }.Send(messageTelegram);
-                        }
+                                new SenderTelegram()
+                                {
+                                    AddLinkDashBoard = true,
+                                    SendType = _sendType,
+                                    ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService })
+                                }.Send(messageTelegram);
+                            }
 
                     }
                     else
@@ -562,29 +501,29 @@ namespace ScheduleDisconnectLight
 
         private void saveHoursRefuel(decimal hourse)
         {
-            SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
+            SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
         private decimal getHoursRefuel()
         {
-            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameFuelStatus, 2, _sendTestGroup ? 2 : 1);
+            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetIndicators, 2, _sendTestGroup ? 2 : 1);
         }
 
 
         private void saveHoursTehService(decimal hourse)
         {
-            SpreadSheet.SetValue(SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1, hourse.ToString());
+            SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 3, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
         private decimal getHoursTehService()
         {
-            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameFuelStatus, 3, _sendTestGroup ? 2 : 1);
+            return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetIndicators, 3, _sendTestGroup ? 2 : 1);
         }
 
 
         private void saveNote(string note)
         {
-            SpreadSheet.AddNote(SpreadSheet.SheetNameFuelStatus, 1, _sendTestGroup ? 2 : 1, note);
+            SpreadSheet.AddNote(SpreadSheet.SheetIndicators, 1, _sendTestGroup ? 2 : 1, note);
 
         }
 
@@ -622,6 +561,7 @@ namespace ScheduleDisconnectLight
                     );
             }
 
+            /*
             if (replyMarkups.Contains(ReplyMarkup.ShowIndicators))
             {
                 string miniAppLink = $"https://t.me/{connect.BotUsername}/onlinestatus/?startapp={payload}";
@@ -636,6 +576,8 @@ namespace ScheduleDisconnectLight
                             }
                     );
             }
+            */
+
             if (replyMarkups.Contains(ReplyMarkup.ShowBonus))
             {
                 string miniAppLink = $"https://t.me/{connect.BotUsername}/bonus/?startapp={payload}";
@@ -791,121 +733,12 @@ namespace ScheduleDisconnectLight
     public enum ReplyMarkup
     {
         Refuel,
-        ShowIndicators,
         ShowBonus,
         TehService,
         Moto,
         AvgRefuel
     }
 
-    public enum StatusModemBattery
-    {
-        [MapValue(0, Caption = "🔴⬇️ Батарея розряджається")]
-        NoCharging,
-        [MapValue(1, Caption = "🟢⬆️ Батарея заряджається")]
-        Charging,
-        [MapValue(2, Caption = "🔴⬇️ Батарея розряджається")]
-        NoChargingAdditional,
-        [MapValue(3, Caption = "🟢 Батарея повністю заряджена")]
-        Full,
-        [MapValue(4, Caption = "🔴⬇️ Низький заряд батареї")]
-        Low,
-        [MapValue(5, Caption = "❌ Помилка батареї")]
-        Error
-    }
-
-
-    public class ModemParam
-    {
-        public int Percent;
-        public StatusModemBattery Status;
-        public DateTime DateTime;
-        public string Message;
-        public bool IsMessageWarning;
-
-        public static ModemParam Get()
-        {
-
-            var param = new ModemParam();
-
-            var percent = (int)Math.Round(SpreadSheet.GetValue<decimal>(SpreadSheet.SheetNameOnOffStatus, 5, 1), 0);
-            var statusInt = SpreadSheet.GetValue<int>(SpreadSheet.SheetNameOnOffStatus, 6, 1);
-            var dateTime = SpreadSheet.GetValue<DateTime>(SpreadSheet.SheetNameOnOffStatus, 7, 1);
-
-          
-            /*
-            string getPercentStr()
-            {
-                if (percent >= 80) return "🟢🔋";
-                if (percent >= 50) return "🟡🔋";
-                if (percent >= 20) return "🟠🔋";
-                return "🔴🪫";
-            }
-
-            */
-
-
-            var status = EnumAttributes.ValueToEnum<StatusModemBattery>(statusInt);
-            if (percent == 100)
-            {
-                status = StatusModemBattery.Full;
-            }
-            var modemStatusCaption = EnumAttributes.GetEnumAttribute(status).GetCaption();
-
-
-            var modemTimeDiff = Api.DateTimeUaCurrent - dateTime;
-
-            var modemTimeUpd = "";
-            if (modemTimeDiff.TotalMinutes < 1)
-            {
-                modemTimeUpd = "<b>щойно</b>";
-            }
-            else
-            {
-                modemTimeUpd = $"<b>{Api.GetTimeHours(modemTimeDiff, true)}</b> назад";
-
-            }
-
-            var messageWarning = "";
-            if (modemTimeDiff.TotalMinutes > 30)
-            {
-                // Модем не обновлялся больше 30 мин
-                messageWarning = "🆘 Модем не в мережі, потрібно перезавантажити\n";
-            }
-            else if (percent <= 20)
-            {
-                messageWarning = "🆘 Низький рівень заряду модема\n";
-            }
-
-
-            /*
-            string getPercentStr()
-            {
-                if (percent >= 80) return "🟢🔋";
-                if (percent >= 50) return "🟡🔋";
-                if (percent >= 20) return "🟠🔋";
-                return "🔴🪫";
-            }
-           */
-
-            var balanceVisualPercent = Api.GetVisualPercent(percent, 8, 3, out ColorResult colorResult);
-            var message =
-                      $"<b>Модем:</b>\n" +
-                      $"{messageWarning}" +
-                      $"📅 оновлено {modemTimeUpd}\n" +
-                      $"{(colorResult == ColorResult.Red ? "🪫" : "🔋")} стан заряду:\n" +
-                      $"{balanceVisualPercent}<b>{percent}%</b>\n" +
-                      $"{modemStatusCaption}\n";
-            return new ModemParam()
-            {
-                Status = status,
-                Percent = percent,
-                Message = message,
-                IsMessageWarning = !string.IsNullOrEmpty(messageWarning)
-
-            };
-        }
-    }
 
 
 

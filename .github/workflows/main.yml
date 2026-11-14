@@ -43,15 +43,43 @@ jobs:
           # (опционально) проверка что это JSON
           Get-Content $keyPath | Select-Object -First 1
           
+      # Токен Deye зберігаємо між запусками в кеші Actions (не в репозиторії), щоб не запитувати
+      # новий токен щоразу: кожен виклик Deye рахується в місячній квоті (100 000).
+      # Беремо найновіший кеш за префіксом deye-token-.
+      - name: Restore Deye token cache
+        uses: actions/cache/restore@v4
+        with:
+          path: deye-token.json
+          key: deye-token-${{ github.run_id }}
+          restore-keys: |
+            deye-token-
+
       - name: Run EXE
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           ZVONOK_KEY: ${{ secrets.ZVONOK_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}\gcp-key.json
           CHAT_ID:  ${{ secrets.CHAT_ID }}
+          # Доступ до Deye Cloud (додати в Settings -> Secrets and variables -> Actions)
+          DEYE_APP_ID: ${{ secrets.DEYE_APP_ID }}
+          DEYE_APP_SECRET: ${{ secrets.DEYE_APP_SECRET }}
+          DEYE_LOGIN: ${{ secrets.DEYE_LOGIN }}
+          DEYE_PASSWORD: ${{ secrets.DEYE_PASSWORD }}
+          DEYE_TOKEN_FILE: ${{ github.workspace }}\deye-token.json
+          # Передача даних на Worker дашборда (secrets: WORKER_URL, INGEST_SECRET)
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
         run: |
           cd ScheduleDisconnectLight\bin\Debug
           .\ScheduleDisconnectLight.exe
+
+      # Кеш зберігаємо ТІЛЬКИ коли застосунок отримав новий токен (він сам ставить DEYE_TOKEN_REFRESHED=true).
+      - name: Save Deye token cache
+        if: env.DEYE_TOKEN_REFRESHED == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: deye-token.json
+          key: deye-token-${{ github.run_id }}
 
       - name: Commit updated appState.json
         if: success()
