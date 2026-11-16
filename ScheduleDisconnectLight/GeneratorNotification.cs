@@ -32,7 +32,7 @@ namespace ScheduleDisconnectLight
             _schedule = schedule;
 
             // На всякий випадок, щоб не заспамити
-            if (!Api.IsGitHub() && 1 == 1)   //
+            if (!Api.IsGitHub() && 1 == 0)   //
             {
                 var sendTypeTmp = SendType.OnlyTest;
 

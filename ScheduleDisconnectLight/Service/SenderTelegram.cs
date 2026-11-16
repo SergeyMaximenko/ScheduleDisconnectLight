@@ -45,8 +45,12 @@ namespace Service
                     if (AddLinkDashBoard)
                     {
 
-                        text = text + "\n" +
-                        $@"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Онлайн стан мережі</a></b>" + "\n";
+                        string separator = text.EndsWith("\n", StringComparison.Ordinal)
+                            ? "\n"
+                            : "\n\n";
+
+                        text += separator
+                            + @"👉 <b><a href=""https://sergeymaximenko.github.io/C13PowerDashboard/"">Онлайн стан мережі</a></b>";
                     }
 
 

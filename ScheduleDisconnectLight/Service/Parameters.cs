@@ -19,8 +19,12 @@ namespace Service
 
         /// <summary>Інфо про включення\виключення світла (світло з'явилось / зникло)</summary>
         public const string TgLightEvent = "TG_LIGHT_EVENT";
-        /// <summary>Нагадування про заплановане відключення\включення світла (за графіком)</summary>
-        public const string TgOutageReminder = "TG_OUTAGE_REMINDER";
+        /// <summary>Нагадування про заплановане включення світла (за графіком)</summary>
+        public const string TgReminderPowerOn = "TG_REMINDER_POWER_ON";
+
+        /// <summary>Нагадування про заплановане відключення світла (за графіком)</summary>
+        public const string TgReminderPowerOff = "TG_REMINDER_POWER_OFF";
+
         /// <summary>Нагадування про низький рівень палива (потрібна заправка)</summary>
         public const string TgFuelLow = "TG_FUEL_LOW";
         /// <summary>Нагадування про необхідність проведення ТО</summary>
