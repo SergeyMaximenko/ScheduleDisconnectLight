@@ -105,7 +105,7 @@ namespace ScheduleDisconnectLight
                 if (current != null)
                 {
                     // Світло з'явилось раніше, ніж закінчується відключення за графіком
-                    result.Add("🎉 нам пощастило, за графіком відключення було до <b>" + TimeWithDay(current.End, at) + "</b>");
+                    result.Add("🎉 за графіком відключення було до <b>" + TimeWithDay(current.End, at) + "</b>");
                     // "Наступне" беремо ПІСЛЯ поточного відключення
                     next = intervals.Where(i => i.Start >= current.End).OrderBy(i => i.Start).FirstOrDefault();
                 }
