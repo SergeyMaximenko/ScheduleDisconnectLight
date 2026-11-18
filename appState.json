@@ -34,7 +34,7 @@
   "IsEmergencyShutdowns": false,
   "ScheduleDateLastUpdate": "2026-11-17T21:28:00",
   "ScheduleHashDateSet": "2026-11-17T21:31:04.6506331",
-  "DateTimePowerOffLastMessage": "2026-11-18T10:00:00",
+  "DateTimePowerOffLastMessage": "2026-11-18T21:00:00",
   "KvLimitAlertDate": "0001-01-01T00:00:00",
   "DateTimePowerOnLastMessage": "2026-11-16T20:00:00"
 }
