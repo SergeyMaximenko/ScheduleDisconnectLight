@@ -185,6 +185,18 @@ namespace ScheduleDisconnectLight
             }
         }
 
+        /// <summary>
+        /// Текст статусу з повідомлення для картинки: без HTML-тегів, емодзі й кінцевого переносу рядка.
+        /// "💛 Графік <b>без змін</b>\n" -> "Графік без змін".
+        /// </summary>
+        private static string PlainStatus(string html)
+        {
+            var text = System.Text.RegularExpressions.Regex.Replace(html ?? "", "<[^>]*>", "");
+            int start = 0;
+            while (start < text.Length && !char.IsLetterOrDigit(text[start])) start++;
+            return text.Substring(start).Trim();
+        }
+
         private static Schedule scheduleFormer()
         {
 
@@ -344,6 +356,8 @@ namespace ScheduleDisconnectLight
                 message.Append("\n");
 
                 var scheduleHashNew = new List<ScheduleOneDay>();
+                // Статус графіка (той самий текст, що в повідомленні, без тегів і емодзі): дублюється в заголовку картинки
+                string statusCurrent = null, statusNext = null;
 
                 // По текущему дню отправляем всегда 
                 if (1 == 1)
@@ -353,6 +367,7 @@ namespace ScheduleDisconnectLight
                     message.Append($"🗓️ <b>{schedule.ScheduleCurrentDay.GetCaptionDate()}</b>\n");
                     if (!schedule.ScheduleCurrentDay.IsEmpty())
                     {
+                        int statusStartCurrent = message.Length;
                         var totalTimeOffPowerNew = schedule.ScheduleCurrentDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateCurrentDay.ScheduleOneDay.GetTotalTimeOffPower();
                         var isMinus = false;
@@ -390,6 +405,7 @@ namespace ScheduleDisconnectLight
                             message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
 
+                        statusCurrent = PlainStatus(message.ToString(statusStartCurrent, message.Length - statusStartCurrent));
                         var pict = isMinus ? "📉" : "📈";
                         message.Append($"{pict} <b>{schedule.ScheduleCurrentDay.GetPercentOffPower()}%</b> часу без світла\n");
                         
@@ -408,6 +424,7 @@ namespace ScheduleDisconnectLight
                     message.Append($"🗓️ <b>{schedule.ScheduleNextDay.GetCaptionDate()}</b>\n");
                     if (!schedule.ScheduleNextDay.IsEmpty())
                     {
+                        int statusStartNext = message.Length;
                         var totalTimeOffPowerNew = schedule.ScheduleNextDay.GetTotalTimeOffPower();
                         var totalTimeOffPowerOld = stateNextDay.ScheduleOneDay.GetTotalTimeOffPower();
 
@@ -445,6 +462,7 @@ namespace ScheduleDisconnectLight
                         {
                             message.Append("🔔 Графік щойно <b>з'явився</b>\n");
                         }
+                        statusNext = PlainStatus(message.ToString(statusStartNext, message.Length - statusStartNext));
                         var pict = isMinus ? "📉" : "📈";
                         message.Append($"{pict} <b>{schedule.ScheduleNextDay.GetPercentOffPower()}%</b> часу без світла\n");
                     }
@@ -475,7 +493,7 @@ namespace ScheduleDisconnectLight
                     new SenderTelegram
                     {
                         AddLinkDashBoard = true,
-                        Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns && false)
+                        Photo = ScheduleImageGenerator.Generate(scheduleHashNew, Api.DateUaCurrent, schedule.IsEmergencyShutdowns && false, new[] { statusCurrent, statusNext })
                     }.Send(message.ToString());
                 }
                 Console.WriteLine("Сообщение об изменении графика отправлено");

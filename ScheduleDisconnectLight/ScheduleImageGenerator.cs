@@ -17,9 +17,24 @@ namespace ScheduleDisconnectLight
                 g.DrawString(value, font, brush, x, y);
         }
 
+        static float Measure(Graphics g, string value, float size, bool bold)
+        {
+            using (var font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular, GraphicsUnit.Pixel))
+                return g.MeasureString(value, font, int.MaxValue, StringFormat.GenericTypographic).Width;
+        }
+
+        // Status colour: more outages - red, fewer - green, schedule just appeared - blue, otherwise amber.
+        static string StatusColor(string status)
+        {
+            if (status.StartsWith("Плюс", StringComparison.OrdinalIgnoreCase)) return "#DC2626";
+            if (status.StartsWith("Мінус", StringComparison.OrdinalIgnoreCase)) return "#16A34A";
+            if (status.IndexOf("щойно", StringComparison.OrdinalIgnoreCase) >= 0) return "#2563EB";
+            return "#B7791F";
+        }
+
         // Only days included in the notification are rendered. Empty schedules are
         // explicitly marked unknown because the source model has no publication flag.
-        public static byte[] Generate(IEnumerable<ScheduleOneDay> schedules, DateTime today, bool emergency = false)
+        public static byte[] Generate(IEnumerable<ScheduleOneDay> schedules, DateTime today, bool emergency = false, string[] statuses = null)
         {
             var days = schedules.ToList();
             if (days.Count < 1 || days.Count > 2) throw new ArgumentException("Expected one or two days.");
@@ -37,9 +52,19 @@ namespace ScheduleDisconnectLight
                     string relative = day.Date.Date == today.Date ? " (сьогодні)" :
                         day.Date.Date == today.Date.AddDays(1) ? " (завтра)" : "";
                     string[] weekdays = { "Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб" };
-                    Text(g, day.Date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) +
-                        " " + weekdays[(int)day.Date.DayOfWeek] + relative,
-                        20, top + 18, 32, "#1E293B", true);
+                    string status = statuses != null && index < statuses.Length ? statuses[index] : null;
+                    string title = day.Date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) +
+                        " " + weekdays[(int)day.Date.DayOfWeek] + relative;
+                    if (!string.IsNullOrEmpty(status)) title += ",";
+                    Text(g, title, 20, top + 18, 32, "#1E293B", true);
+                    if (!string.IsNullOrEmpty(status))
+                    {
+                        // Status text from the Telegram message, right after the date. A long text gets a smaller font so it fits the width.
+                        float titleWidth = Measure(g, title, 32, true);
+                        float statusX = 20 + titleWidth + 4, statusSize = 28;
+                        while (statusSize > 16 && statusX + Measure(g, status, statusSize, false) > bitmap.Width - 16) statusSize -= 1;
+                        Text(g, status, statusX, top + 18 + (32 - statusSize) * 0.6f, statusSize, StatusColor(status));
+                    }
                     if (emergency || day.Times == null || day.Times.Count == 0)
                     {
                         Text(g, emergency ? "Екстрені відключення — графік не діє" : "Графік відсутній або відключень не заплановано",
