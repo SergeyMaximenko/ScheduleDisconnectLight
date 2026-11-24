@@ -226,7 +226,7 @@ namespace ScheduleDisconnectLight
         }
 
         /// <summary>
-        /// Тривалість словами без секунд: "3 хв", "1 год 5 хв", "10 год". Нуль хвилин не пишемо.
+        /// Тривалість словами без секунд: "3 хв", "1 год 5 хв", "10 год"; від доби: "2 дн 2 год 45 хв". Нуль хвилин не пишемо.
         /// </summary>
         private static string Duration(TimeSpan span)
         {
@@ -234,6 +234,26 @@ namespace ScheduleDisconnectLight
             if (totalMinutes < 0)
             {
                 totalMinutes = 0;
+            }
+
+            // Від доби: "дн", години й хвилини без округлення, нульові частини не пишемо (2 дн 2 год 45 хв, 2 дн 29 хв, 2 дн 3 год).
+            if (totalMinutes >= 24 * 60)
+            {
+                var days = totalMinutes / (24 * 60);
+                var restMinutes = totalMinutes % (24 * 60);
+                var restHours = restMinutes / 60;
+                var restMin = restMinutes % 60;
+
+                var result = days + " дн";
+                if (restHours > 0)
+                {
+                    result += " " + restHours + " год";
+                }
+                if (restMin > 0)
+                {
+                    result += " " + restMin + " хв";
+                }
+                return result;
             }
 
             var hours = totalMinutes / 60;
