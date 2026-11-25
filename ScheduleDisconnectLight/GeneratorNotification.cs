@@ -378,7 +378,7 @@ namespace ScheduleDisconnectLight
             if (statusGenRefuel != null)
             {
                 savePercentRefuel(statusGenRefuel.Refuel_Balance_Percent);
-                saveRefuelBlanceHourse(statusGenRefuel.Refuel_Balance_HoursStr);
+                saveRefuelBlanceHourse(statusGenRefuel.Refuel_Balance_Percent <=2 ? "" : statusGenRefuel.Refuel_Balance_HoursStr);
             }
             
 

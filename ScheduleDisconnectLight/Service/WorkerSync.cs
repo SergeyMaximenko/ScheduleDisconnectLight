@@ -176,15 +176,15 @@ namespace Service
         /// <summary>
         /// На скільки вистачить палива: готовий текст (наприклад "9 год 4 хв") із закладки "Показники",
         /// рядок "Вистатичить палива на" (одразу під "Паливо, % палива в баці"), колонка B - Прод, C - Тест.
-        /// null, якщо клітинка порожня або не вдалося прочитати: передача на Worker через це не зупиняється.
+        /// "" (порожній рядок), якщо клітинка порожня: Worker тоді прибирає текст із сайту.
+        /// null, якщо не вдалося прочитати: Worker лишає попереднє значення, передача через це не зупиняється.
         /// </summary>
         private static string ReadFuelRemaining()
         {
             try
             {
                 var text = SpreadSheet.GetValue<string>(SpreadSheet.SheetIndicators, 5, Api.IsRegTest() ? 2 : 1);
-                text = text == null ? null : text.Trim();
-                return string.IsNullOrEmpty(text) ? null : text;
+                return text == null ? "" : text.Trim();
             }
             catch (Exception ex)
             {
