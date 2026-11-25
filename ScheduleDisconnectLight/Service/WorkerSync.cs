@@ -65,7 +65,7 @@ namespace Service
             var body = new JObject
             {
                 ["schemaVersion"] = SchemaVersion,
-                ["snapshot"] = BuildSnapshot(stored, GeneratorNotification.LastIndicatorsHtml, GeneratorNotification.LastIndicatorsAt),
+                ["snapshot"] = BuildSnapshot(stored, GeneratorNotification.LastIndicatorsHtml, GeneratorNotification.LastIndicatorsAt, ReadFuelPercent()),
                 ["journalHash"] = journalHash,
                 ["refuelsHash"] = refuelsHash
             };
@@ -147,11 +147,38 @@ namespace Service
         // ------------------------------------------------------------------------------------
 
         /// <summary>
+        /// % палива в баці генератора: готове число із закладки "Показники" (рядок "Паливо, % палива в баці",
+        /// колонка B - Прод, C - Тест). Його записує GeneratorNotification (savePercentRefuel).
+        /// null, якщо клітинка порожня, не число або не вдалося прочитати: передача на Worker через це не зупиняється.
+        /// </summary>
+        private static int? ReadFuelPercent()
+        {
+            try
+            {
+                // Рядок 4 (0-based), колонка 1 = B (Прод), 2 = C (Тест): так само, як у savePercentRefuel
+                var text = SpreadSheet.GetValue<string>(SpreadSheet.SheetIndicators, 4, Api.IsRegTest() ? 2 : 1);
+                int value;
+                if (!string.IsNullOrWhiteSpace(text) &&
+                    int.TryParse(text.Trim().Replace("%", ""), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out value) &&
+                    value >= 0 && value <= 100)
+                {
+                    return value;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("WorkerSync: не вдалося прочитати % палива: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Знімок: поточний стан Deye + текст показників генератора (indicatorsHtml) і час, на який він пораховано.
         /// Усе йде одним JSON, а Worker зберігає його одним ключем KV (один запис на запуск).
         /// indicatorsHtml = null, якщо показники цього разу не сформовано (Worker тоді лишає попередні).
         /// </summary>
-        private static JObject BuildSnapshot(DeyeStored s, string indicatorsHtml, DateTime? indicatorsAt)
+        private static JObject BuildSnapshot(DeyeStored s, string indicatorsHtml, DateTime? indicatorsAt, int? fuelPercent)
         {
             string mode = null;
             if (s.BatteryMode.HasValue)
@@ -167,6 +194,7 @@ namespace Service
                 ["genStatus"] = s.GenStatus, ["genDate"] = Ms(s.GenDate), ["genPower"] = s.GenPower, ["genVoltage"] = s.GenVoltage, ["genPeak"] = s.GenPeak,
                 ["inverterStatus"] = s.InverterStatus, ["inverterDate"] = Ms(s.InverterDate), ["loadWatts"] = s.LoadWatts,
                 ["soc"] = s.Soc, ["batteryMode"] = mode, ["batteryWatts"] = s.BatteryWatts,
+                ["fuelPercent"] = fuelPercent,
                 ["indicatorsHtml"] = indicatorsHtml,
                 ["indicatorsAt"] = indicatorsHtml == null ? null : Ms(indicatorsAt)
             };

@@ -153,7 +153,7 @@
 Контракт: `C13PowerDashboard/INGEST.md` (`schemaVersion` 1). Кожен запуск:
 
 1. читає журнал (`DeyeСтатистика`) й заправки (`ЗаправкаСтатистика`, A:K), рахує їх хеші (SHA-256 від компактного JSON, 32 символи);
-2. `POST /api/ingest`: знімок поточного стану (`gridStatus`, `genStatus`, `genPower`, `soc`, `batteryMode`, `batteryWatts`, `loadWatts`, `indicatorsHtml` тощо) і хеші;
+2. `POST /api/ingest`: знімок поточного стану (`gridStatus`, `genStatus`, `genPower`, `soc`, `batteryMode`, `batteryWatts`, `loadWatts`, `fuelPercent`, `indicatorsHtml` тощо) і хеші. `fuelPercent` (% палива в баці) береться готовим із закладки `Показники` (рядок «Паливо, % палива в баці», колонка B — Прод, C — Тест; його записує `savePercentRefuel`), за помилки читання або порожньої клітинки йде `null`;
 3. Worker відповідає `needJournal`/`needRefuels` (його хеш інший) → лише тоді шлемо повні блоки (`/api/ingest/journal`, `/api/ingest/refuels`). Ручні правки таблиці теж потрапляють на Worker самі;
 4. тестові рядки й рядки «Не враховувати» заправок не передаються.
 

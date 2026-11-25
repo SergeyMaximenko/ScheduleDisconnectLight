@@ -375,6 +375,13 @@ namespace ScheduleDisconnectLight
 
             saveNote(messageSaveIndicatorsToExcel);
 
+            if (statusGenRefuel != null)
+            {
+                savePercentRefuel(statusGenRefuel.Refuel_Balance_Percent);
+            }
+            
+
+
             // Той самий текст передаємо на Worker (WorkerSync), щоб показати його в дашборді
             LastIndicatorsHtml = messageSaveIndicatorsToExcel;
             LastIndicatorsAt = Api.DateTimeUaCurrent;
@@ -501,6 +508,13 @@ namespace ScheduleDisconnectLight
             SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 2, _sendTestGroup ? 2 : 1, hourse.ToString());
 
         }
+
+        private void savePercentRefuel(int percent)
+        {
+            SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 4, _sendTestGroup ? 2 : 1, percent);
+
+        }
+
         private decimal getHoursRefuel()
         {
             return SpreadSheet.GetValue<decimal>(SpreadSheet.SheetIndicators, 2, _sendTestGroup ? 2 : 1);
