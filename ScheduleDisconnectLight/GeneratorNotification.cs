@@ -378,6 +378,7 @@ namespace ScheduleDisconnectLight
             if (statusGenRefuel != null)
             {
                 savePercentRefuel(statusGenRefuel.Refuel_Balance_Percent);
+                saveRefuelBlanceHourse(statusGenRefuel.Refuel_Balance_HoursStr);
             }
             
 
@@ -514,6 +515,13 @@ namespace ScheduleDisconnectLight
             SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 4, _sendTestGroup ? 2 : 1, percent);
 
         }
+
+        private void saveRefuelBlanceHourse(string hourse)
+        {
+            SpreadSheet.SetValue(SpreadSheet.SheetIndicators, 5, _sendTestGroup ? 2 : 1, hourse);
+
+        }
+
 
         private decimal getHoursRefuel()
         {

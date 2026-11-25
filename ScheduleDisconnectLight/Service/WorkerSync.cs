@@ -65,7 +65,7 @@ namespace Service
             var body = new JObject
             {
                 ["schemaVersion"] = SchemaVersion,
-                ["snapshot"] = BuildSnapshot(stored, GeneratorNotification.LastIndicatorsHtml, GeneratorNotification.LastIndicatorsAt, ReadFuelPercent()),
+                ["snapshot"] = BuildSnapshot(stored, GeneratorNotification.LastIndicatorsHtml, GeneratorNotification.LastIndicatorsAt, ReadFuelPercent(), ReadFuelRemaining()),
                 ["journalHash"] = journalHash,
                 ["refuelsHash"] = refuelsHash
             };
@@ -174,11 +174,31 @@ namespace Service
         }
 
         /// <summary>
+        /// На скільки вистачить палива: готовий текст (наприклад "9 год 4 хв") із закладки "Показники",
+        /// рядок "Вистатичить палива на" (одразу під "Паливо, % палива в баці"), колонка B - Прод, C - Тест.
+        /// null, якщо клітинка порожня або не вдалося прочитати: передача на Worker через це не зупиняється.
+        /// </summary>
+        private static string ReadFuelRemaining()
+        {
+            try
+            {
+                var text = SpreadSheet.GetValue<string>(SpreadSheet.SheetIndicators, 5, Api.IsRegTest() ? 2 : 1);
+                text = text == null ? null : text.Trim();
+                return string.IsNullOrEmpty(text) ? null : text;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("WorkerSync: не вдалося прочитати, на скільки вистачить палива: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Знімок: поточний стан Deye + текст показників генератора (indicatorsHtml) і час, на який він пораховано.
         /// Усе йде одним JSON, а Worker зберігає його одним ключем KV (один запис на запуск).
         /// indicatorsHtml = null, якщо показники цього разу не сформовано (Worker тоді лишає попередні).
         /// </summary>
-        private static JObject BuildSnapshot(DeyeStored s, string indicatorsHtml, DateTime? indicatorsAt, int? fuelPercent)
+        private static JObject BuildSnapshot(DeyeStored s, string indicatorsHtml, DateTime? indicatorsAt, int? fuelPercent, string fuelRemaining)
         {
             string mode = null;
             if (s.BatteryMode.HasValue)
@@ -195,6 +215,7 @@ namespace Service
                 ["inverterStatus"] = s.InverterStatus, ["inverterDate"] = Ms(s.InverterDate), ["loadWatts"] = s.LoadWatts,
                 ["soc"] = s.Soc, ["batteryMode"] = mode, ["batteryWatts"] = s.BatteryWatts,
                 ["fuelPercent"] = fuelPercent,
+                ["fuelRemaining"] = fuelRemaining,
                 ["indicatorsHtml"] = indicatorsHtml,
                 ["indicatorsAt"] = indicatorsHtml == null ? null : Ms(indicatorsAt)
             };
