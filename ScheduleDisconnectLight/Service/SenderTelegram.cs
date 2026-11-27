@@ -25,6 +25,7 @@ namespace Service
             var connect = new ConnectParam(SendType);
             var chat_id = "";
             var message_thread_id = "";
+            /*
             if (SendType == SendType.ServiceGroup )
             {
                 chat_id = connect.ChatIdServiceGroup;
@@ -32,9 +33,10 @@ namespace Service
             }
             else
             {
+            */
                 chat_id = connect.ChatId;
                 message_thread_id = SendInChatIdThreadAddition ? connect.ChatIdThreadAdditional : connect.ChatIdThread;
-            }
+            /*}*/
 
             bool hasPhoto = Photo != null;
             using (var client = new HttpClient())

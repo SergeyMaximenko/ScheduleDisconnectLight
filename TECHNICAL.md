@@ -48,7 +48,7 @@
 - Запуск: вручну (`workflow_dispatch`) і по `repository_dispatch` з типом `run-from-crone` (його надсилає зовнішній планувальник; вбудований `schedule` закоментований). `concurrency: state-updater1` без скасування: запуски стають у чергу, а не накладаються.
 - Раннер `windows-latest`. Кроки: checkout → `git reset --hard origin/main` → створити `gcp-key.json` з секрету → відновити кеш токена Deye → запустити `ScheduleDisconnectLight\bin\Debug\ScheduleDisconnectLight.exe` → зберегти кеш токена (лише якщо токен оновився) → закомітити `appState.json`.
 - **Запускається готовий exe з `bin\Debug`, який лежить у репозиторії.** Тому після змін коду треба зібрати проєкт у Visual Studio й закомітити `bin\Debug`. Без цього GitHub виконує стару збірку.
-- Секрети GitHub: `BOT_TOKEN`, `ZVONOK_KEY`, `GCP_SA_KEY`, `CHAT_ID`, `DEYE_APP_ID`, `DEYE_APP_SECRET`, `DEYE_LOGIN`, `DEYE_PASSWORD`, `WORKER_URL`, `INGEST_SECRET`.
+- Секрети GitHub: `BOT_TOKEN`, `ZVONOK_KEY`, `GCP_SA_KEY`, `CHAT_ID`, `DEYE_APP_ID`, `DEYE_APP_SECRET`, `DEYE_LOGIN`, `DEYE_PASSWORD`, `WORKER_URL`, `INGEST_SECRET`, `VIBER_API_URL`, `VIBER_API_TOKEN`.
 - `appState.json` комітить сам workflow (`git pull --rebase --autostash`, потім push). Через це в Visual Studio/GitHub Desktop регулярно виникають конфлікти по `appState.json`: вирішувати, залишаючи версію з GitHub, і перед комітом робити Pull.
 
 ## 3. Конфігурація і секрети
@@ -61,6 +61,7 @@
 | Доступ до Google Sheets | `GOOGLE_APPLICATION_CREDENTIALS` → `gcp-key.json` зі секрету `GCP_SA_KEY` | файл сервісного акаунта в корені репозиторію (у `.gitignore`) |
 | Deye Cloud | `DEYE_APP_ID`, `DEYE_APP_SECRET`, `DEYE_LOGIN`, `DEYE_PASSWORD` | ті самі ключі в `appsettings.Local.json` |
 | Worker | `WORKER_URL`, `INGEST_SECRET` | ті самі ключі в `appsettings.Local.json` |
+| Viber (API черги) | `VIBER_API_URL`, `VIBER_API_TOKEN` | ті самі ключі в `appsettings.Local.json` |
 
 Файли, що не повинні потрапити в репозиторій (є в `.gitignore`): `appsettings.Local.json`, `connectExcel.json`, файл ключа Google, `deye-token.json`, `deye-token.local.json`, `appState-local.json`, `.vs/`. У лог не писати значення секретів; `DeyeClient` вирізає їх із тексту помилок.
 

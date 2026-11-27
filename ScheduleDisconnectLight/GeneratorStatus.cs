@@ -155,6 +155,9 @@ namespace ScheduleDisconnectLight
                         SendType = _sendType,
                         ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel })
                     }.Send(message);
+
+                    new SenderViber() { SendType = _sendType }.Send(message);
+
                 }
 
                 SpreadSheet.SetValue(SpreadSheet.SheetFuelStatistic, refuel_Last_RowID, 8, "так");
@@ -298,6 +301,7 @@ namespace ScheduleDisconnectLight
                         SendType = _sendType,
                         //ReplyMarkupObj = GeneratorNotification.GetReplyMarkup(_sendType, new[] { ReplyMarkup.ShowIndicators })
                     }.Send(message);
+                    new SenderViber() { SendType = _sendType }.Send(message);
                 }
            
 
@@ -787,7 +791,7 @@ namespace ScheduleDisconnectLight
             // Иначе через спам может быть ошибка
             if (_countSendTgError <= 5)
             {
-                new SenderTelegram() { SendType = SendType.ServiceGroup }.Send(message);
+                new SenderTelegram() { SendType = SendType.OnlyTest }.Send(message);
             }
 
         }

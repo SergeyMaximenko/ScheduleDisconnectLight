@@ -50,6 +50,7 @@
     <Compile Include="Service\DeyeSheet.cs" />
     <Compile Include="Service\PowerCalc.cs" />
     <Compile Include="Service\Parameters.cs" />
+    <Compile Include="Service\SenderViber.cs" />
     <Compile Include="Service\WorkerSync.cs" />
     <Compile Include="ScheduleImageGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

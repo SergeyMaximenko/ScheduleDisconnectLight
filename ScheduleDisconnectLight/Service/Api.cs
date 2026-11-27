@@ -14,7 +14,7 @@ namespace Service
         Auto = 0,
         OnlyProd = 1,
         OnlyTest = 2,
-        ServiceGroup = 4
+        //ServiceGroup = 4
     }
 
     public static class Api
@@ -166,10 +166,12 @@ namespace Service
             {
                 return false;
             }
+            /*
             if (sendType == SendType.ServiceGroup)
             {
                 return false;
             }
+            */
             return true;
             
         }
@@ -489,7 +491,7 @@ namespace Service
         public KeyParam KeyParam { get; private set; }
         public string ChatId { get; private set; }
 
-        public string ChatIdServiceGroup { get; private set; }
+       // public string ChatIdServiceGroup { get; private set; }
 
 
         public string ChatIdThread { get; private set; }
@@ -505,7 +507,7 @@ namespace Service
         public ConnectParam(SendType sendType = SendType.Auto)
         {
 
-            ChatIdServiceGroup = "-5288461755";
+           // ChatIdServiceGroup = "-5288461755";
 
             if (Api.IsRegTest(sendType))
             {

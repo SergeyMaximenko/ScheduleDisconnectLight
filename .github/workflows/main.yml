@@ -69,6 +69,9 @@ jobs:
           # Передача даних на Worker дашборда (secrets: WORKER_URL, INGEST_SECRET)
           WORKER_URL: ${{ secrets.WORKER_URL }}
           INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+          # Відправка у Viber через власне API черги (secrets: VIBER_API_URL, VIBER_API_TOKEN)
+          VIBER_API_URL: ${{ secrets.VIBER_API_URL }}
+          VIBER_API_TOKEN: ${{ secrets.VIBER_API_TOKEN }}
         run: |
           cd ScheduleDisconnectLight\bin\Debug
           .\ScheduleDisconnectLight.exe

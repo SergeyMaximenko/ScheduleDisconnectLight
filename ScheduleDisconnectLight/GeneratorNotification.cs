@@ -430,6 +430,9 @@ namespace ScheduleDisconnectLight
                                     SendType = _sendType,
                                     ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.Refuel })
                                 }.Send(messageTelegram);
+                            
+                                new SenderViber() { SendType = _sendType }.Send(messageTelegram);
+
                             }
 
                     }
@@ -479,6 +482,8 @@ namespace ScheduleDisconnectLight
                                     SendType = _sendType,
                                     ReplyMarkupObj = GetReplyMarkup(_sendType, new[] { ReplyMarkup.TehService })
                                 }.Send(messageTelegram);
+
+                                new SenderViber() { SendType = _sendType }.Send(messageTelegram);
                             }
 
                     }
