@@ -12,11 +12,24 @@
           "To": "19:30"
         }
       ]
+    },
+    {
+      "Date": "2026-11-28T00:00:00",
+      "Times": [
+        {
+          "From": "11:30",
+          "To": "16:30"
+        },
+        {
+          "From": "22:30",
+          "To": "24:00"
+        }
+      ]
     }
   ],
   "IsEmergencyShutdowns": false,
-  "ScheduleDateLastUpdate": "2026-11-27T00:30:00",
-  "ScheduleHashDateSet": "2026-11-27T00:32:32.1872117",
+  "ScheduleDateLastUpdate": "2026-11-27T20:36:00",
+  "ScheduleHashDateSet": "2026-11-27T20:38:29.5461763",
   "DateTimePowerOffLastMessage": "2026-11-27T14:30:00",
   "KvLimitAlertDate": "0001-01-01T00:00:00",
   "DateTimePowerOnLastMessage": "2026-11-25T00:00:00"
